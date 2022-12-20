@@ -85,3 +85,42 @@ int len(node_t* head){
 
     return counter;
 }
+
+node_t *sort_byorder(node_t *head){
+    node_t *sorted = init_list();
+    
+    // if list is empty
+    if(head->next == NULL){
+        return head;
+    } 
+
+    while(len(head) > 0){
+        node_t *tmp = head->next;
+
+        // initially first move in list is worst move (and head the previous node)
+        node_t *prev = head;
+        node_t *worstmove = tmp;
+
+        // find worst move
+        while(tmp->next != NULL){
+            if(tmp->next->move->orderid < worstmove->move->orderid){
+                // save the worst move and the previous node
+                prev = tmp;
+                worstmove = tmp->next;
+            }
+            tmp = tmp->next;
+        }
+
+        // remove worst move from list by adjusting pointer from previous node
+        prev->next = worstmove->next;
+
+        // add move to sorted list (from worst to best)
+        add(sorted, worstmove->move);
+
+        // free node of worstmove
+        free(worstmove);
+    }
+    free(head);
+
+    return sorted;
+}

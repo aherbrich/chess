@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <limits.h>
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"
@@ -40,12 +41,17 @@
 #define FIGURE(X) ((X)&~1)
 #define OPPONENT(X) ((X == 0)?(1):(0))
 
+#define INFINITY INT_MAX
+#define NEGINFINITY (-INFINITY)
+
+#define MAXIMIZING(X) ((X == 0)?(1):(0))
 
 typedef uint8_t piece_t;
 typedef uint8_t player_t;
 typedef uint8_t flag_t;
 typedef uint8_t dir_t;
 typedef int8_t idx_t;
+typedef uint16_t order_t;
 
 
 typedef struct _board_t{
@@ -78,6 +84,8 @@ typedef struct _move_t{
     flag_t newep;
 
     oldflags_t* oldflags;
+
+    order_t orderid;
 }move_t;
 
 typedef struct _node_t{
@@ -85,6 +93,21 @@ typedef struct _node_t{
     struct _node_t *next;
 } node_t;
 
+
+typedef struct _zobrist_t {
+  uint64_t hashvalue[8][8][12];
+} zobrist_t;
+
+zobrist_t zobtable;
+
+typedef struct _entry_t{
+    int16_t eval;
+}entry_t;
+
+
+typedef struct _ttable_t{
+    entry_t *entry;
+}ttable_t;
 
 /////////////////////////////////////////////////////////////
 //  LIST STRUCTURE & FUNCTIONS
@@ -99,6 +122,8 @@ int len(node_t* head);
 void add(node_t* head, move_t* move);
 move_t* pop(node_t* head);
 
+/* Sorts list by capture order */
+node_t *sort_byorder(node_t *head);
 
 
 ////////////////////////////////////////////////////////////////
@@ -171,3 +196,26 @@ oldflags_t* copyflagsfrommove(move_t* move);
 
 /* Move generation */
 node_t* generateMoves(board_t* board);
+
+int isLegalMove(board_t* board);
+
+
+///////////////////////////////////////////////////////////////
+//  EVALUATION FUNCTIONS
+
+int countMaterial(board_t *board, player_t color);
+
+int evalBoard(board_t* board);
+
+///////////////////////////////////////////////////////////////
+//  SEARCH 
+
+int alphaBeta(board_t *board, int depth, int alpha, int beta, int maximizingplayer, int maxdepth, move_t** bestmove);
+
+
+////////////////////////////////////////////////////////////
+// ZOBRIST HASHING
+
+void init_zobrist(zobrist_t *zobristtable);
+
+uint64_t zobrist(zobrist_t *zobristtable, board_t *board);

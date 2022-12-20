@@ -8,6 +8,7 @@ move_t* create_normalmove(piece_t piece_was, piece_t piece_cap, idx_t start, idx
     move_t* move = (move_t *) malloc(sizeof(move_t));
 
     move->typeofmove = NORMALMOVE;
+    move->orderid = (FIGURE(piece_cap) * 100) + (KING - FIGURE(piece_was));
 
     move->piece_was = piece_was;
     move->piece_cap = piece_cap;
@@ -25,6 +26,7 @@ move_t* create_eppossiblemove(piece_t piece_was, idx_t start, idx_t end, flag_t 
     move_t* move = (move_t *) malloc(sizeof(move_t));
 
     move->typeofmove = EPPOSSIBLEMOVE;
+    move->orderid = 0;
 
     move->piece_was = piece_was;
 
@@ -41,6 +43,7 @@ move_t* create_promotionmove(piece_t piece_was, piece_t piece_is, piece_t piece_
     move_t* move = (move_t *) malloc(sizeof(move_t));
 
     move->typeofmove = PROMOTIONMOVE;
+    move->orderid = 10000 + (FIGURE(piece_is) * 100) + (FIGURE(piece_cap));
 
     move->piece_was = piece_was;
     move->piece_is = piece_is;
@@ -58,6 +61,7 @@ move_t* create_promotionmove(piece_t piece_was, piece_t piece_is, piece_t piece_
 move_t* create_castlemove(idx_t startking, idx_t endking, idx_t startrook, idx_t endrook, flag_t newcr, oldflags_t *oldflags){
     move_t* move = (move_t *) malloc(sizeof(move_t));
     move->typeofmove = CASTLEMOVE;
+    move->orderid = 0;
 
     move->start = startking;
     move->end = endking;
@@ -74,6 +78,7 @@ move_t* create_castlemove(idx_t startking, idx_t endking, idx_t startrook, idx_t
 move_t* create_epmove(idx_t startattacker, idx_t endattacker, oldflags_t *oldflags){
     move_t* move = (move_t *) malloc(sizeof(move_t));
     move->typeofmove = ENPASSANTMOVE;
+    move->orderid = 0;
 
     move->start = startattacker;
     move->end = endattacker;
