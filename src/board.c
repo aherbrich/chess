@@ -23,6 +23,20 @@ void free_board(board_t *board){
     free(board);
 }
 
+board_t* copy_board(board_t* board){
+    board_t* copy =(board_t*) malloc(sizeof(board_t));
+    copy->playingfield = (piece_t*) calloc(64, sizeof(piece_t));
+
+    memcpy(copy->playingfield, board->playingfield, 64);
+
+    copy->player = board->player;
+    copy->epfield = board->epfield;
+    copy->eppossible = board->eppossible;
+    copy->castlerights = board->castlerights;
+
+    return copy;
+}
+
 /* Load a game position based on FEN */
 void loadByFEN(board_t *board, char *FEN){
     int row = 7;
