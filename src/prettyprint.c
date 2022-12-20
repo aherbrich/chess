@@ -48,11 +48,19 @@ char printPiece(piece_t piece){
 void printBoard(board_t *board){
     for(int x = 7; x>=0; x--){
         for(int y = 0; y < 8; y++){
+            if (y == 0){
+                printf("%s%d%s    ",Color_GREEN, x+1, Color_END);
+            }
+
             char piece = printPiece(board->playingfield[posToIdx(x, y)]);
-            printf("%c  ", piece);
+            if(COLOR(board->playingfield[posToIdx(x, y)]) == BLACK){
+                printf("%s", Color_CYAN);
+            }
+            printf("%c%s  ", piece, Color_END);
         }
         printf("\n");
     }
+    printf("\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
     printf("\n");
 }
 
