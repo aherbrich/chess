@@ -144,3 +144,28 @@ int evalBoard(board_t* board){
     return eval;
 }
 
+int evalEndOfGame(board_t *board, int depth){
+    // check for stalemate
+
+    board->player = OPPONENT(board->player);    // same as doing a null move
+    int inCheck = !isLegalMove(board);          // are we in check?
+    board->player = OPPONENT(board->player);    // reverse the null move
+
+    // if in check
+    if(inCheck){
+        // if WHITE (the maximizing player) is in check
+        // return negative evaluation
+        if(board->player == WHITE){
+            return -16000-depth;
+        } 
+        // if BLACK (the minimizing player) is in check
+        // return positiv evaluation
+        else{
+            return 16000+depth;
+        }
+    }
+    // stalemate has been reached
+    else{
+        return 0;
+    }
+}
