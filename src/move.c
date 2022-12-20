@@ -216,3 +216,65 @@ void reverseMove(board_t* board, move_t* move, player_t playerwhomademove){
     board->player = playerwhomademove;
 
 }
+
+int isSameMove(move_t* move, move_t *move2){
+    if(move->typeofmove != move2->typeofmove){
+        return 0;
+    }
+    if(move->start != move2->start){
+        return 0;
+    }
+    if(move->end != move2->end){
+        return 0;
+    }
+    if(move->piece_was != move2->piece_was){
+        return 0;
+    }
+    if(move->piece_cap != move2->piece_cap){
+        return 0;
+    }
+    if(move->piece_was != move2->piece_was){
+        return 0;
+    }
+    return 1;
+}
+
+
+node_t *sortMoves(node_t *head){
+    node_t *sorted = init_list();
+    
+    // if list is empty
+    if(head->next == NULL){
+        return head;
+    } 
+
+    while(len(head) > 0){
+        node_t *tmp = head->next;
+
+        // initially first move in list is worst move (and head the previous node)
+        node_t *prev = head;
+        node_t *worstmove = tmp;
+
+        // find worst move by orderid
+        while(tmp->next != NULL){
+            if(tmp->next->move->orderid < worstmove->move->orderid){
+                // save the worst move and the previous node
+                prev = tmp;
+                worstmove = tmp->next;
+            }
+            tmp = tmp->next;
+        }
+
+        // remove worst move from list by adjusting pointer from previous node
+        prev->next = worstmove->next;
+
+        // add move to sorted list (from worst to best)
+        add(sorted, worstmove->move);
+
+        // free node of worstmove
+        free(worstmove);
+    }
+    free(head);
+
+    return sorted;
+}
