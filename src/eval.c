@@ -132,19 +132,7 @@ int countMaterial(board_t *board, player_t color){
 }
 
 
-int evalBoard(board_t* board){
-    int whiteEval = countMaterial(board, WHITE);
-    int blackEval = countMaterial(board, BLACK);
-
-    int eval = whiteEval - blackEval;
-
-    // if(board->player == WHITE){
-    //     eval = eval * -1;
-    // }
-    return eval;
-}
-
-int evalEndOfGame(board_t *board, int depth){
+int evalEndOfGameMax(board_t *board, int depth){
     // check for stalemate
 
     board->player = OPPONENT(board->player);    // same as doing a null move
@@ -153,19 +141,22 @@ int evalEndOfGame(board_t *board, int depth){
 
     // if in check
     if(inCheck){
-        // if WHITE (the maximizing player) is in check
-        // return negative evaluation
-        if(board->player == WHITE){
-            return -16000-depth;
-        } 
-        // if BLACK (the minimizing player) is in check
-        // return positiv evaluation
-        else{
-            return 16000+depth;
-        }
+        return 16000+depth;
     }
     // stalemate has been reached
     else{
         return 0;
     }
+}
+
+int evalBoardMax(board_t* board){
+    int whiteEval = countMaterial(board, WHITE);
+    int blackEval = countMaterial(board, BLACK);
+
+    int eval = whiteEval - blackEval;
+
+    if(board->player == BLACK){
+        eval = eval * -1;
+    }
+    return eval;
 }

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <limits.h>
+#include <string.h>
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"
@@ -45,6 +46,17 @@
 #define NEGINFINITY (-INFINITY)
 
 #define MAXIMIZING(X) ((X == 0)?(1):(0))
+
+#define HTSIZE 67108864
+
+#define FLG_EXCACT 1
+#define FLG_CUT 2
+#define FLG_ALL 4
+
+#define ND_EXACT(X) ((X&1) != 0)
+#define ND_CUT(X) ((X&2) != 0)
+#define ND_ALL(X) ((X&4) != 0)
+
 
 typedef uint8_t piece_t;
 typedef uint8_t player_t;
@@ -96,18 +108,30 @@ typedef struct _node_t{
 
 typedef struct _zobrist_t {
   uint64_t hashvalue[8][8][12];
+  uint64_t hashflags[13];
 } zobrist_t;
 
-zobrist_t zobtable;
+extern zobrist_t zobtable;
 
-typedef struct _entry_t{
+typedef struct _htentry_t{ 
+    int8_t flags;
     int16_t eval;
-}entry_t;
+    int8_t depth;
+    int alpha;
+    int beta;
+    move_t* bestmove;
+    uint64_t hash;
+}htentry_t;
+
+extern htentry_t *httable;
 
 
-typedef struct _ttable_t{
-    entry_t *entry;
-}ttable_t;
+/////////////////////////////////////////////////////////////
+//  GLOBAL PERFORMANCE COUNTER
+
+extern int nodes_searched;
+extern int hash_used;
+extern int hash_boundsadjusted;
 
 /////////////////////////////////////////////////////////////
 //  LIST STRUCTURE & FUNCTIONS
@@ -121,9 +145,6 @@ int len(node_t* head);
 /* List helpers*/
 void add(node_t* head, move_t* move);
 move_t* pop(node_t* head);
-
-/* Sorts list by capture order */
-node_t *sort_byorder(node_t *head);
 
 
 ////////////////////////////////////////////////////////////////
@@ -139,11 +160,19 @@ move_t* create_epmove(idx_t startattacker, idx_t endattacker, oldflags_t *oldfla
 /* Frees memory of move */
 void free_move(move_t* move);
 
+/* Deep copies move */
+move_t *copy_move(move_t* move);
+
 /* Execute move */
 void playMove(board_t* board, move_t* move, player_t playerwhomademove);
 
 /* Reverses a move/ recovers old board state */
 void reverseMove(board_t* board, move_t* move, player_t playerwhomademove);
+
+/* Sorts list by capture order */
+node_t *sortMoves(node_t *head);
+
+int isSameMove(move_t* move, move_t *move2);
 
 ///////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
@@ -151,8 +180,10 @@ void reverseMove(board_t* board, move_t* move, player_t playerwhomademove);
 /* Allocate memory for a empty board */
 board_t* init_board();
 
-/* Free memory of board */
+/* Make deep cop of board */
+board_t* copy_board(board_t* board);
 
+/* Free memory of board */
 void free_board(board_t *board);
 
 /* Load a game position based on FEN */
@@ -177,6 +208,7 @@ void printMoves(node_t *movelst);
 /////////////////////////////////////////////////////////////
 // PERFT TESTER
 
+/* Perft move generation and validation */
 int MoveGen(board_t* board, int depth);
 
 //////////////////////////////////////////////////////////////
@@ -191,31 +223,50 @@ oldflags_t* copyflags(board_t* board);
 /* Copies flags from move */
 oldflags_t* copyflagsfrommove(move_t* move);
 
+/* Max of function */
+int maxof(int x, int y);
+
+/* Min of function */
+int minof(int x, int y);
+
 //////////////////////////////////////////////////////////////
 //  MOVE GENERATION
 
 /* Move generation */
 node_t* generateMoves(board_t* board);
 
+/* Checks if a move is legal (king not in check) */
 int isLegalMove(board_t* board);
+
+int ttMoveIsPossible(node_t *movelst, move_t* ttmove);
 
 
 ///////////////////////////////////////////////////////////////
 //  EVALUATION FUNCTIONS
 
+/* Counts the material and its value of a specific color */
 int countMaterial(board_t *board, player_t color);
 
-int evalBoard(board_t* board);
+/* Simple evaluation fucntion for negamax */
+int evalBoardMax(board_t* board);
+
+/* SImple evaluation function of an ended game for negamax*/
+int evalEndOfGameMax(board_t *board, int depth);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH 
 
-int alphaBeta(board_t *board, int depth, int alpha, int beta, int maximizingplayer, int maxdepth, move_t** bestmove);
-
+/* The alpha beta search */
+int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta);
 
 ////////////////////////////////////////////////////////////
-// ZOBRIST HASHING
+// ZOBRIST HASHING & TRANSPOSITION TABLE
 
-void init_zobrist(zobrist_t *zobristtable);
+/* Initializes the global zobrist table */
+void init_zobrist();
 
-uint64_t zobrist(zobrist_t *zobristtable, board_t *board);
+/* Zobrist-hashes a board using the zobrist table */
+uint64_t zobrist(board_t *board);
+
+/* Initializes a global hashtable */
+void init_hashtable();

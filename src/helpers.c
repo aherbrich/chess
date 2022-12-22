@@ -30,3 +30,19 @@ oldflags_t* copyflagsfrommove(move_t* move){
     return oldflagsfrommove;
 }
 
+/* Max of function */
+int maxof(int x, int y){
+    if(x > y){
+        return x;
+    }
+    return y;
+}
+
+/* Min of function */
+int minof(int x, int y){
+    if(x < y){
+        return x;
+    }
+    return y;
+}
+
