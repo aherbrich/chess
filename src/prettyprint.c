@@ -91,3 +91,29 @@ void printMoves(node_t *movelst){
     }
     printf("\n");
 }
+
+void printLine(board_t* board, int depth) {
+    uint64_t hash;
+    uint64_t hashmod;
+    player_t playeratturn = board->player;
+    move_t* bestmove;
+
+    if (depth > 0) {
+        hash = zobrist(board);
+        hashmod = hash % HTSIZE;
+
+        bestmove = copy_move(httable[hashmod].bestmove);
+
+        if(bestmove == NULL){
+            return;
+        }
+        playMove(board, bestmove, playeratturn);
+        printMove(bestmove);
+        printf("\t");
+        printLine(board, depth-1);
+        reverseMove(board, bestmove, playeratturn);
+        free_move(bestmove);
+    } else {
+        return;
+    }
+}

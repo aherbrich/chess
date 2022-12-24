@@ -1,6 +1,6 @@
  #include "../include/chess.h"
 
-int quietSearch(board_t *board, int alpha, int beta){
+int quietSearch(board_t *board, int alpha, int beta, clock_t start, double timeleft){
     // evaluate board
     int value = evalBoardMax(board);
 
@@ -14,11 +14,6 @@ int quietSearch(board_t *board, int alpha, int beta){
 
     // if no more captures possible return evaluation
     if(len(movelst) == 0){
-        // checkmate or stalemate
-        if(len(generateMoves(board)) == 0){
-            return evalEndOfGameMax;
-        }
-
         // else return evaluation
         return value;
     }
@@ -30,10 +25,20 @@ int quietSearch(board_t *board, int alpha, int beta){
     // alpha beta only on captures
     while((move = pop(movelst)) != NULL){
         nodes_searched++;
+
+        double timediff = (double) (clock() - start) / CLOCKS_PER_SEC;
+        if(timediff > timeleft) {
+            free_move(move);
+            free_movelst(movelst);
+            uint64_t hash = zobrist(board);
+            uint64_t key = hash%HTSIZE;
+            return httable[key].eval;
+        }
+
         alpha = maxof(value, alpha);
 
         playMove(board, move, playeratturn);
-        int value = -quietSearch(board, -beta, -alpha);
+        int value = -quietSearch(board, -beta, -alpha, start, timeleft);
         reverseMove(board, move, playeratturn);
 
 
@@ -57,7 +62,7 @@ int quietSearch(board_t *board, int alpha, int beta){
     return bestvalue;
 }
 
-int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
+int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta, clock_t start, double timeleft){    
     int oldalpha = alpha;
     move_t* bestmovesofar = NULL;
 
@@ -93,7 +98,7 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
     if(depth == 0){
         nodes_searched++;
         free_move(pvmove);
-        return(quietSearch(board, alpha, beta));
+        return(quietSearch(board, alpha, beta, start, timeleft));
         //return evalBoardMax(board);
     }
     
@@ -104,11 +109,11 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
     node_t* movelst = generateMoves(board);
     movelst = sortMoves(movelst);
 
-    if(pvdepth >= 0 && ttMoveIsPossible(movelst, pvmove)){
-
+    if(pvdepth >= 0 && PVMoveIsPossible(movelst, pvmove)){
         nodes_searched++;
+        
         playMove(board, pvmove, playeratturn);
-        bestvalue = -alphaBetaWithTT(board, depth-1, -beta, -alpha);
+        bestvalue = -alphaBetaWithTT(board, depth-1, -beta, -alpha, start, timeleft);
         reverseMove(board, pvmove, playeratturn);
 
         free_move(bestmovesofar);
@@ -125,12 +130,19 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
         nodes_searched++;
         free_move(pvmove);
         free_move(bestmovesofar);
-        free(movelst);
+        free_movelst(movelst);
         return evalEndOfGameMax(board, depth);
     }
 
     while((move = pop(movelst)) != NULL){
         nodes_searched++;
+
+        double timediff = (double) (clock() - start) / CLOCKS_PER_SEC;
+        if(timediff > timeleft) {
+            free_move(move);
+            free_movelst(movelst);
+            return pvvalue;
+        }
 
         if(pvmove != NULL && isSameMove(move, pvmove)){
             free_move(move);
@@ -139,7 +151,7 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
 
         alpha = maxof(bestvalue, alpha);
         playMove(board, move, playeratturn);
-        int value = -alphaBetaWithTT(board, depth-1, -beta, -alpha);
+        int value = -alphaBetaWithTT(board, depth-1, -beta, -alpha, start, timeleft);
         reverseMove(board, move, playeratturn);
 
         if(value > bestvalue){
@@ -175,4 +187,41 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
     free_move(bestmovesofar);
 
     return bestvalue;
+}
+
+move_t *iterativeSearch(board_t *board, int8_t maxdepth, double maxtime){
+    /* reset the performance counters */
+    nodes_searched = 0;
+    hash_used = 0;
+    hash_boundsadjusted = 0;
+
+    double timeleft = maxtime;
+    move_t* bestmove = NULL;
+    clock_t begin;
+
+
+    for (int i = 1; i <= maxdepth; i++) {
+        begin = clock();
+        alphaBetaWithTT(board, i, NEGINFINITY, INFINITY, clock(), timeleft);
+        uint64_t hash = zobrist(board);
+        hash = hash % HTSIZE;
+        free_move(bestmove);
+        bestmove = copy_move(httable[hash].bestmove);
+        clock_t end = clock();
+
+        //printMove(bestmove);
+        // printf("\t\t\t Time:\t%fs\n",
+        //         (double)(end - begin) / CLOCKS_PER_SEC);
+        
+        // printLine(board, i);
+        // printf("\n");
+
+        timeleft -= (double)(end - begin) / CLOCKS_PER_SEC;
+        if(timeleft <= 0){
+            printf("Depth searched: %d\n", i);
+            break;
+        }
+    }
+
+    return bestmove;
 }

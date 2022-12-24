@@ -205,6 +205,8 @@ void printMove(move_t *move);
 /* Print list of moves */
 void printMoves(node_t *movelst);
 
+void printLine(board_t* board, int depth);
+
 /////////////////////////////////////////////////////////////
 // PERFT TESTER
 
@@ -241,7 +243,7 @@ node_t* generateCaptures(board_t* board);
 /* Checks if a move is legal (king not in check) */
 int isLegalMove(board_t* board);
 
-int ttMoveIsPossible(node_t *movelst, move_t* ttmove);
+int PVMoveIsPossible(node_t *movelst, move_t* ttmove);
 
 
 ///////////////////////////////////////////////////////////////
@@ -260,7 +262,9 @@ int evalEndOfGameMax(board_t *board, int depth);
 //  SEARCH 
 
 /* The alpha beta search */
-int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta);
+int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta, clock_t start, double timeleft);
+
+move_t *iterativeSearch(board_t *board, int8_t maxdepth, double maxtime);
 
 ////////////////////////////////////////////////////////////
 // ZOBRIST HASHING & TRANSPOSITION TABLE

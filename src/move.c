@@ -276,7 +276,7 @@ int isSameMove(move_t* move, move_t *move2){
     return 1;
 }
 
-int ttMoveIsPossible(node_t *movelst, move_t* ttmove){
+int PVMoveIsPossible(node_t *movelst, move_t* ttmove){
     node_t *tmp = movelst;
     if(ttmove != NULL){
         while(tmp->next != NULL){
