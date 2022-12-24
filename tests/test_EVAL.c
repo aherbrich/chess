@@ -1,3 +1,4 @@
+#include "../include/book.h"
 #include "../include/chess.h"
 #include "../include/zobrist.h"
 

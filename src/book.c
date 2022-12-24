@@ -1,4 +1,4 @@
-#include "../include/chess.h"
+#include "../include/book.h"
 #include "../include/zobrist.h"
 
 bookentry_t book[MAXNR_LINES][MAXDEPTH_LINE];

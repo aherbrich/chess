@@ -110,14 +110,6 @@ typedef struct _node_t {
     struct _node_t* next;
 } node_t;
 
-typedef struct _bookentry_t {
-    int8_t possible;
-    uint64_t hash;
-    move_t* move;
-} bookentry_t;
-
-extern bookentry_t book[MAXNR_LINES][MAXDEPTH_LINE];
-
 /////////////////////////////////////////////////////////////
 //  GLOBAL PERFORMANCE COUNTER
 
@@ -230,12 +222,5 @@ extern int evalEndOfGameMax(board_t* board, int depth);
 /* The alpha beta search */
 extern int alphaBetaWithTT(board_t* board, uint8_t depth, int alpha, int beta, clock_t start, double timeleft);
 extern move_t* iterativeSearch(board_t* board, int8_t maxdepth, double maxtime);
-
-//////////////////////////////////////////////////////////////
-// BOOK OF OPENINGS
-
-extern void init_book();
-extern int book_possible(board_t* board);
-extern move_t* getRandomBook(board_t* board);
 
 #endif

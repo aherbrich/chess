@@ -23,9 +23,6 @@ typedef struct _htentry_t {
 
 extern htentry_t* httable;
 
-////////////////////////////////////////////////////////////
-// ZOBRIST HASHING & TRANSPOSITION TABLE
-
 /* Initializes the global zobrist table */
 extern void init_zobrist();
 /* Zobrist-hashes a board using the zobrist table */
