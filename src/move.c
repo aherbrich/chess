@@ -118,6 +118,15 @@ void free_move(move_t* move){
     }
 }
 
+void free_movelst(node_t* movelst){
+    move_t *move;
+    while((move = pop(movelst)) != NULL) {
+        free_move(move);
+    }
+    
+    free(movelst);
+}
+
 /* Execute move */
 void playMove(board_t* board, move_t* move, player_t playerwhomademove){
     if(move->typeofmove == NORMALMOVE){
