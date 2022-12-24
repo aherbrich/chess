@@ -141,7 +141,7 @@ int evalEndOfGameMax(board_t *board, int depth){
 
     // if in check
     if(inCheck){
-        return 16000+depth;
+        return -16000-depth;
     }
     // stalemate has been reached
     else{
