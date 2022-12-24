@@ -1,7 +1,7 @@
 #include "../include/chess.h"
 #include <string.h>
 
-char STARTING_FEN[] =
+char *STARTING_FEN=
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 char TEST2_FEN[] =
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
@@ -94,7 +94,7 @@ move_t* getMove(board_t *board){
 
 int main(){
     board_t* board = init_board();
-    loadByFEN(board, TEST6_FEN);
+    loadByFEN(board, STARTING_FEN);
 
     clock_t end;
     clock_t begin;
@@ -103,6 +103,7 @@ int main(){
     /* Implement here */
     init_zobrist();
     init_hashtable();
+    init_book();
 
     printBoard(board);
 
@@ -110,6 +111,7 @@ int main(){
         if(board->player == WHITE){
             move_t *move = getMove(board);
             playMove(board, move, board->player);
+            board->plynr++;
             printBoard(board);
         }
         else{
@@ -125,20 +127,30 @@ int main(){
             begin = clock();
 
             clear_hashtable();
+            move_t *bestmove;
 
-            move_t *bestmove = iterativeSearch(board, maxdepth, maxtime);
+            if(book_possible(board)==1){
+                printf("Book move possible!\n");
+                bestmove = getRandomBook(board);
+            }
+            else{
+                printf("No book moves possible!\n");
+                bestmove = iterativeSearch(board, maxdepth, maxtime);
 
-            printf("\nNodes Explored:\t%d\n", nodes_searched);
-            printf("Hashes used:\t%d \t(%4.2f)\n",hash_used, (float) hash_used/(float) nodes_searched);
-            printf("Bounds adj.:\t%d\n",hash_boundsadjusted);
-            printf("Found move:\t");
-            printMove(bestmove);
+                printf("\nNodes Explored:\t%d\n", nodes_searched);
+                printf("Hashes used:\t%d \t(%4.2f)\n",hash_used, (float) hash_used/(float) nodes_searched);
+                printf("Bounds adj.:\t%d\n",hash_boundsadjusted);
+                printf("Found move:\t");
+                printMove(bestmove);
 
-            end = clock();
-            printf("\t\t\t Time:\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
-            printf("\n");
+                end = clock();
+                printf("\t\t\t Time:\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
+                printf("\n");
+
+            }
 
             playMove(board, bestmove, board->player);
+            board->plynr++;
             printBoard(board);
             printf("%s", Color_END);
         }

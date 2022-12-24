@@ -1,6 +1,6 @@
 #include "../include/chess.h"
 
-char STARTING_FEN[] =
+char *STARTING_FEN =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 char TEST2_FEN[] =
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
@@ -26,7 +26,7 @@ int hash_boundsadjusted = 0;
 
 int main() {
     board_t* board = init_board();
-    loadByFEN(board, TEST2_FEN);
+    loadByFEN(board, STARTING_FEN);
 
     clock_t end;
     clock_t begin;
@@ -40,6 +40,7 @@ int main() {
     /* Implement here */
     init_zobrist();
     init_hashtable();
+    init_book();
 
     int maxdepth = 40;
     double maxtime = 5.0;

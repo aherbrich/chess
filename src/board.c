@@ -12,7 +12,7 @@ board_t* init_board(){
     board->epfield = 0;
     board->eppossible = FALSE;
     board->castlerights = 0b1111;
-
+    board->plynr = 0;
     return board;
 }
 

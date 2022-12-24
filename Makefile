@@ -1,6 +1,6 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c src/eval.c src/minmax.c src/zobrist.c
+EXERCISE_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c src/eval.c src/minmax.c src/zobrist.c src/book.c
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 TEST_DIR = tests
@@ -51,7 +51,7 @@ $(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
 
-$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/chess.o $(BUILD_DIR)/src/list.o $(BUILD_DIR)/src/move.o $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/perft.o $(BUILD_DIR)/src/prettyprint.o $(BUILD_DIR)/src/eval.o $(BUILD_DIR)/src/minmax.o $(BUILD_DIR)/src/zobrist.o
+$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/chess.o $(BUILD_DIR)/src/list.o $(BUILD_DIR)/src/move.o $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/perft.o $(BUILD_DIR)/src/prettyprint.o $(BUILD_DIR)/src/eval.o $(BUILD_DIR)/src/minmax.o $(BUILD_DIR)/src/zobrist.o $(BUILD_DIR)/src/book.o
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o$@ $^
 

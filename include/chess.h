@@ -57,6 +57,10 @@
 #define ND_CUT(X) ((X&2) != 0)
 #define ND_ALL(X) ((X&4) != 0)
 
+#define MAXNR_LINES 200
+#define MAXDEPTH_LINE 40
+
+extern char *STARTING_FEN;
 
 typedef uint8_t piece_t;
 typedef uint8_t player_t;
@@ -72,6 +76,7 @@ typedef struct _board_t{
     flag_t castlerights;
     flag_t eppossible;
     piece_t epfield;
+    uint16_t plynr;
 }board_t;
 
 typedef struct _oldflags_t{
@@ -123,6 +128,14 @@ typedef struct _htentry_t{
 
 extern htentry_t *httable;
 
+
+typedef struct _bookentry_t{
+    int8_t possible;
+    uint64_t hash;
+    move_t* move;
+}bookentry_t;
+
+extern bookentry_t book[MAXNR_LINES][MAXDEPTH_LINE];
 
 /////////////////////////////////////////////////////////////
 //  GLOBAL PERFORMANCE COUNTER
@@ -286,3 +299,12 @@ void storeTableEntry(board_t *board, int8_t flags, int16_t value, move_t *move, 
 
 /* Probes table entry from hashtable */
 void probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth);
+
+//////////////////////////////////////////////////////////////
+// BOOK OF OPENINGS
+
+void init_book();
+
+int book_possible(board_t *board);
+
+move_t *getRandomBook(board_t *board);
