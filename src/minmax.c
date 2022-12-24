@@ -1,4 +1,5 @@
 #include "../include/chess.h"
+#include "../include/zobrist.h"
 
 int quietSearch(board_t *board, int alpha, int beta, clock_t start, double timeleft) {
     // evaluate board

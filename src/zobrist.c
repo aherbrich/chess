@@ -1,4 +1,4 @@
-#include "../include/chess.h"
+#include "../include/zobrist.h"
 
 zobrist_t zobtable;
 htentry_t *httable;
