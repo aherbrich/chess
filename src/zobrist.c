@@ -90,9 +90,40 @@ void init_hashtable() {
         httable[i].eval = 0;
         
         httable[i].depth = -1;
-        httable[i].alpha = 0;
-        httable[i].beta = 0;
         httable[i].bestmove = NULL;
         httable[i].hash = 0;
     }
+}
+
+void clear_hashtable() {
+    for(int i = 0; i < HTSIZE; i++){
+        httable[i].flags = 0;
+        httable[i].eval = 0;
+        
+        httable[i].depth = -1;
+        httable[i].bestmove = NULL;
+        httable[i].hash = 0;
+    }
+}
+
+void storeTableEntry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth){
+    uint64_t hash = zobrist(board);
+    uint64_t key = hash%HTSIZE;
+
+    httable[key].flags = flags;
+    httable[key].depth = depth;
+    httable[key].eval = value;
+    httable[key].hash = hash;
+    free_move(httable[key].bestmove);
+    httable[key].bestmove = copy_move(move);
+}
+
+void probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth){
+    uint64_t hash = zobrist(board);
+    uint64_t key = hash%HTSIZE;
+
+    *flags = httable[key].flags;
+    *depth = httable[key].depth;
+    *value = httable[key].eval;
+    *move = copy_move(httable[key].bestmove);
 }
