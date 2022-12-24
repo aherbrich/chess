@@ -163,19 +163,6 @@ extern void free_board(board_t* board);
 extern void loadByFEN(board_t* board, char* FEN);
 
 /////////////////////////////////////////////////////////////
-//  PRINT HELPERS
-
-/* Print a piece */
-extern char printPiece(piece_t piece);
-/* Print the board */
-extern void printBoard(board_t* board);
-/* Print move*/
-extern void printMove(move_t* move);
-/* Print list of moves */
-extern void printMoves(node_t* movelst);
-extern void printLine(board_t* board, int depth);
-
-/////////////////////////////////////////////////////////////
 // PERFT TESTER
 
 /* Perft move generation and validation */

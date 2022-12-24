@@ -2,6 +2,7 @@
 
 #include "../include/book.h"
 #include "../include/chess.h"
+#include "../include/prettyprint.h"
 #include "../include/zobrist.h"
 
 char *STARTING_FEN =
