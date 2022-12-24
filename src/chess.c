@@ -1033,6 +1033,29 @@ int isLegalMove(board_t* board){
     return 1;
 }
 
+node_t* filterNonCaptures(board_t* board, node_t* movelst){
+    node_t* captureMoves = init_list();
+    player_t playerwhomademove = board->player;
+    move_t* move;
+
+    while((move= pop(movelst)) != NULL){
+        if(move->typeofmove == NORMALMOVE || move->typeofmove == PROMOTIONMOVE){
+            if(move->piece_cap != EMPTY){
+                add(captureMoves, move);
+            }
+            else{
+                free_move(move);
+            }
+        }
+        else{
+            add(captureMoves, move);
+        }
+    }
+    free(movelst);
+
+    return captureMoves;
+}
+
 node_t* filterIllegalMoves(board_t* board, node_t* movelst){
     node_t* legalMoves = init_list();
     player_t playerwhomademove = board->player;
@@ -1158,4 +1181,8 @@ node_t* generateMoves(board_t* board){
     node_t* legalMoves = filterIllegalMoves(board, movelst);
 
     return legalMoves;
+}
+
+node_t* generateCaptures(board_t* board){
+    return(filterNonCaptures(board, generateMoves(board)));
 }

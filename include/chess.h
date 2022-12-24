@@ -117,8 +117,6 @@ typedef struct _htentry_t{
     int8_t flags;
     int16_t eval;
     int8_t depth;
-    int alpha;
-    int beta;
     move_t* bestmove;
     uint64_t hash;
 }htentry_t;
@@ -159,6 +157,8 @@ move_t* create_epmove(idx_t startattacker, idx_t endattacker, oldflags_t *oldfla
 
 /* Frees memory of move */
 void free_move(move_t* move);
+
+void free_movelst(node_t* movelst);
 
 /* Deep copies move */
 move_t *copy_move(move_t* move);
@@ -235,6 +235,9 @@ int minof(int x, int y);
 /* Move generation */
 node_t* generateMoves(board_t* board);
 
+/* Generates all captures */
+node_t* generateCaptures(board_t* board);
+
 /* Checks if a move is legal (king not in check) */
 int isLegalMove(board_t* board);
 
@@ -270,3 +273,12 @@ uint64_t zobrist(board_t *board);
 
 /* Initializes a global hashtable */
 void init_hashtable();
+
+/* Clears the hashtable */
+void clear_hashtable();
+
+/* Stores key value pair in hashtable */
+void storeTableEntry(board_t *board, int8_t flags, int16_t value, move_t *move,  int8_t depth);
+
+/* Probes table entry from hashtable */
+void probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth);

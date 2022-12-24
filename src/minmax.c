@@ -1,43 +1,100 @@
  #include "../include/chess.h"
 
+int quietSearch(board_t *board, int alpha, int beta){
+    // evaluate board
+    int value = evalBoardMax(board);
+
+    // beta cutoff
+    if(value >= beta){
+        return value;
+    }
+
+    node_t* movelst = generateCaptures(board);
+    movelst = sortMoves(movelst);
+
+    // if no more captures possible return evaluation
+    if(len(movelst) == 0){
+        // checkmate or stalemate
+        if(len(generateMoves(board)) == 0){
+            return evalEndOfGameMax;
+        }
+
+        // else return evaluation
+        return value;
+    }
+
+    move_t *move;
+    player_t playeratturn = board->player;
+    int bestvalue = value;
+
+    // alpha beta only on captures
+    while((move = pop(movelst)) != NULL){
+        nodes_searched++;
+        alpha = maxof(value, alpha);
+
+        playMove(board, move, playeratturn);
+        int value = -quietSearch(board, -beta, -alpha);
+        reverseMove(board, move, playeratturn);
+
+
+        if(value > bestvalue){
+            bestvalue = value;
+            if(bestvalue >= beta){
+                free_move(move);
+                goto betacutoff;
+            }
+        }
+        free_move(move);
+    }
+    betacutoff:
+
+    // free the remaining move list
+    while((move = pop(movelst)) != NULL) {
+        free_move(move);
+    }
+    free(movelst);
+
+    return bestvalue;
+}
+
 int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
     int oldalpha = alpha;
     move_t* bestmovesofar = NULL;
 
-    uint64_t hash = zobrist(board);
-    uint64_t hashmod = hash%HTSIZE;
+    move_t* pvmove;
+    int16_t pvvalue;
+    int8_t pvflags;
+    int8_t pvdepth;
 
-    move_t* ttmove = copy_move(httable[hashmod].bestmove);
-    int ttvalue = httable[hashmod].eval;
-    int8_t ttflags = httable[hashmod].flags;
-    int8_t ttdepth = httable[hashmod].depth;
+    probeTableEntry(board, &pvflags, &pvvalue, &pvmove, &pvdepth);
 
-    if(ttdepth == depth){
+    if(pvdepth == depth){
         nodes_searched++;
-        if(ttflags == FLG_EXCACT){
+        if(pvflags == FLG_EXCACT){
             hash_used++;
-            free_move(ttmove);
-            return ttvalue;
+            free_move(pvmove);
+            return pvvalue;
         }
-        else if(ttflags == FLG_CUT){
+        else if(pvflags == FLG_CUT){
             hash_boundsadjusted++;
-            alpha = maxof(ttvalue, alpha);
+            alpha = maxof(pvvalue, alpha);
         }
-        else if(ttflags == FLG_ALL){
+        else if(pvflags == FLG_ALL){
             hash_boundsadjusted++;
-            beta = minof(ttvalue, beta);
+            beta = minof(pvvalue, beta);
         }
         if (alpha >= beta){
             hash_used++;
-            free_move(ttmove);
-            return ttvalue;
+            free_move(pvmove);
+            return pvvalue;
         }
     }
 
     if(depth == 0){
         nodes_searched++;
-        free_move(ttmove);
-        return evalBoardMax(board);
+        free_move(pvmove);
+        return(quietSearch(board, alpha, beta));
+        //return evalBoardMax(board);
     }
     
     move_t *move;
@@ -47,15 +104,15 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
     node_t* movelst = generateMoves(board);
     movelst = sortMoves(movelst);
 
-    if(ttdepth >= 0 && ttMoveIsPossible(movelst, ttmove)){
+    if(pvdepth >= 0 && ttMoveIsPossible(movelst, pvmove)){
 
         nodes_searched++;
-        playMove(board, ttmove, playeratturn);
+        playMove(board, pvmove, playeratturn);
         bestvalue = -alphaBetaWithTT(board, depth-1, -beta, -alpha);
-        reverseMove(board, ttmove, playeratturn);
+        reverseMove(board, pvmove, playeratturn);
 
         free_move(bestmovesofar);
-        bestmovesofar = copy_move(ttmove);
+        bestmovesofar = copy_move(pvmove);
         if(bestvalue >= beta){
             goto betacutoff;
         }
@@ -64,11 +121,9 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
         bestvalue = NEGINFINITY;
     }
 
-    //bestvalue = NEGINFINITY;
-
     if(len(movelst) == 0){
         nodes_searched++;
-        free_move(ttmove);
+        free_move(pvmove);
         free_move(bestmovesofar);
         free(movelst);
         return evalEndOfGameMax(board, depth);
@@ -77,7 +132,7 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
     while((move = pop(movelst)) != NULL){
         nodes_searched++;
 
-        if(ttmove != NULL && isSameMove(move, ttmove)){
+        if(pvmove != NULL && isSameMove(move, pvmove)){
             free_move(move);
             continue;
         }
@@ -102,29 +157,21 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta){
 
     betacutoff:
 
-    httable[hashmod].depth = depth;
-    httable[hashmod].eval = bestvalue;
-    httable[hashmod].hash = hash;
-    free_move(httable[hashmod].bestmove); // freeing ttmove
-    httable[hashmod].bestmove = copy_move(bestmovesofar);
-
     if(bestvalue <= oldalpha){
-        httable[hashmod].flags = FLG_ALL;
+        storeTableEntry(board, FLG_ALL, bestvalue, bestmovesofar,  depth);
     }
     else if(bestvalue >= beta){
-        httable[hashmod].flags = FLG_CUT;
+        storeTableEntry(board, FLG_CUT, bestvalue, bestmovesofar,  depth);
     }
     else{
-        httable[hashmod].flags = FLG_EXCACT;
+        storeTableEntry(board, FLG_EXCACT, bestvalue, bestmovesofar,  depth);
     }
 
     /* free the remaining move list */
-    while((move = pop(movelst)) != NULL) {
-        free_move(move);
-    }
-    free(movelst);
+    free_movelst(movelst);
+
     /* free ttmove & bestmovesofar */
-    free_move(ttmove);
+    free_move(pvmove);
     free_move(bestmovesofar);
 
     return bestvalue;
