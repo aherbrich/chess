@@ -25,7 +25,7 @@ int hash_boundsadjusted = 0;
 // MAIN ENTRY POINT
 
 int main() {
-    board_t* board = init_board();
+    board_t *board = init_board();
     loadByFEN(board, STARTING_FEN);
 
     clock_t end;
@@ -54,7 +54,7 @@ int main() {
         printf("Bounds adj.:\t%d\n", hash_boundsadjusted);
         printf("Found move:\t");
         printMove(bestmove);
-        //printf("\nEvalution: %d", evaluation);
+        // printf("\nEvalution: %d", evaluation);
 
         end = clock();
         printf("\t\t\t Time:\t%fs\n",

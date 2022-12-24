@@ -1,7 +1,8 @@
-#include "../include/chess.h"
 #include <string.h>
 
-char *STARTING_FEN=
+#include "../include/chess.h"
+
+char *STARTING_FEN =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 char TEST2_FEN[] =
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
@@ -24,42 +25,89 @@ int hash_boundsadjusted = 0;
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 
-idx_t inputToIdx(char *ptr){
+idx_t inputToIdx(char *ptr) {
     piece_t idx = 0;
-    while(*ptr != '\0'){
-        switch(*ptr){
-            case 'a': idx = idx + 0; break;
-            case 'b': idx = idx + 1; break;
-            case 'c': idx = idx + 2; break;
-            case 'd': idx = idx + 3; break;
-            case 'e': idx = idx + 4; break;
-            case 'f': idx = idx + 5; break;
-            case 'g': idx = idx + 6; break;
-            case 'h': idx = idx + 7; break;
-            case 'A': idx = idx + 0; break;
-            case 'B': idx = idx + 1; break;
-            case 'C': idx = idx + 2; break;
-            case 'D': idx = idx + 3; break;
-            case 'E': idx = idx + 4; break;
-            case 'F': idx = idx + 5; break;
-            case 'G': idx = idx + 6; break;
-            case 'H': idx = idx + 7; break;
-            case '1': idx = idx + (8 * 0); break;
-            case '2': idx = idx + (8 * 1); break;
-            case '3': idx = idx + (8 * 2); break;
-            case '4': idx = idx + (8 * 3); break;
-            case '5': idx = idx + (8 * 4); break;
-            case '6': idx = idx + (8 * 5); break;
-            case '7': idx = idx + (8 * 6); break;
-            case '8': idx = idx + (8 * 7); break;
+    while (*ptr != '\0') {
+        switch (*ptr) {
+            case 'a':
+                idx = idx + 0;
+                break;
+            case 'b':
+                idx = idx + 1;
+                break;
+            case 'c':
+                idx = idx + 2;
+                break;
+            case 'd':
+                idx = idx + 3;
+                break;
+            case 'e':
+                idx = idx + 4;
+                break;
+            case 'f':
+                idx = idx + 5;
+                break;
+            case 'g':
+                idx = idx + 6;
+                break;
+            case 'h':
+                idx = idx + 7;
+                break;
+            case 'A':
+                idx = idx + 0;
+                break;
+            case 'B':
+                idx = idx + 1;
+                break;
+            case 'C':
+                idx = idx + 2;
+                break;
+            case 'D':
+                idx = idx + 3;
+                break;
+            case 'E':
+                idx = idx + 4;
+                break;
+            case 'F':
+                idx = idx + 5;
+                break;
+            case 'G':
+                idx = idx + 6;
+                break;
+            case 'H':
+                idx = idx + 7;
+                break;
+            case '1':
+                idx = idx + (8 * 0);
+                break;
+            case '2':
+                idx = idx + (8 * 1);
+                break;
+            case '3':
+                idx = idx + (8 * 2);
+                break;
+            case '4':
+                idx = idx + (8 * 3);
+                break;
+            case '5':
+                idx = idx + (8 * 4);
+                break;
+            case '6':
+                idx = idx + (8 * 5);
+                break;
+            case '7':
+                idx = idx + (8 * 6);
+                break;
+            case '8':
+                idx = idx + (8 * 7);
+                break;
         }
         ptr++;
     }
-    return(idx);
+    return (idx);
 }
 
-
-move_t* getMove(board_t *board){
+move_t *getMove(board_t *board) {
     char inputbuffer[20];
     printf("Enter move: ");
     scanf("%s", inputbuffer);
@@ -69,36 +117,33 @@ move_t* getMove(board_t *board){
     idx_t from = inputToIdx(fromstr);
     idx_t to = inputToIdx(tostr);
 
-    node_t* movelst = generateMoves(board);
+    node_t *movelst = generateMoves(board);
 
-    node_t* tmp = movelst->next;
-    move_t* move = NULL;
+    node_t *tmp = movelst->next;
+    move_t *move = NULL;
 
-    while(tmp != NULL){
-        if(tmp->move->start == from && tmp->move->end == to){
+    while (tmp != NULL) {
+        if (tmp->move->start == from && tmp->move->end == to) {
             move = tmp->move;
             break;
         }
         tmp = tmp->next;
     }
 
-    if(move){
+    if (move) {
         return move;
-    }
-    else{
+    } else {
         printf("Invalid move!\n");
         return getMove(board);
     }
-
 }
 
-int main(){
-    board_t* board = init_board();
+int main() {
+    board_t *board = init_board();
     loadByFEN(board, STARTING_FEN);
 
     clock_t end;
     clock_t begin;
-    clock_t tmpbegin;
 
     /* Implement here */
     init_zobrist();
@@ -107,16 +152,15 @@ int main(){
 
     printBoard(board);
 
-    while(len(generateMoves(board)) > 0){
-        if(board->player == WHITE){
+    while (len(generateMoves(board)) > 0) {
+        if (board->player == WHITE) {
             move_t *move = getMove(board);
             playMove(board, move, board->player);
             board->plynr++;
             printBoard(board);
-        }
-        else{
+        } else {
             printf("\n%sBOT at play\n\n", Color_PURPLE);
-            
+
             nodes_searched = 0;
             hash_used = 0;
             hash_boundsadjusted = 0;
@@ -129,24 +173,22 @@ int main(){
             clear_hashtable();
             move_t *bestmove;
 
-            if(book_possible(board)==1){
+            if (book_possible(board) == 1) {
                 printf("Book move possible!\n");
                 bestmove = getRandomBook(board);
-            }
-            else{
+            } else {
                 printf("No book moves possible!\n");
                 bestmove = iterativeSearch(board, maxdepth, maxtime);
 
                 printf("\nNodes Explored:\t%d\n", nodes_searched);
-                printf("Hashes used:\t%d \t(%4.2f)\n",hash_used, (float) hash_used/(float) nodes_searched);
-                printf("Bounds adj.:\t%d\n",hash_boundsadjusted);
+                printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
+                printf("Bounds adj.:\t%d\n", hash_boundsadjusted);
                 printf("Found move:\t");
                 printMove(bestmove);
 
                 end = clock();
                 printf("\t\t\t Time:\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
                 printf("\n");
-
             }
 
             playMove(board, bestmove, board->player);
@@ -155,7 +197,6 @@ int main(){
             printf("%s", Color_END);
         }
     }
-    
-        
+
     free_board(board);
 }
