@@ -21,10 +21,6 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 char TEST8_FEN[] = "1k6/4Q3/2Q5/8/8/8/6K1/8 w - - 0 1";
 char TEST9_FEN[] = "8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -";
 
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_boundsadjusted = 0;
-
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 

@@ -4,6 +4,8 @@
 #include "chess.h"
 #include <stdint.h>
 
+extern char* STARTING_FEN;
+
 typedef struct _bookentry_t {
     int8_t possible;
     uint64_t hash;

@@ -61,8 +61,6 @@
 #define MAXNR_LINES 200
 #define MAXDEPTH_LINE 40
 
-extern char* STARTING_FEN;
-
 typedef uint8_t piece_t;
 typedef uint8_t player_t;
 typedef uint8_t flag_t;

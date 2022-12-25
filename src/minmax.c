@@ -1,6 +1,12 @@
 #include "../include/chess.h"
 #include "../include/zobrist.h"
 
+/* global counters for evaluation */
+int nodes_searched = 0;
+int hash_used = 0;
+int hash_boundsadjusted = 0;
+
+
 int quietSearch(board_t *board, int alpha, int beta, clock_t start, double timeleft) {
     // evaluate board
     int value = evalBoardMax(board);
