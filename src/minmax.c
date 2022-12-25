@@ -219,7 +219,7 @@ move_t *iterative_search(board_t *board, int8_t maxdepth, double maxtime) {
 
         time_left -= (double)(end - begin) / CLOCKS_PER_SEC;
         if (time_left <= 0) {
-            printf("Depth searched: %d\n", i);
+            fprintf(stderr, "Depth searched: %d\n", i);
             break;
         }
     }

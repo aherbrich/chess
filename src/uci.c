@@ -208,14 +208,14 @@ void handle_position(char *token, board_t *board) {
         /* handles the starting position */
         load_by_FEN(board, STARTING_FEN);
         token = strtok(NULL, delim);
-        if (strcmp(token, "moves")) {
+        if (token && strcmp(token, "moves")) {
             fprintf(stderr, "Incorrect syntax in the 'position startpos' command: %s\n", token);
             return;
         }
-    }else if (!strcmp(token, "fen")) {
+    } else if (!strcmp(token, "fen")) {
         int fen_idx = 0;
         token = strtok(NULL, delim);
-        while (strcmp(token, "moves")) {
+        while (token && strcmp(token, "moves")) {
             int len = strlen(token);
             strcpy(&(fen[fen_idx]), token);
             fen_idx += len;
@@ -228,16 +228,37 @@ void handle_position(char *token, board_t *board) {
         fprintf(stderr, "Incorrect syntax in the 'position' command: %s\n", token);
     }
 
-    print_board(board);
-    printf("\n");
+    /* finally, read all the moves, if there are any */
+    if (token) 
+        while((token = strtok(NULL, delim))) {
+            move_t *move = str_to_move(board, token);
+            if (move) 
+                play_move(board, move, board->player);
+            else {
+                fprintf(stderr, "Invalid move: %s\n", token);
+                exit(-1);
+            }
+        }
+
+    // print_board(board);
+    // printf("\n");
 
     return;
 }
 
 /* runs the main loop of the the UCI communication interface */
 void *main_interface_loop(void *args) {
+    /* initialize options */
     board_t *board = (board_t *)args;
     options_t *options = init_options();
+
+    /* removing buffering from stdin and stdout */
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
+    printf("id name AChess 0.1\nid author Alexander Herbrich\n\n");
+    printf("\n");
+    print_options(options);
+    printf("uciok\n");
 
     while (1) {
         char buffer[MAX_LEN];
@@ -256,7 +277,6 @@ void *main_interface_loop(void *args) {
         } else if (!strcmp(token, "uci")) {
             /* handle 'uci' command */
             printf("id name AChess 0.1\nid author Alexander Herbrich\n\n");
-            printf("option name Debug Log File type string default\n");
             printf("\n");
             print_options(options);
             printf("uciok\n");
@@ -271,11 +291,8 @@ void *main_interface_loop(void *args) {
             handle_position(token, board);
         } else if (!strcmp(token, "ucinewgame")) {
             /* handle the 'ucinewgame' command */
-            free_board(board);
-            board = init_board();
-            init_zobrist();
-            init_hashtable();
-            init_book();
+            clear_board(board);
+            clear_hashtable();
         } else if (!strcmp(token, "isready")) {
             /* handle 'isready' command */
             printf("readyok\n");
@@ -300,33 +317,28 @@ void *main_game_loop(void *args) {
     int maxdepth = 40;
     double maxtime = 5.0;
 
-    printf("Game started\n");
-    print_board(board);
-
     for (int i = 0; i < 1; i++) {
-        printf("Starting iterative search\n");
         move_t *bestmove = iterative_search(board, maxdepth, maxtime);
-        printf("Search finished\n");
 
-        printf("\nNodes Explored:\t%d\n", nodes_searched);
-        printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
-        printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
-        printf("Found move: %p\t", bestmove);
-        print_move(bestmove);
+        // printf("\nNodes Explored:\t%d\n", nodes_searched);
+        // printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
+        // printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
+        // printf("Found move: %p\t", bestmove);
+        // print_move(bestmove);
         // printf("\nEvalution: %d", evaluation);
 
         end = clock();
-        printf("\t\t\t Time:\t%fs\n", (double)(end - tmp_begin) / CLOCKS_PER_SEC);
+        // printf("\t\t\t Time:\t%fs\n", (double)(end - tmp_begin) / CLOCKS_PER_SEC);
         tmp_begin = clock();
-        printf("\n");
+        // printf("\n");
 
-        play_move(board, bestmove, board->player);
-        print_board(board);
+        // play_move(board, bestmove, board->player);
+        // print_board(board);
     }
 
     ///////////
     end = clock();
-    printf("Overall Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
+    // printf("Overall Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
     return (NULL);
 }
