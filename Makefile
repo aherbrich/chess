@@ -3,6 +3,8 @@ BUILD_DIR = build
 CHESS_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c src/eval.c src/minmax.c src/zobrist.c src/book.c
 CHESS_OBJ = $(addprefix $(BUILD_DIR)/, $(CHESS_SRC:%.c=%.o))
 
+UCI_SRC = src/uci.c
+
 TEST_DIR = tests
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
 TEST_OBJ = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
@@ -14,7 +16,7 @@ CC = gcc
 CC_FLAGS = -Wall -Wextra -g -std=c11 -O3
 
 .PHONY: all
-all: build build_tests     # Build everything but runs nothing
+all: build build_tests $(BUILD_DIR)/uci/uci   # Build everything but runs nothing
 
 .PHONY: run
 run: all_tests             # Run all tests (alias)
@@ -51,10 +53,13 @@ $(CHESS_OBJ): $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
 
-$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/chess.o $(BUILD_DIR)/src/list.o $(BUILD_DIR)/src/move.o $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/perft.o $(BUILD_DIR)/src/prettyprint.o $(BUILD_DIR)/src/eval.o $(BUILD_DIR)/src/minmax.o $(BUILD_DIR)/src/zobrist.o $(BUILD_DIR)/src/book.o
+$(BUILD_DIR)/tests/test_%: tests/test_%.c $(CHESS_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o$@ $^
 
+$(BUILD_DIR)/uci/uci: $(UCI_SRC) $(CHESS_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o$@ $^
 
 .PHONY: clean
 clean:
