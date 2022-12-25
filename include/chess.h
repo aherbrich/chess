@@ -131,22 +131,26 @@ extern move_t* pop(node_t* head);
 
 /* Allocate memory for a specific move */
 extern move_t* create_normal_move(piece_t piece_was, piece_t piece_cap, idx_t start, idx_t end, flag_t new_cr, oldflags_t* oldflags);
-extern move_t* create_ep_possible_move(piece_t piece_was, idx_t start, idx_t end, flag_t newepfield, oldflags_t* oldflags);
+extern move_t* create_ep_possible_move(piece_t piece_was, idx_t start, idx_t end, flag_t new_ep_field, oldflags_t* oldflags);
 extern move_t* create_promotion_move(piece_t piece_was, piece_t piece_is, piece_t piece_cap, idx_t start, idx_t end, flag_t new_cr, oldflags_t* oldflags);
-extern move_t* create_castle_move(idx_t startking, idx_t endking, idx_t startrook, idx_t endrook, flag_t new_cr, oldflags_t* oldflags);
-extern move_t* create_ep_move(idx_t startattacker, idx_t endattacker, oldflags_t* oldflags);
+extern move_t* create_castle_move(idx_t start_king, idx_t end_king, idx_t start_rook, idx_t end_rook, flag_t new_cr, oldflags_t* oldflags);
+extern move_t* create_ep_move(idx_t start_attacker, idx_t end_attacker, oldflags_t* oldflags);
 /* Frees memory of move */
 extern void free_move(move_t* move);
-extern void free_move_list(node_t* movelst);
+/* Frees memory of move list */
+extern void free_move_list(node_t* move_list);
 /* Deep copies move */
 extern move_t* copy_move(move_t* move);
 /* Execute move */
-extern void play_move(board_t* board, move_t* move, player_t playerwhomademove);
+extern void play_move(board_t* board, move_t* move, player_t player_who_made_move);
 /* Reverses a move/ recovers old board state */
-extern void reverse_move(board_t* board, move_t* move, player_t playerwhomademove);
+extern void reverse_move(board_t* board, move_t* move, player_t player_who_made_move);
 /* Sorts list by capture order */
 extern node_t* sort_moves(node_t* head);
+/* Returns true if two moves are identical */
 extern int is_same_move(move_t* move, move_t* move2);
+/* Converts a string to a move in the context of an existing board */
+extern move_t *str_to_move(board_t *board, char *move_str);
 
 ///////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS

@@ -119,6 +119,7 @@ void free_move(move_t *move) {
     }
 }
 
+/* Frees memory of move list */
 void free_move_list(node_t *move_list) {
     move_t *move;
     while ((move = pop(move_list)) != NULL) {
@@ -250,6 +251,7 @@ void reverse_move(board_t *board, move_t *move, player_t player_who_made_move) {
     board->player = player_who_made_move;
 }
 
+/* Returns true if two moves are identical */
 int is_same_move(move_t *move, move_t *move2) {
     if (move->type_of_move != move2->type_of_move) {
         return 0;
@@ -289,6 +291,7 @@ int PVMove_is_possible(node_t *move_list, move_t *tt_move) {
     return 0;
 }
 
+/* Sorts list by capture order */
 node_t *sort_moves(node_t *head) {
     node_t *sorted = init_list();
 
@@ -327,4 +330,120 @@ node_t *sort_moves(node_t *head) {
     free(head);
 
     return sorted;
+}
+
+/* Converts a string to a move index */
+idx_t str_to_idx(char *ptr, int len) {
+    idx_t idx = 0;
+    for(int i = 0; i < len; i++) {
+        switch (*ptr) {
+            case 'a':
+            case 'b':
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'g':
+            case 'h':
+                idx = idx + ((*ptr) - 'a');
+                break;
+            case 'A':
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'E':
+            case 'F':
+            case 'G':
+            case 'H':
+                idx = idx + ((*ptr) - 'A');
+                break;
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+                idx = idx + (8 * (*ptr - '1'));
+                break;
+        }
+        ptr++;
+    }
+    return (idx);
+}
+
+/* Converts a character to a piece */
+piece_t str_to_piece(char p_char) {
+    switch (p_char) {
+        case 'p':
+            return(PAWN | BLACK);
+            break;
+        case 'n':
+            return(KNIGHT | BLACK);
+            break;
+        case 'b':
+            return(BISHOP | BLACK);
+            break;
+        case 'r':
+            return(ROOK | BLACK);
+            break;
+        case 'q':
+            return(QUEEN | BLACK);
+            break;
+        case 'k':
+            return(KING | BLACK);
+            break;
+        case 'P':
+            return(PAWN | WHITE);
+            break;
+        case 'N':
+            return(KNIGHT | WHITE);
+            break;
+        case 'B':
+            return(BISHOP | WHITE);
+            break;
+        case 'R':
+            return(ROOK | WHITE);
+            break;
+        case 'Q':
+            return(QUEEN | WHITE);
+            break;
+        case 'K':
+            return(KING | WHITE);
+            break;
+        default:
+            fprintf(stderr, "parsing error ('%c')\n", p_char);
+            exit(-1);
+    }
+
+    fprintf(stderr, "parsing error ('%c')\n", p_char);
+    exit(-1);
+    return(-1);
+}
+
+/* Converts a string to a move in the context of an existing board */
+move_t *str_to_move(board_t *board, char *move_str) {
+    /* extracts the from and to position of the move */
+    idx_t from = str_to_idx(move_str, 2);
+    idx_t to = str_to_idx(&(move_str[2]), 2);
+    piece_t new_piece = (strlen(move_str) == 5) ? str_to_piece(move_str[4]) : EMPTY;
+
+    /* generate all possible moves in the current position ... */
+    node_t *move_list = generate_moves(board);
+    node_t *node = move_list;
+    move_t *move = NULL;
+
+    while ((node = node->next)) {
+        if (node->move->start == from && node->move->end == to) {
+            if ((node->move->type_of_move != PROMOTIONMOVE && new_piece == EMPTY) ||
+                (node->move->type_of_move == PROMOTIONMOVE && node->move->piece_is == new_piece)) {
+                move = copy_move(node->move);
+                break;
+            }
+        }
+    }
+    free_move_list(move_list);
+
+    return move;
 }

@@ -8,19 +8,19 @@ int move_gen(board_t* board, int depth) {
         return 1;
     }
 
-    node_t* movelst = generate_moves(board);
+    node_t* move_list = generate_moves(board);
     move_t* move;
 
     int numPositions = 0;
 
-    player_t playerwhomademove = board->player;
+    player_t player_who_made_move = board->player;
 
-    while ((move = pop(movelst)) != NULL) {
-        play_move(board, move, playerwhomademove);
+    while ((move = pop(move_list)) != NULL) {
+        play_move(board, move, player_who_made_move);
         numPositions += move_gen(board, depth - 1);
-        reverse_move(board, move, playerwhomademove);
+        reverse_move(board, move, player_who_made_move);
         free_move(move);
     }
-    free(movelst);
+    free(move_list);
     return numPositions;
 }

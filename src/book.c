@@ -5,77 +5,6 @@ bookentry_t book[MAXNR_LINES][MAXDEPTH_LINE];
 int book_line_index;
 int book_move_index;
 
-idx_t str_to_idx(char *ptr) {
-    piece_t idx = 0;
-    while (*ptr != '\0') {
-        switch (*ptr) {
-            case 'a':
-            case 'b':
-            case 'c':
-            case 'd':
-            case 'e':
-            case 'f':
-            case 'g':
-            case 'h':
-                idx = idx + ((*ptr) - 'a');
-                break;
-            case 'A':
-            case 'B':
-            case 'C':
-            case 'D':
-            case 'E':
-            case 'F':
-            case 'G':
-            case 'H':
-                idx = idx + ((*ptr) - 'A');
-                break;
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-                idx = idx + (8 * (*ptr - '0'));
-                break;
-        }
-        ptr++;
-    }
-    return (idx);
-}
-
-move_t *str_to_move(board_t *board, char *move_str) {
-    char from_str[3];
-    char to_str[3];
-
-    strncpy(from_str, move_str, 2);
-    strncpy(to_str, move_str + 2, 2);
-
-    from_str[2] = '\0';
-    to_str[2] = '\0';
-
-    idx_t from = str_to_idx(from_str);
-    idx_t to = str_to_idx(to_str);
-
-    node_t *move_lst = generate_moves(board);
-
-    node_t *tmp = move_lst->next;
-    move_t *move = NULL;
-
-    while (tmp != NULL) {
-        if (tmp->move->start == from && tmp->move->end == to) {
-            free_move(move);
-            move = copy_move(tmp->move);
-            break;
-        }
-        tmp = tmp->next;
-    }
-    free_move_list(move_lst);
-
-    return move;
-}
-
 void book_add(board_t *board, char *move_str) {
     move_t *move = str_to_move(board, move_str);
 
@@ -91,27 +20,28 @@ void book_add(board_t *board, char *move_str) {
 }
 
 void book_add_line(char *move_line) {
-    char move[5];
-    book_move_index = 0;
+    /* copy the string before tokenization */
+    char *move_line_copy = (char *) malloc (sizeof(char) * (strlen(move_line) + 1));
+    strcpy(move_line_copy, move_line);
 
+    /* initializes the board with a standard setting */
     board_t *board = init_board();
     load_by_FEN(board, STARTING_FEN);
 
-    int limit = (int)strlen(move_line);
-    int no_moves = limit / 5;
-
-    for (int i = 0; i < (no_moves + 1); i++) {
-        move[0] = move_line[5 * i];
-        move[1] = move_line[5 * i + 1];
-        move[2] = move_line[5 * i + 2];
-        move[3] = move_line[5 * i + 3];
-        move[4] = move_line[5 * i + 4];
-        book_add(board, move);
+    /* parse each move as a token */
+    book_move_index = 0; 
+    char *token = strtok(move_line_copy, " ");
+    while(token) {
+        book_add(board, token);
+        token = strtok(NULL, " ");
     }
 
+    /* free the board and the copy of the move line */
     free_board(board);
-
+    free(move_line_copy);
+    
     book_line_index++;
+    return;
 }
 
 void book_load() {
@@ -168,7 +98,6 @@ void book_load() {
 
     book_add_line("e2e4 e7e6 d2d4 d7d5 e4e5 c7c5 c2c3 b8c6 g1f3 d8b6 a2a3 c5c4");
     book_add_line("e2e4 e7e6 d2d4 d7d5 b1c3 g8f6 c1g5 f8e7 e4e5 f6d7 g5e7 d8e7 f2f4 e8g8 d1d2 c7c5 g1f3 b8c6 e1c1 c5c4");
-    book_add_line("e2e4 e7e6 d2d4 d7d5 b1c3 d5e4 c3e4 b8d7 g1f3 g8f6 e4f6 d7f6 f1d3 b7b6 d1e2 c8b7? c1g5 f8e7");
     book_add_line("e2e4 e7e6 d2d4 d7d5 b1c3 f8b4 e4e5 g8e7 a2a3 b4c3 b2c3 c7c5 g1f3 b8c6 a3a4 d8a5 d1d2 c8d7");
     book_add_line("e2e4 e7e6 d2d4 d7d5 b1c3 f8b4 e4e5 g8e7 a2a3 b4c3 b2c3 c7c5 a3a4 b8c6 g1f3 d8a5 c1d2 c8d7");
     book_add_line("e2e4 e7e6 d2d4 d7d5 b1c3 f8b4 e4e5 c7c5 a2a3 b4c3 b2c3 g8e7 d1g4 d8c7 g4g7 h8g8 g7h7 c5d4 g1e2 b8c6 f2f4 c8d7");

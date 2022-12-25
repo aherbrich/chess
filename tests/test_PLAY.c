@@ -24,110 +24,11 @@ char TEST9_FEN[] = "8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -";
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 
-idx_t inputToIdx(char *ptr) {
-    piece_t idx = 0;
-    while (*ptr != '\0') {
-        switch (*ptr) {
-            case 'a':
-                idx = idx + 0;
-                break;
-            case 'b':
-                idx = idx + 1;
-                break;
-            case 'c':
-                idx = idx + 2;
-                break;
-            case 'd':
-                idx = idx + 3;
-                break;
-            case 'e':
-                idx = idx + 4;
-                break;
-            case 'f':
-                idx = idx + 5;
-                break;
-            case 'g':
-                idx = idx + 6;
-                break;
-            case 'h':
-                idx = idx + 7;
-                break;
-            case 'A':
-                idx = idx + 0;
-                break;
-            case 'B':
-                idx = idx + 1;
-                break;
-            case 'C':
-                idx = idx + 2;
-                break;
-            case 'D':
-                idx = idx + 3;
-                break;
-            case 'E':
-                idx = idx + 4;
-                break;
-            case 'F':
-                idx = idx + 5;
-                break;
-            case 'G':
-                idx = idx + 6;
-                break;
-            case 'H':
-                idx = idx + 7;
-                break;
-            case '1':
-                idx = idx + (8 * 0);
-                break;
-            case '2':
-                idx = idx + (8 * 1);
-                break;
-            case '3':
-                idx = idx + (8 * 2);
-                break;
-            case '4':
-                idx = idx + (8 * 3);
-                break;
-            case '5':
-                idx = idx + (8 * 4);
-                break;
-            case '6':
-                idx = idx + (8 * 5);
-                break;
-            case '7':
-                idx = idx + (8 * 6);
-                break;
-            case '8':
-                idx = idx + (8 * 7);
-                break;
-        }
-        ptr++;
-    }
-    return (idx);
-}
-
 move_t *getMove(board_t *board) {
-    char inputbuffer[20];
+    char input_buffer[20];
     printf("Enter move: ");
-    scanf("%s", inputbuffer);
-
-    char *fromstr = strtok(inputbuffer, "-");
-    char *tostr = strtok(NULL, " ");
-    idx_t from = inputToIdx(fromstr);
-    idx_t to = inputToIdx(tostr);
-
-    node_t *movelst = generate_moves(board);
-
-    node_t *tmp = movelst->next;
-    move_t *move = NULL;
-
-    while (tmp != NULL) {
-        if (tmp->move->start == from && tmp->move->end == to) {
-            move = tmp->move;
-            break;
-        }
-        tmp = tmp->next;
-    }
+    scanf("%s", input_buffer);
+    move_t *move = str_to_move(board, input_buffer);
 
     if (move) {
         return move;
@@ -170,27 +71,27 @@ int main() {
             begin = clock();
 
             clear_hashtable();
-            move_t *bestmove;
+            move_t *best_move;
 
             if (book_possible(board) == 1) {
                 printf("Book move possible!\n");
-                bestmove = get_random_book(board);
+                best_move = get_random_book(board);
             } else {
                 printf("No book moves possible!\n");
-                bestmove = iterative_search(board, maxdepth, maxtime);
+                best_move = iterative_search(board, maxdepth, maxtime);
 
                 printf("\nNodes Explored:\t%d\n", nodes_searched);
                 printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
                 printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
                 printf("Found move:\t");
-                print_move(bestmove);
+                print_move(best_move);
 
                 end = clock();
                 printf("\t\t\t Time:\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
                 printf("\n");
             }
 
-            play_move(board, bestmove, board->player);
+            play_move(board, best_move, board->player);
             board->ply_no++;
             print_board(board);
             printf("%s", Color_END);

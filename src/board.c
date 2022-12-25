@@ -59,103 +59,69 @@ void load_by_FEN(board_t* board, char* FEN) {
     while ((row != 0) || (col != 8)) {
         switch (*ptr) {
             case 'p':
-                board->playing_field[pos_to_idx(row, col)] = 3;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = PAWN | BLACK;
                 col++;
                 break;
             case 'n':
-                board->playing_field[pos_to_idx(row, col)] = 5;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = KNIGHT | BLACK;
                 col++;
                 break;
             case 'b':
-                board->playing_field[pos_to_idx(row, col)] = 9;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = BISHOP | BLACK;
                 col++;
                 break;
             case 'r':
-                board->playing_field[pos_to_idx(row, col)] = 17;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = ROOK | BLACK;
                 col++;
                 break;
             case 'q':
-                board->playing_field[pos_to_idx(row, col)] = 33;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = QUEEN | BLACK;
                 col++;
                 break;
             case 'k':
-                board->playing_field[pos_to_idx(row, col)] = 65;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = KING | BLACK;
                 col++;
                 break;
             case 'P':
-                board->playing_field[pos_to_idx(row, col)] = 2;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = PAWN | WHITE;
                 col++;
                 break;
             case 'N':
-                board->playing_field[pos_to_idx(row, col)] = 4;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = KNIGHT | WHITE;
                 col++;
                 break;
             case 'B':
-                board->playing_field[pos_to_idx(row, col)] = 8;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = BISHOP | WHITE;
                 col++;
                 break;
             case 'R':
-                board->playing_field[pos_to_idx(row, col)] = 16;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = ROOK | WHITE;
                 col++;
                 break;
             case 'Q':
-                board->playing_field[pos_to_idx(row, col)] = 32;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = QUEEN | WHITE;
                 col++;
                 break;
             case 'K':
-                board->playing_field[pos_to_idx(row, col)] = 64;
-                ptr++;
+                board->playing_field[pos_to_idx(row, col)] = KING | WHITE;
                 col++;
                 break;
             case '/':
-                ptr++;
                 row--;
                 col = 0;
                 break;
             case '1':
-                ptr++;
-                col += 1;
-                break;
             case '2':
-                ptr++;
-                col += 2;
-                break;
             case '3':
-                ptr++;
-                col += 3;
-                break;
             case '4':
-                ptr++;
-                col += 4;
-                break;
             case '5':
-                ptr++;
-                col += 5;
-                break;
             case '6':
-                ptr++;
-                col += 6;
-                break;
             case '7':
-                ptr++;
-                col += 7;
-                break;
             case '8':
-                ptr++;
-                col += 8;
+                col += (*ptr - '0');
                 break;
         }
+        ptr++;
     }
 
     ptr++;
@@ -206,52 +172,24 @@ void load_by_FEN(board_t* board, char* FEN) {
         while (*ptr != ' ') {
             switch (*ptr) {
                 case 'a':
-                    idx = idx + 0;
-                    break;
                 case 'b':
-                    idx = idx + 1;
-                    break;
                 case 'c':
-                    idx = idx + 2;
-                    break;
                 case 'd':
-                    idx = idx + 3;
-                    break;
                 case 'e':
-                    idx = idx + 4;
-                    break;
                 case 'f':
-                    idx = idx + 5;
-                    break;
                 case 'g':
-                    idx = idx + 6;
-                    break;
                 case 'h':
-                    idx = idx + 7;
+                    idx = idx + (*ptr - 'a');
                     break;
                 case '1':
-                    idx = idx + (8 * 0);
-                    break;
                 case '2':
-                    idx = idx + (8 * 1);
-                    break;
                 case '3':
-                    idx = idx + (8 * 2);
-                    break;
                 case '4':
-                    idx = idx + (8 * 3);
-                    break;
                 case '5':
-                    idx = idx + (8 * 4);
-                    break;
                 case '6':
-                    idx = idx + (8 * 5);
-                    break;
                 case '7':
-                    idx = idx + (8 * 6);
-                    break;
                 case '8':
-                    idx = idx + (8 * 7);
+                    idx = idx + (8 * (*ptr - '1'));
                     break;
             }
             ptr++;
