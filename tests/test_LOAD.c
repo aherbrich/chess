@@ -20,10 +20,10 @@ int main() {
     clock_t end;
     clock_t begin;
 
-    printBoard(board);
+    print_board(board);
 
     begin = clock();
-    int genresult = MoveGen(board, 4);
+    int genresult = move_gen(board, 4);
     printf("Found: \t\t%d\n", genresult);
     end = clock();
     printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);

@@ -4,12 +4,12 @@
 //  USEFUL FUNCTIONS
 
 /* Calculate idx based on a row & column */
-idx_t posToIdx(int row, int col) {
+idx_t pos_to_idx(int row, int col) {
     return (row * 8 + col);
 }
 
 /* Copies flags from board */
-oldflags_t* copyflags(board_t* board) {
+oldflags_t* copy_flags(board_t* board) {
     oldflags_t* oldflags = (oldflags_t*)malloc(sizeof(oldflags_t));
 
     oldflags->castle_rights = board->castle_rights;
@@ -20,7 +20,7 @@ oldflags_t* copyflags(board_t* board) {
 }
 
 /* Copies flags from move */
-oldflags_t* copyflagsfrommove(move_t* move) {
+oldflags_t* copy_flags_from_move(move_t* move) {
     oldflags_t* oldflagsfrommove = (oldflags_t*)malloc(sizeof(oldflags_t));
 
     oldflagsfrommove->castle_rights = move->oldflags->castle_rights;
@@ -31,7 +31,7 @@ oldflags_t* copyflagsfrommove(move_t* move) {
 }
 
 /* Max of function */
-int maxof(int x, int y) {
+int max(int x, int y) {
     if (x > y) {
         return x;
     }
@@ -39,7 +39,7 @@ int maxof(int x, int y) {
 }
 
 /* Min of function */
-int minof(int x, int y) {
+int min(int x, int y) {
     if (x < y) {
         return x;
     }

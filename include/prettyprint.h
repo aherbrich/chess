@@ -4,13 +4,13 @@
 #include "chess.h"
 
 /* Print a piece */
-extern char printPiece(piece_t piece);
+extern char print_piece(piece_t piece);
 /* Print the board */
-extern void printBoard(board_t* board);
+extern void print_board(board_t* board);
 /* Print move*/
-extern void printMove(move_t* move);
+extern void print_move(move_t* move);
 /* Print list of moves */
-extern void printMoves(node_t* movelst);
-extern void printLine(board_t* board, int depth);
+extern void print_moves(node_t* move_list);
+extern void print_line(board_t* board, int depth);
 
 #endif

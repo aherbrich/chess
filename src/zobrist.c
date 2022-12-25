@@ -60,7 +60,7 @@ uint64_t zobrist(board_t *board) {
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            piece_t piece = board->playing_field[posToIdx(x, y)];
+            piece_t piece = board->playing_field[pos_to_idx(x, y)];
             if (piece != EMPTY) {
                 idx_t pieceidx = indexing(piece);
                 hash ^= zobtable.hashvalue[x][y][pieceidx];

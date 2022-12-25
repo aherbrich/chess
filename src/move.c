@@ -9,30 +9,30 @@ move_t *copy_move(move_t *move) {
     }
     move_t *copy = (move_t *)malloc(sizeof(move_t));
 
-    copy->typeofmove = move->typeofmove;
+    copy->type_of_move = move->type_of_move;
     copy->start = move->start;
     copy->end = move->end;
-    copy->startopt = move->startopt;
-    copy->endopt = move->endopt;
+    copy->optional_start = move->optional_start;
+    copy->optional_end = move->optional_end;
     copy->piece_was = move->piece_was;
     copy->piece_is = move->piece_is;
     copy->piece_cap = move->piece_cap;
 
-    copy->newcr = move->newcr;
-    copy->newep = move->newep;
-    copy->orderid = move->orderid;
+    copy->new_cr = move->new_cr;
+    copy->new_ep = move->new_ep;
+    copy->order_id = move->order_id;
 
-    copy->oldflags = copyflagsfrommove(move);
+    copy->oldflags = copy_flags_from_move(move);
 
     return copy;
 }
 
 /* Allocate memory for a move */
-move_t *create_normalmove(piece_t piece_was, piece_t piece_cap, idx_t start, idx_t end, flag_t newcr, oldflags_t *oldflags) {
+move_t *create_normal_move(piece_t piece_was, piece_t piece_cap, idx_t start, idx_t end, flag_t new_cr, oldflags_t *oldflags) {
     move_t *move = (move_t *)malloc(sizeof(move_t));
 
-    move->typeofmove = NORMALMOVE;
-    move->orderid = (FIGURE(piece_cap) * 100) + (KING - FIGURE(piece_was));
+    move->type_of_move = NORMALMOVE;
+    move->order_id = (FIGURE(piece_cap) * 100) + (KING - FIGURE(piece_was));
 
     move->piece_was = piece_was;
     move->piece_cap = piece_cap;
@@ -40,34 +40,34 @@ move_t *create_normalmove(piece_t piece_was, piece_t piece_cap, idx_t start, idx
     move->start = start;
     move->end = end;
 
-    move->newcr = newcr;
+    move->new_cr = new_cr;
 
     move->oldflags = oldflags;
     return move;
 }
 
-move_t *create_eppossiblemove(piece_t piece_was, idx_t start, idx_t end, flag_t newepfield, oldflags_t *oldflags) {
+move_t *create_ep_possible_move(piece_t piece_was, idx_t start, idx_t end, flag_t new_ep_field, oldflags_t *oldflags) {
     move_t *move = (move_t *)malloc(sizeof(move_t));
 
-    move->typeofmove = EPPOSSIBLEMOVE;
-    move->orderid = 0;
+    move->type_of_move = EPPOSSIBLEMOVE;
+    move->order_id = 0;
 
     move->piece_was = piece_was;
 
     move->start = start;
     move->end = end;
 
-    move->newep = newepfield;
+    move->new_ep = new_ep_field;
 
     move->oldflags = oldflags;
     return move;
 }
 
-move_t *create_promotionmove(piece_t piece_was, piece_t piece_is, piece_t piece_cap, idx_t start, idx_t end, flag_t newcr, oldflags_t *oldflags) {
+move_t *create_promotion_move(piece_t piece_was, piece_t piece_is, piece_t piece_cap, idx_t start, idx_t end, flag_t new_cr, oldflags_t *oldflags) {
     move_t *move = (move_t *)malloc(sizeof(move_t));
 
-    move->typeofmove = PROMOTIONMOVE;
-    move->orderid = 10000 + (FIGURE(piece_is) * 100) + (FIGURE(piece_cap));
+    move->type_of_move = PROMOTIONMOVE;
+    move->order_id = 10000 + (FIGURE(piece_is) * 100) + (FIGURE(piece_cap));
 
     move->piece_was = piece_was;
     move->piece_is = piece_is;
@@ -76,36 +76,36 @@ move_t *create_promotionmove(piece_t piece_was, piece_t piece_is, piece_t piece_
     move->start = start;
     move->end = end;
 
-    move->newcr = newcr;
+    move->new_cr = new_cr;
 
     move->oldflags = oldflags;
     return move;
 }
 
-move_t *create_castlemove(idx_t startking, idx_t endking, idx_t startrook, idx_t endrook, flag_t newcr, oldflags_t *oldflags) {
+move_t *create_castle_move(idx_t start_king, idx_t end_king, idx_t start_rook, idx_t end_rook, flag_t new_cr, oldflags_t *oldflags) {
     move_t *move = (move_t *)malloc(sizeof(move_t));
-    move->typeofmove = CASTLEMOVE;
-    move->orderid = 0;
+    move->type_of_move = CASTLEMOVE;
+    move->order_id = 0;
 
-    move->start = startking;
-    move->end = endking;
-    move->startopt = startrook;
-    move->endopt = endrook;
+    move->start = start_king;
+    move->end = end_king;
+    move->optional_start = start_rook;
+    move->optional_end = end_rook;
 
-    move->newcr = newcr;
+    move->new_cr = new_cr;
 
     move->oldflags = oldflags;
 
     return move;
 }
 
-move_t *create_epmove(idx_t startattacker, idx_t endattacker, oldflags_t *oldflags) {
+move_t *create_ep_move(idx_t start_attacker, idx_t end_attacker, oldflags_t *oldflags) {
     move_t *move = (move_t *)malloc(sizeof(move_t));
-    move->typeofmove = ENPASSANTMOVE;
-    move->orderid = 0;
+    move->type_of_move = ENPASSANTMOVE;
+    move->order_id = 0;
 
-    move->start = startattacker;
-    move->end = endattacker;
+    move->start = start_attacker;
+    move->end = end_attacker;
 
     move->oldflags = oldflags;
     return (move);
@@ -119,44 +119,44 @@ void free_move(move_t *move) {
     }
 }
 
-void free_movelst(node_t *movelst) {
+void free_move_list(node_t *move_list) {
     move_t *move;
-    while ((move = pop(movelst)) != NULL) {
+    while ((move = pop(move_list)) != NULL) {
         free_move(move);
     }
 
-    free(movelst);
+    free(move_list);
 }
 
 /* Execute move */
-void playMove(board_t *board, move_t *move, player_t playerwhomademove) {
-    if (move->typeofmove == NORMALMOVE) {
+void play_move(board_t *board, move_t *move, player_t player_who_made_move) {
+    if (move->type_of_move == NORMALMOVE) {
         // start and end field
         board->playing_field[move->start] = EMPTY;
         board->playing_field[move->end] = move->piece_was;
 
         // castle rights
-        board->castle_rights = move->newcr;
+        board->castle_rights = move->new_cr;
 
         // en passant
         board->ep_possible = FALSE;
         board->ep_field = 0;
     }
 
-    else if (move->typeofmove == PROMOTIONMOVE) {
+    else if (move->type_of_move == PROMOTIONMOVE) {
         // start and end field
         board->playing_field[move->start] = EMPTY;
         board->playing_field[move->end] = move->piece_is;
 
         // castle rights
-        board->castle_rights = move->newcr;
+        board->castle_rights = move->new_cr;
 
         // en passant
         board->ep_possible = FALSE;
         board->ep_field = 0;
     }
 
-    else if (move->typeofmove == EPPOSSIBLEMOVE) {
+    else if (move->type_of_move == EPPOSSIBLEMOVE) {
         // start and end field
         board->playing_field[move->start] = EMPTY;
         board->playing_field[move->end] = move->piece_was;
@@ -166,29 +166,29 @@ void playMove(board_t *board, move_t *move, player_t playerwhomademove) {
 
         // en passant
         board->ep_possible = TRUE;
-        board->ep_field = move->newep;
+        board->ep_field = move->new_ep;
     }
 
-    else if (move->typeofmove == CASTLEMOVE) {
+    else if (move->type_of_move == CASTLEMOVE) {
         // start and end field
         board->playing_field[move->start] = EMPTY;
         board->playing_field[move->end] = (move->end <= 7) ? KING : (KING | BLACK);
-        board->playing_field[move->startopt] = EMPTY;
-        board->playing_field[move->endopt] = (move->endopt <= 7) ? ROOK : (ROOK | BLACK);
+        board->playing_field[move->optional_start] = EMPTY;
+        board->playing_field[move->optional_end] = (move->optional_end <= 7) ? ROOK : (ROOK | BLACK);
 
         // castle rights
-        board->castle_rights = move->newcr;
+        board->castle_rights = move->new_cr;
 
         // en passant
         board->ep_possible = FALSE;
         board->ep_field = 0;
     }
 
-    else if (move->typeofmove == ENPASSANTMOVE) {
+    else if (move->type_of_move == ENPASSANTMOVE) {
         // start and end field
         board->playing_field[move->start] = EMPTY;
-        board->playing_field[move->end] = (playerwhomademove == WHITE) ? PAWN : (PAWN | BLACK);
-        idx_t captured = (playerwhomademove == WHITE) ? (move->end - 8) : (move->end + 8);
+        board->playing_field[move->end] = (player_who_made_move == WHITE) ? PAWN : (PAWN | BLACK);
+        idx_t captured = (player_who_made_move == WHITE) ? (move->end - 8) : (move->end + 8);
         board->playing_field[captured] = EMPTY;
 
         // castle rights
@@ -200,43 +200,43 @@ void playMove(board_t *board, move_t *move, player_t playerwhomademove) {
     }
 
     // switch player
-    board->player = OPPONENT(playerwhomademove);
+    board->player = OPPONENT(player_who_made_move);
 }
 
 /* Reverses a move/ recovers old board state */
-void reverseMove(board_t *board, move_t *move, player_t playerwhomademove) {
-    if (move->typeofmove == NORMALMOVE) {
+void reverse_move(board_t *board, move_t *move, player_t player_who_made_move) {
+    if (move->type_of_move == NORMALMOVE) {
         // start and end field
         board->playing_field[move->start] = move->piece_was;
         board->playing_field[move->end] = move->piece_cap;
     }
 
-    else if (move->typeofmove == PROMOTIONMOVE) {
+    else if (move->type_of_move == PROMOTIONMOVE) {
         // start and end field
         board->playing_field[move->start] = move->piece_was;
         board->playing_field[move->end] = move->piece_cap;
     }
 
-    else if (move->typeofmove == EPPOSSIBLEMOVE) {
+    else if (move->type_of_move == EPPOSSIBLEMOVE) {
         // start and end field
         board->playing_field[move->start] = move->piece_was;
         board->playing_field[move->end] = EMPTY;
     }
 
-    else if (move->typeofmove == CASTLEMOVE) {
+    else if (move->type_of_move == CASTLEMOVE) {
         // start and end field
         board->playing_field[move->start] = (move->end <= 7) ? KING : (KING | BLACK);
         board->playing_field[move->end] = EMPTY;
-        board->playing_field[move->startopt] = (move->endopt <= 7) ? ROOK : (ROOK | BLACK);
-        board->playing_field[move->endopt] = EMPTY;
+        board->playing_field[move->optional_start] = (move->optional_end <= 7) ? ROOK : (ROOK | BLACK);
+        board->playing_field[move->optional_end] = EMPTY;
     }
 
-    else if (move->typeofmove == ENPASSANTMOVE) {
+    else if (move->type_of_move == ENPASSANTMOVE) {
         // start and end field
-        board->playing_field[move->start] = (playerwhomademove == WHITE) ? PAWN : (PAWN | BLACK);
+        board->playing_field[move->start] = (player_who_made_move == WHITE) ? PAWN : (PAWN | BLACK);
         board->playing_field[move->end] = EMPTY;
-        idx_t captured = (playerwhomademove == WHITE) ? (move->end - 8) : (move->end + 8);
-        board->playing_field[captured] = (playerwhomademove == WHITE) ? (PAWN | BLACK) : PAWN;
+        idx_t captured = (player_who_made_move == WHITE) ? (move->end - 8) : (move->end + 8);
+        board->playing_field[captured] = (player_who_made_move == WHITE) ? (PAWN | BLACK) : PAWN;
     }
 
     // castle rights
@@ -247,11 +247,11 @@ void reverseMove(board_t *board, move_t *move, player_t playerwhomademove) {
     board->ep_field = move->oldflags->ep_field;
 
     // switch player
-    board->player = playerwhomademove;
+    board->player = player_who_made_move;
 }
 
-int isSameMove(move_t *move, move_t *move2) {
-    if (move->typeofmove != move2->typeofmove) {
+int is_same_move(move_t *move, move_t *move2) {
+    if (move->type_of_move != move2->type_of_move) {
         return 0;
     }
     if (move->start != move2->start) {
@@ -266,7 +266,7 @@ int isSameMove(move_t *move, move_t *move2) {
     if (move->piece_cap != move2->piece_cap) {
         return 0;
     }
-    if (move->typeofmove == PROMOTIONMOVE) {
+    if (move->type_of_move == PROMOTIONMOVE) {
         if (move->piece_is != move2->piece_is) {
             return 0;
         }
@@ -275,11 +275,11 @@ int isSameMove(move_t *move, move_t *move2) {
     return 1;
 }
 
-int PVMoveIsPossible(node_t *movelst, move_t *ttmove) {
-    node_t *tmp = movelst;
-    if (ttmove != NULL) {
+int PVMove_is_possible(node_t *move_list, move_t *tt_move) {
+    node_t *tmp = move_list;
+    if (tt_move != NULL) {
         while (tmp->next != NULL) {
-            if (isSameMove(tmp->next->move, ttmove) == 1) {
+            if (is_same_move(tmp->next->move, tt_move) == 1) {
                 return 1;
                 break;
             }
@@ -289,7 +289,7 @@ int PVMoveIsPossible(node_t *movelst, move_t *ttmove) {
     return 0;
 }
 
-node_t *sortMoves(node_t *head) {
+node_t *sort_moves(node_t *head) {
     node_t *sorted = init_list();
 
     // if list is empty
@@ -302,27 +302,27 @@ node_t *sortMoves(node_t *head) {
 
         // initially first move in list is worst move (and head the previous node)
         node_t *prev = head;
-        node_t *worstmove = tmp;
+        node_t *worst_move = tmp;
 
-        // find worst move by orderid
+        // find worst move by order_id
         while (tmp->next != NULL) {
-            if (tmp->next->move->orderid < worstmove->move->orderid) {
+            if (tmp->next->move->order_id < worst_move->move->order_id) {
                 // save the worst move and the previous node
                 prev = tmp;
-                worstmove = tmp->next;
+                worst_move = tmp->next;
             }
             tmp = tmp->next;
         }
 
         // remove worst move from list by adjusting pointer from previous node
-        prev->next = worstmove->next;
+        prev->next = worst_move->next;
 
         // add move to sorted list (from worst to best)
-        add(sorted, copy_move(worstmove->move));
+        add(sorted, copy_move(worst_move->move));
 
-        // free node of worstmove
-        free_move(worstmove->move);
-        free(worstmove);
+        // free node of worst_move
+        free_move(worst_move->move);
+        free(worst_move);
     }
     free(head);
 

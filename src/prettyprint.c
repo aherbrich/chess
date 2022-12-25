@@ -14,7 +14,7 @@ char FIELD[64][2] = {"A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1",
 //  PRINT HELPERS
 
 /* Print a piece */
-char printPiece(piece_t piece) {
+char print_piece(piece_t piece) {
     switch (piece) {
         case 2:
             return 'P';
@@ -46,15 +46,15 @@ char printPiece(piece_t piece) {
 }
 
 /* Print the board */
-void printBoard(board_t* board) {
+void print_board(board_t* board) {
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
             if (y == 0) {
                 printf("%s%d%s    ", Color_GREEN, x + 1, Color_END);
             }
 
-            char piece = printPiece(board->playing_field[posToIdx(x, y)]);
-            if (COLOR(board->playing_field[posToIdx(x, y)]) == BLACK) {
+            char piece = print_piece(board->playing_field[pos_to_idx(x, y)]);
+            if (COLOR(board->playing_field[pos_to_idx(x, y)]) == BLACK) {
                 printf("%s", Color_CYAN);
             }
             printf("%c%s  ", piece, Color_END);
@@ -66,31 +66,31 @@ void printBoard(board_t* board) {
 }
 
 /* Print move*/
-void printMove(move_t* move) {
+void print_move(move_t* move) {
     char* startfield = FIELD[move->start];
     char* endfield = FIELD[move->end];
-    if (move->typeofmove == PROMOTIONMOVE) {
-        printf("%.2s-%.2s-(%c)", startfield, endfield, printPiece(move->piece_is));
+    if (move->type_of_move == PROMOTIONMOVE) {
+        printf("%.2s-%.2s-(%c)", startfield, endfield, print_piece(move->piece_is));
 
-    } else if (move->typeofmove == CASTLEMOVE) {
+    } else if (move->type_of_move == CASTLEMOVE) {
         printf("%.2s-%.2s-C", startfield, endfield);
     } else {
-        printf("%.2s-%.2s-%c", startfield, endfield, printPiece(move->piece_was));
+        printf("%.2s-%.2s-%c", startfield, endfield, print_piece(move->piece_was));
     }
 }
 
 /* Print list move */
-void printMoves(node_t* movelst) {
+void print_moves(node_t* movelst) {
     node_t* ptr = movelst->next;
     while (ptr != NULL) {
-        printMove(ptr->move);
+        print_move(ptr->move);
         printf("\n");
         ptr = ptr->next;
     }
     printf("\n");
 }
 
-void printLine(board_t* board, int depth) {
+void print_line(board_t* board, int depth) {
     uint64_t hash;
     uint64_t hashmod;
     player_t playeratturn = board->player;
@@ -105,11 +105,11 @@ void printLine(board_t* board, int depth) {
         if (bestmove == NULL) {
             return;
         }
-        playMove(board, bestmove, playeratturn);
-        printMove(bestmove);
+        play_move(board, bestmove, playeratturn);
+        print_move(bestmove);
         printf("\t");
-        printLine(board, depth - 1);
-        reverseMove(board, bestmove, playeratturn);
+        print_line(board, depth - 1);
+        reverse_move(board, bestmove, playeratturn);
         free_move(bestmove);
     } else {
         return;

@@ -84,7 +84,7 @@ typedef struct _oldflags_t {
 } oldflags_t;
 
 typedef struct _move_t {
-    flag_t typeofmove;
+    flag_t type_of_move;
 
     piece_t piece_was;
     piece_t piece_is;
@@ -92,15 +92,15 @@ typedef struct _move_t {
 
     idx_t start;
     idx_t end;
-    idx_t startopt;
-    idx_t endopt;
+    idx_t optional_start;
+    idx_t optional_end;
 
-    flag_t newcr;
-    flag_t newep;
+    flag_t new_cr;
+    flag_t new_ep;
 
     oldflags_t* oldflags;
 
-    order_t orderid;
+    order_t order_id;
 } move_t;
 
 typedef struct _node_t {
@@ -113,7 +113,7 @@ typedef struct _node_t {
 
 extern int nodes_searched;
 extern int hash_used;
-extern int hash_boundsadjusted;
+extern int hash_bounds_adjusted;
 
 /////////////////////////////////////////////////////////////
 //  LIST STRUCTURE & FUNCTIONS
@@ -130,23 +130,23 @@ extern move_t* pop(node_t* head);
 // MOVE FUNCTIONS
 
 /* Allocate memory for a specific move */
-extern move_t* create_normalmove(piece_t piece_was, piece_t piece_cap, idx_t start, idx_t end, flag_t newcr, oldflags_t* oldflags);
-extern move_t* create_eppossiblemove(piece_t piece_was, idx_t start, idx_t end, flag_t newepfield, oldflags_t* oldflags);
-extern move_t* create_promotionmove(piece_t piece_was, piece_t piece_is, piece_t piece_cap, idx_t start, idx_t end, flag_t newcr, oldflags_t* oldflags);
-extern move_t* create_castlemove(idx_t startking, idx_t endking, idx_t startrook, idx_t endrook, flag_t newcr, oldflags_t* oldflags);
-extern move_t* create_epmove(idx_t startattacker, idx_t endattacker, oldflags_t* oldflags);
+extern move_t* create_normal_move(piece_t piece_was, piece_t piece_cap, idx_t start, idx_t end, flag_t new_cr, oldflags_t* oldflags);
+extern move_t* create_ep_possible_move(piece_t piece_was, idx_t start, idx_t end, flag_t newepfield, oldflags_t* oldflags);
+extern move_t* create_promotion_move(piece_t piece_was, piece_t piece_is, piece_t piece_cap, idx_t start, idx_t end, flag_t new_cr, oldflags_t* oldflags);
+extern move_t* create_castle_move(idx_t startking, idx_t endking, idx_t startrook, idx_t endrook, flag_t new_cr, oldflags_t* oldflags);
+extern move_t* create_ep_move(idx_t startattacker, idx_t endattacker, oldflags_t* oldflags);
 /* Frees memory of move */
 extern void free_move(move_t* move);
-extern void free_movelst(node_t* movelst);
+extern void free_move_list(node_t* movelst);
 /* Deep copies move */
 extern move_t* copy_move(move_t* move);
 /* Execute move */
-extern void playMove(board_t* board, move_t* move, player_t playerwhomademove);
+extern void play_move(board_t* board, move_t* move, player_t playerwhomademove);
 /* Reverses a move/ recovers old board state */
-extern void reverseMove(board_t* board, move_t* move, player_t playerwhomademove);
+extern void reverse_move(board_t* board, move_t* move, player_t playerwhomademove);
 /* Sorts list by capture order */
-extern node_t* sortMoves(node_t* head);
-extern int isSameMove(move_t* move, move_t* move2);
+extern node_t* sort_moves(node_t* head);
+extern int is_same_move(move_t* move, move_t* move2);
 
 ///////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
@@ -166,38 +166,38 @@ extern void load_by_FEN(board_t* board, char* FEN);
 // PERFT TESTER
 
 /* Perft move generation and validation */
-extern int MoveGen(board_t* board, int depth);
+extern int move_gen(board_t* board, int depth);
 
 //////////////////////////////////////////////////////////////
 //  USEFUL FUNCTIONS
 
 /* Calculate idx based on a row & column */
-extern idx_t posToIdx(int row, int col);
+extern idx_t pos_to_idx(int row, int col);
 /* Copies flags from board */
-extern oldflags_t* copyflags(board_t* board);
+extern oldflags_t* copy_flags(board_t* board);
 /* Copies flags from move */
-extern oldflags_t* copyflagsfrommove(move_t* move);
+extern oldflags_t* copy_flags_from_move(move_t* move);
 /* Max of function */
-extern int maxof(int x, int y);
+extern int max(int x, int y);
 /* Min of function */
-extern int minof(int x, int y);
+extern int min(int x, int y);
 
 //////////////////////////////////////////////////////////////
 //  MOVE GENERATION
 
 /* Move generation */
-extern node_t* generateMoves(board_t* board);
+extern node_t* generate_moves(board_t* board);
 /* Generates all captures */
-extern node_t* generateCaptures(board_t* board);
+extern node_t* generate_captures(board_t* board);
 /* Checks if a move is legal (king not in check) */
-extern int isLegalMove(board_t* board);
-extern int PVMoveIsPossible(node_t* movelst, move_t* ttmove);
+extern int is_legal_move(board_t* board);
+extern int PVMove_is_possible(node_t* movelst, move_t* ttmove);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH
 
 /* The alpha beta search */
-extern int alphaBetaWithTT(board_t* board, uint8_t depth, int alpha, int beta, clock_t start, double timeleft);
-extern move_t* iterativeSearch(board_t* board, int8_t maxdepth, double maxtime);
+extern int alphaBeta_with_TT(board_t* board, uint8_t depth, int alpha, int beta, clock_t start, double timeleft);
+extern move_t* iterative_search(board_t* board, int8_t maxdepth, double maxtime);
 
 #endif

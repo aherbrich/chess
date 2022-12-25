@@ -8,7 +8,7 @@ void clear_board(board_t *board) {
     /* clears the playing field */
     for(int row = 0; row < 8; row++) 
         for (int col = 0; col < 8; col++)
-            board->playing_field[posToIdx(row,col)] = EMPTY;
+            board->playing_field[pos_to_idx(row,col)] = EMPTY;
 
     /* reset player, en passant field/possible, castle rights and ply number */
     board->player = 0;
@@ -53,65 +53,68 @@ void load_by_FEN(board_t* board, char* FEN) {
     int col = 0;
     char* ptr = FEN;
 
+    /* clear board before setting it from a FEN */
+    clear_board(board);
+
     while ((row != 0) || (col != 8)) {
         switch (*ptr) {
             case 'p':
-                board->playing_field[posToIdx(row, col)] = 3;
+                board->playing_field[pos_to_idx(row, col)] = 3;
                 ptr++;
                 col++;
                 break;
             case 'n':
-                board->playing_field[posToIdx(row, col)] = 5;
+                board->playing_field[pos_to_idx(row, col)] = 5;
                 ptr++;
                 col++;
                 break;
             case 'b':
-                board->playing_field[posToIdx(row, col)] = 9;
+                board->playing_field[pos_to_idx(row, col)] = 9;
                 ptr++;
                 col++;
                 break;
             case 'r':
-                board->playing_field[posToIdx(row, col)] = 17;
+                board->playing_field[pos_to_idx(row, col)] = 17;
                 ptr++;
                 col++;
                 break;
             case 'q':
-                board->playing_field[posToIdx(row, col)] = 33;
+                board->playing_field[pos_to_idx(row, col)] = 33;
                 ptr++;
                 col++;
                 break;
             case 'k':
-                board->playing_field[posToIdx(row, col)] = 65;
+                board->playing_field[pos_to_idx(row, col)] = 65;
                 ptr++;
                 col++;
                 break;
             case 'P':
-                board->playing_field[posToIdx(row, col)] = 2;
+                board->playing_field[pos_to_idx(row, col)] = 2;
                 ptr++;
                 col++;
                 break;
             case 'N':
-                board->playing_field[posToIdx(row, col)] = 4;
+                board->playing_field[pos_to_idx(row, col)] = 4;
                 ptr++;
                 col++;
                 break;
             case 'B':
-                board->playing_field[posToIdx(row, col)] = 8;
+                board->playing_field[pos_to_idx(row, col)] = 8;
                 ptr++;
                 col++;
                 break;
             case 'R':
-                board->playing_field[posToIdx(row, col)] = 16;
+                board->playing_field[pos_to_idx(row, col)] = 16;
                 ptr++;
                 col++;
                 break;
             case 'Q':
-                board->playing_field[posToIdx(row, col)] = 32;
+                board->playing_field[pos_to_idx(row, col)] = 32;
                 ptr++;
                 col++;
                 break;
             case 'K':
-                board->playing_field[posToIdx(row, col)] = 64;
+                board->playing_field[pos_to_idx(row, col)] = 64;
                 ptr++;
                 col++;
                 break;

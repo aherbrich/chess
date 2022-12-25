@@ -116,7 +116,7 @@ move_t *getMove(board_t *board) {
     idx_t from = inputToIdx(fromstr);
     idx_t to = inputToIdx(tostr);
 
-    node_t *movelst = generateMoves(board);
+    node_t *movelst = generate_moves(board);
 
     node_t *tmp = movelst->next;
     move_t *move = NULL;
@@ -149,20 +149,20 @@ int main() {
     init_hashtable();
     init_book();
 
-    printBoard(board);
+    print_board(board);
 
-    while (len(generateMoves(board)) > 0) {
+    while (len(generate_moves(board)) > 0) {
         if (board->player == WHITE) {
             move_t *move = getMove(board);
-            playMove(board, move, board->player);
+            play_move(board, move, board->player);
             board->ply_no++;
-            printBoard(board);
+            print_board(board);
         } else {
             printf("\n%sBOT at play\n\n", Color_PURPLE);
 
             nodes_searched = 0;
             hash_used = 0;
-            hash_boundsadjusted = 0;
+            hash_bounds_adjusted = 0;
 
             int maxdepth = 40;
             double maxtime = 5.0;
@@ -174,25 +174,25 @@ int main() {
 
             if (book_possible(board) == 1) {
                 printf("Book move possible!\n");
-                bestmove = getRandomBook(board);
+                bestmove = get_random_book(board);
             } else {
                 printf("No book moves possible!\n");
-                bestmove = iterativeSearch(board, maxdepth, maxtime);
+                bestmove = iterative_search(board, maxdepth, maxtime);
 
                 printf("\nNodes Explored:\t%d\n", nodes_searched);
                 printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
-                printf("Bounds adj.:\t%d\n", hash_boundsadjusted);
+                printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
                 printf("Found move:\t");
-                printMove(bestmove);
+                print_move(bestmove);
 
                 end = clock();
                 printf("\t\t\t Time:\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
                 printf("\n");
             }
 
-            playMove(board, bestmove, board->player);
+            play_move(board, bestmove, board->player);
             board->ply_no++;
-            printBoard(board);
+            print_board(board);
             printf("%s", Color_END);
         }
     }

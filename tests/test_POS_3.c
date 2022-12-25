@@ -21,7 +21,7 @@ int main() {
 
     int genresult;
 
-    printBoard(board);
+    print_board(board);
 
     printf("TESTING START POSITION...\n");
 
@@ -32,7 +32,7 @@ int main() {
         begin = clock();
         printf("DEPTH(%d):\n", (int)i + 1);
         printf("Expected: \t%d\n", result[i]);
-        genresult = MoveGen(board, i + 1);
+        genresult = move_gen(board, i + 1);
         printf("Found: \t\t%d\n", genresult);
         end = clock();
         printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);

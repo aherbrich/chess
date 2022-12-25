@@ -16,6 +16,6 @@ extern bookentry_t book[MAXNR_LINES][MAXDEPTH_LINE];
 
 extern void init_book();
 extern int book_possible(board_t* board);
-extern move_t* getRandomBook(board_t* board);
+extern move_t* get_random_book(board_t* board);
 
 #endif

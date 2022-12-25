@@ -66,52 +66,52 @@ int kingpos[64] = {-30, -40, -40, -50, -50, -40, -40, -30,
                    20, 20, 0, 0, 0, 0, 20, 20,
                    20, 30, 10, 0, 0, 10, 30, 20};
 
-int countMaterial(board_t *board, player_t color) {
+int count_material(board_t *board, player_t color) {
     int material = 0;
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            piece_t piece = board->playing_field[posToIdx(x, y)];
+            piece_t piece = board->playing_field[pos_to_idx(x, y)];
             if (piece == (PAWN | color)) {
                 material += PAWNVALUE;
                 if (color == WHITE) {
-                    material += pawnpos[posToIdx(7 - x, y)];
+                    material += pawnpos[pos_to_idx(7 - x, y)];
                 } else {
-                    material += pawnpos[63 - posToIdx(7 - x, y)];
+                    material += pawnpos[63 - pos_to_idx(7 - x, y)];
                 }
             } else if (piece == (KNIGHT | color)) {
                 material += KNIGHTVALUE;
                 if (color == WHITE) {
-                    material += knightpos[posToIdx(7 - x, y)];
+                    material += knightpos[pos_to_idx(7 - x, y)];
                 } else {
-                    material += knightpos[63 - posToIdx(7 - x, y)];
+                    material += knightpos[63 - pos_to_idx(7 - x, y)];
                 }
             } else if (piece == (BISHOP | color)) {
                 material += BISHOPVALUE;
                 if (color == WHITE) {
-                    material += bishoppos[posToIdx(7 - x, y)];
+                    material += bishoppos[pos_to_idx(7 - x, y)];
                 } else {
-                    material += bishoppos[63 - posToIdx(7 - x, y)];
+                    material += bishoppos[63 - pos_to_idx(7 - x, y)];
                 }
             } else if (piece == (ROOK | color)) {
                 material += ROOKVALUE;
                 if (color == WHITE) {
-                    material += rookpos[posToIdx(7 - x, y)];
+                    material += rookpos[pos_to_idx(7 - x, y)];
                 } else {
-                    material += rookpos[63 - posToIdx(7 - x, y)];
+                    material += rookpos[63 - pos_to_idx(7 - x, y)];
                 }
             } else if (piece == (QUEEN | color)) {
                 material += QUEENVALUE;
                 if (color == WHITE) {
-                    material += queenpos[posToIdx(7 - x, y)];
+                    material += queenpos[pos_to_idx(7 - x, y)];
                 } else {
-                    material += queenpos[63 - posToIdx(7 - x, y)];
+                    material += queenpos[63 - pos_to_idx(7 - x, y)];
                 }
             } else if (piece == (KING | color)) {
                 if (color == WHITE) {
-                    material += kingpos[posToIdx(7 - x, y)];
+                    material += kingpos[pos_to_idx(7 - x, y)];
                 } else {
-                    material += kingpos[63 - posToIdx(7 - x, y)];
+                    material += kingpos[63 - pos_to_idx(7 - x, y)];
                 }
             }
         }
@@ -120,11 +120,11 @@ int countMaterial(board_t *board, player_t color) {
     return material;
 }
 
-int evalEndOfGame(board_t *board, int depth) {
+int eval_end_of_game(board_t *board, int depth) {
     // check for stalemate
 
     board->player = OPPONENT(board->player);  // same as doing a null move
-    int inCheck = !isLegalMove(board);        // are we in check?
+    int inCheck = !is_legal_move(board);        // are we in check?
     board->player = OPPONENT(board->player);  // reverse the null move
 
     // if in check
@@ -137,9 +137,9 @@ int evalEndOfGame(board_t *board, int depth) {
     }
 }
 
-int evalBoard(board_t *board) {
-    int whiteEval = countMaterial(board, WHITE);
-    int blackEval = countMaterial(board, BLACK);
+int eval_board(board_t *board) {
+    int whiteEval = count_material(board, WHITE);
+    int blackEval = count_material(board, BLACK);
 
     int eval = whiteEval - blackEval;
 

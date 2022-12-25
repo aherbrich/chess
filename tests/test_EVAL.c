@@ -28,7 +28,7 @@ int main() {
     clock_t begin;
     clock_t tmpbegin;
 
-    printBoard(board);
+    print_board(board);
 
     begin = clock();
     tmpbegin = clock();
@@ -42,14 +42,14 @@ int main() {
     double maxtime = 5.0;
 
     for (int i = 0; i < 1; i++) {
-        move_t *bestmove = iterativeSearch(board, maxdepth, maxtime);
+        move_t *bestmove = iterative_search(board, maxdepth, maxtime);
 
         printf("\nNodes Explored:\t%d\n", nodes_searched);
         printf("Hashes used:\t%d \t(%4.2f)\n", hash_used,
                (float)hash_used / (float)nodes_searched);
-        printf("Bounds adj.:\t%d\n", hash_boundsadjusted);
+        printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
         printf("Found move:\t");
-        printMove(bestmove);
+        print_move(bestmove);
         // printf("\nEvalution: %d", evaluation);
 
         end = clock();
@@ -58,8 +58,8 @@ int main() {
         tmpbegin = clock();
         printf("\n");
 
-        playMove(board, bestmove, board->player);
-        printBoard(board);
+        play_move(board, bestmove, board->player);
+        print_board(board);
     }
 
     ///////////
