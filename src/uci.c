@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../include/book.h"
 #include "../include/chess.h"
@@ -246,6 +247,149 @@ void handle_position(char *token, board_t *board) {
     return;
 }
 
+/* structure to exchange information to the background thread for search */
+struct _search_thread_data {
+    board_t *board;         /* pointer to the actual board */
+    int max_depth;          /* maximum search depth */
+    double max_time;        /* maximum time allowed */
+    move_t *best_move;      /* computed best move (so far) */
+}  search_thread_data;
+
+pthread_t game_thread = 0;
+
+/* plays a move on the board passed and returns the best move */
+void *start_search(void *args) {
+    /* initialize options */
+    struct _search_thread_data *data = (struct _search_thread_data *)args;
+
+    if (book_possible(data->board) == 1) {
+        fprintf(stderr, "Book move possible!\n");
+        data->best_move = get_random_book(data->board);
+    } else {
+        data->best_move = iterative_search(data->board, data->max_depth, data->max_time);
+    }
+
+    /* output the best move to stdout */
+    printf("bestmove ");
+    print_LAN_move(data->best_move);
+    printf("\n");
+
+    game_thread = 0;
+
+    pthread_exit(NULL);
+}
+
+/* handles the go command */
+void handle_go(char *token, board_t *board) {
+    const char delim[] = " \n\t";
+    int max_depth = 8;
+    double max_time = 5.0;    
+    int max_nodes = 1000000;
+
+    while ((token = strtok(NULL, delim))) {
+        if (!strcmp(token, "infinite")) {
+            max_depth = 10;
+            max_time = (double) 20000;
+            break;
+        } else if(!strcmp(token, "depth")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing depth\n");
+                exit(-1);
+            } else {
+                max_depth = atoi(token);
+            }            
+        } else if(!strcmp(token, "seldepth")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing seldepth\n");
+                exit(-1);
+            } else {
+                max_depth = atoi(token);
+            }
+        } else if(!strcmp(token, "nodes")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing nodes\n");
+                exit(-1);
+            } else {
+                max_nodes = atoi(token);
+            }
+        } else if(!strcmp(token, "movetime")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing movetime\n");
+                exit(-1);
+            } else {
+                max_time = atof(token) / 1000.0;
+            }
+        } else if(!strcmp(token, "mate")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing mate number\n");
+                exit(-1);
+            } else {
+                // TODO
+            }
+        } else if(!strcmp(token, "wtime")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing time left for white\n");
+                exit(-1);
+            } else {
+                // TODO
+            }
+        } else if(!strcmp(token, "btime")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing time left for black\n");
+                exit(-1);
+            } else {
+                // TODO
+            }
+        } else if(!strcmp(token, "winc")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing time left for white increment\n");
+                exit(-1);
+            } else {
+                max_time = (board->player == WHITE) ? atof(token) / 1000.0 : max_time;
+            }
+        } else if(!strcmp(token, "binc")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing time left for black increment\n");
+                exit(-1);
+            } else {
+                max_time = (board->player == BLACK) ? atof(token) / 1000.0 : max_time;
+            }
+        } else if(!strcmp(token, "movestogo")) {
+            token = strtok(NULL, delim);
+            if (!token) {
+                fprintf(stderr, "Missing moves to go\n");
+                exit(-1);
+            } else {
+                // TODO
+            }
+        } else {
+            fprintf(stderr, "incorrect command: %s\n", token);
+        }
+    }
+
+    search_thread_data.max_depth = max_depth;
+    search_thread_data.max_time = max_time;
+    search_thread_data.board = board;
+
+    while (game_thread) {
+        fprintf (stderr, "Search underway ... sleeping for 1 second\n");
+        sleep (1);
+    }
+
+    pthread_create(&game_thread, NULL, start_search, (void *)&search_thread_data);
+
+    return;
+}
+
 /* runs the main loop of the the UCI communication interface */
 void *main_interface_loop(void *args) {
     /* initialize options */
@@ -256,8 +400,8 @@ void *main_interface_loop(void *args) {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     printf("id name AChess 0.1\nid author Alexander Herbrich\n\n");
-    printf("\n");
-    print_options(options);
+    // printf("\n");
+    // print_options(options);
     printf("uciok\n");
 
     while (1) {
@@ -271,21 +415,23 @@ void *main_interface_loop(void *args) {
         /* get the first token */
         token = strtok(buffer, delim);
 
+        if (!token) continue;
+
         if (!strcmp(token, "quit") || !strcmp(token, "stop")) {
             /* handle 'quit' or 'stop' command */
             break;
         } else if (!strcmp(token, "uci")) {
             /* handle 'uci' command */
             printf("id name AChess 0.1\nid author Alexander Herbrich\n\n");
-            printf("\n");
-            print_options(options);
+            // printf("\n");
+            // print_options(options);
             printf("uciok\n");
         } else if (!strcmp(token, "setoption")) {
             /* handle 'setoption' command */
             printf("setoption\n");
         } else if (!strcmp(token, "go")) {
             /* handle 'go' command */
-            printf("go\n");
+            handle_go(token, board);
         } else if (!strcmp(token, "position")) {
             /* handle 'position' command */
             handle_position(token, board);
@@ -304,50 +450,9 @@ void *main_interface_loop(void *args) {
 }
 
 ////////////////////////////////////////////////////////////////
-// MAIN GAME HANDLER
-
-/* runs the main loop of the the game */
-void *main_game_loop(void *args) {
-    board_t *board = (board_t *)args;
-    load_by_FEN(board, STARTING_FEN);
-
-    clock_t end, tmp_begin;
-    clock_t begin = clock();
-
-    int maxdepth = 40;
-    double maxtime = 5.0;
-
-    for (int i = 0; i < 1; i++) {
-        move_t *bestmove = iterative_search(board, maxdepth, maxtime);
-
-        // printf("\nNodes Explored:\t%d\n", nodes_searched);
-        // printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
-        // printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
-        // printf("Found move: %p\t", bestmove);
-        // print_move(bestmove);
-        // printf("\nEvalution: %d", evaluation);
-
-        end = clock();
-        // printf("\t\t\t Time:\t%fs\n", (double)(end - tmp_begin) / CLOCKS_PER_SEC);
-        tmp_begin = clock();
-        // printf("\n");
-
-        // play_move(board, bestmove, board->player);
-        // print_board(board);
-    }
-
-    ///////////
-    end = clock();
-    // printf("Overall Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
-
-    return (NULL);
-}
-
-////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 int main() {
     pthread_t comm_thread;
-    pthread_t game_thread;
 
     /* Initialize all dictionaries and tables */
     board_t *board = init_board();
@@ -356,8 +461,6 @@ int main() {
     init_book();
 
     pthread_create(&comm_thread, NULL, main_interface_loop, (void *)board);
-    pthread_create(&game_thread, NULL, main_game_loop, (void *)board);
-    pthread_join(game_thread, NULL);
     pthread_join(comm_thread, NULL);
 
     /* free the board */

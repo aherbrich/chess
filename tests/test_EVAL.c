@@ -26,12 +26,12 @@ int main() {
 
     clock_t end;
     clock_t begin;
-    clock_t tmpbegin;
+    clock_t tmp_begin;
 
     print_board(board);
 
     begin = clock();
-    tmpbegin = clock();
+    tmp_begin = clock();
 
     /* Implement here */
     init_zobrist();
@@ -42,23 +42,23 @@ int main() {
     double maxtime = 5.0;
 
     for (int i = 0; i < 1; i++) {
-        move_t *bestmove = iterative_search(board, maxdepth, maxtime);
+        move_t *best_move = iterative_search(board, maxdepth, maxtime);
 
         printf("\nNodes Explored:\t%d\n", nodes_searched);
         printf("Hashes used:\t%d \t(%4.2f)\n", hash_used,
                (float)hash_used / (float)nodes_searched);
         printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
         printf("Found move:\t");
-        print_move(bestmove);
+        print_move(best_move);
         // printf("\nEvalution: %d", evaluation);
 
         end = clock();
         printf("\t\t\t Time:\t%fs\n",
-               (double)(end - tmpbegin) / CLOCKS_PER_SEC);
-        tmpbegin = clock();
+               (double)(end - tmp_begin) / CLOCKS_PER_SEC);
+        tmp_begin = clock();
         printf("\n");
 
-        play_move(board, bestmove, board->player);
+        play_move(board, best_move, board->player);
         print_board(board);
     }
 

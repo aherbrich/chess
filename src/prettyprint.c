@@ -1,17 +1,14 @@
 #include "../include/chess.h"
 #include "../include/zobrist.h"
 
-char FIELD[64][2] = {"A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1",
-                     "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2",
-                     "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3",
-                     "A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4",
-                     "A5", "B5", "C5", "D5", "E5", "F5", "G5", "H5",
-                     "A6", "B6", "C6", "D6", "E6", "F6", "G6", "H6",
-                     "A7", "B7", "C7", "D7", "E7", "F7", "G7", "H7",
-                     "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8"};
-
-/////////////////////////////////////////////////////////////
-//  PRINT HELPERS
+char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
+                     "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
+                     "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+                     "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
+                     "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
+                     "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
+                     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
+                     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
 
 /* Print a piece */
 char print_piece(piece_t piece) {
@@ -65,23 +62,36 @@ void print_board(board_t* board) {
     printf("\n");
 }
 
-/* Print move*/
+/* Print move */
 void print_move(move_t* move) {
-    char* startfield = FIELD[move->start];
-    char* endfield = FIELD[move->end];
+    char* start_field = FIELD[move->start];
+    char* end_field = FIELD[move->end];
     if (move->type_of_move == PROMOTIONMOVE) {
-        printf("%.2s-%.2s-(%c)", startfield, endfield, print_piece(move->piece_is));
+        printf("%.2s-%.2s-(%c)", start_field, end_field, print_piece(move->piece_is));
 
     } else if (move->type_of_move == CASTLEMOVE) {
-        printf("%.2s-%.2s-C", startfield, endfield);
+        printf("%.2s-%.2s-C", start_field, end_field);
     } else {
-        printf("%.2s-%.2s-%c", startfield, endfield, print_piece(move->piece_was));
+        printf("%.2s-%.2s-%c", start_field, end_field, print_piece(move->piece_was));
     }
 }
 
+/* Print move in the long algebraic notation */
+void print_LAN_move(move_t* move) {
+    char* start_field = FIELD[move->start];
+    char* end_field = FIELD[move->end];
+
+    if (move->type_of_move == PROMOTIONMOVE)
+        printf("%.2s%.2s%c", start_field, end_field, print_piece(move->piece_is));
+    else 
+        printf("%.2s%.2s", start_field, end_field);
+
+    return;
+}
+
 /* Print list move */
-void print_moves(node_t* movelst) {
-    node_t* ptr = movelst->next;
+void print_moves(node_t* move_list) {
+    node_t* ptr = move_list->next;
     while (ptr != NULL) {
         print_move(ptr->move);
         printf("\n");
@@ -90,27 +100,28 @@ void print_moves(node_t* movelst) {
     printf("\n");
 }
 
+/* Print the list of best possible moves until a depth (PV line) */
 void print_line(board_t* board, int depth) {
     uint64_t hash;
-    uint64_t hashmod;
-    player_t playeratturn = board->player;
-    move_t* bestmove;
+    uint64_t hash_mod;
+    player_t player_at_turn = board->player;
+    move_t* best_move;
 
     if (depth > 0) {
         hash = zobrist(board);
-        hashmod = hash % HTSIZE;
+        hash_mod = hash % HTSIZE;
 
-        bestmove = copy_move(httable[hashmod].bestmove);
+        best_move = copy_move(ht_table[hash_mod].best_move);
 
-        if (bestmove == NULL) {
+        if (best_move == NULL) {
             return;
         }
-        play_move(board, bestmove, playeratturn);
-        print_move(bestmove);
+        play_move(board, best_move, player_at_turn);
+        print_move(best_move);
         printf("\t");
         print_line(board, depth - 1);
-        reverse_move(board, bestmove, playeratturn);
-        free_move(bestmove);
+        reverse_move(board, best_move, player_at_turn);
+        free_move(best_move);
     } else {
         return;
     }

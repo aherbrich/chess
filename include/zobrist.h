@@ -7,21 +7,21 @@
 #define HTSIZE 67108864
 
 typedef struct _zobrist_t {
-    uint64_t hashvalue[8][8][12];
-    uint64_t hashflags[13];
+    uint64_t hash_value[8][8][12];
+    uint64_t hash_flags[13];
 } zobrist_t;
 
-extern zobrist_t zobtable;
+extern zobrist_t zob_table;
 
 typedef struct _htentry_t {
     int8_t flags;
     int16_t eval;
     int8_t depth;
-    move_t* bestmove;
+    move_t* best_move;
     uint64_t hash;
 } htentry_t;
 
-extern htentry_t* httable;
+extern htentry_t* ht_table;
 
 /* Initializes the global zobrist table */
 extern void init_zobrist();

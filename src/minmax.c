@@ -40,7 +40,7 @@ int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_
             free_move_list(move_list);
             uint64_t hash = zobrist(board);
             uint64_t key = hash % HTSIZE;
-            return httable[key].eval;
+            return ht_table[key].eval;
         }
 
         alpha = max(value, alpha);
@@ -207,7 +207,7 @@ move_t *iterative_search(board_t *board, int8_t maxdepth, double maxtime) {
         uint64_t hash = zobrist(board);
         hash = hash % HTSIZE;
         free_move(best_move);
-        best_move = copy_move(httable[hash].bestmove);
+        best_move = copy_move(ht_table[hash].best_move);
         clock_t end = clock();
 
         // print_move(best_move);
