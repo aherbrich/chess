@@ -60,7 +60,7 @@ uint64_t zobrist(board_t *board) {
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            piece_t piece = board->playingfield[posToIdx(x, y)];
+            piece_t piece = board->playing_field[posToIdx(x, y)];
             if (piece != EMPTY) {
                 idx_t pieceidx = indexing(piece);
                 hash ^= zobtable.hashvalue[x][y][pieceidx];
@@ -68,23 +68,23 @@ uint64_t zobrist(board_t *board) {
         }
     }
 
-    if (board->eppossible) {
-        hash ^= zobtable.hashflags[board->epfield % 8];
+    if (board->ep_possible) {
+        hash ^= zobtable.hashflags[board->ep_field % 8];
     }
 
-    if ((board->castlerights & LONGSIDEW) != 0) {
+    if ((board->castle_rights & LONGSIDEW) != 0) {
         hash ^= zobtable.hashflags[8];
     }
 
-    if ((board->castlerights & SHORTSIDEW) != 0) {
+    if ((board->castle_rights & SHORTSIDEW) != 0) {
         hash ^= zobtable.hashflags[9];
     }
 
-    if ((board->castlerights & LONGSIDEB) != 0) {
+    if ((board->castle_rights & LONGSIDEB) != 0) {
         hash ^= zobtable.hashflags[10];
     }
 
-    if ((board->castlerights & SHORTSIDEB) != 0) {
+    if ((board->castle_rights & SHORTSIDEB) != 0) {
         hash ^= zobtable.hashflags[11];
     }
 

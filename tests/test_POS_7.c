@@ -15,7 +15,7 @@ int main() {
     int result[] = {24, 496, 9483, 182838, 3605103, 71179139};
 
     board_t* board = init_board();
-    loadByFEN(board, TEST7_FEN);
+    load_by_FEN(board, TEST7_FEN);
 
     clock_t end;
     clock_t begin;

@@ -139,7 +139,7 @@ move_t *getMove(board_t *board) {
 
 int main() {
     board_t *board = init_board();
-    loadByFEN(board, STARTING_FEN);
+    load_by_FEN(board, STARTING_FEN);
 
     clock_t end;
     clock_t begin;
@@ -155,7 +155,7 @@ int main() {
         if (board->player == WHITE) {
             move_t *move = getMove(board);
             playMove(board, move, board->player);
-            board->plynr++;
+            board->ply_no++;
             printBoard(board);
         } else {
             printf("\n%sBOT at play\n\n", Color_PURPLE);
@@ -191,7 +191,7 @@ int main() {
             }
 
             playMove(board, bestmove, board->player);
-            board->plynr++;
+            board->ply_no++;
             printBoard(board);
             printf("%s", Color_END);
         }

@@ -53,8 +53,8 @@ void printBoard(board_t* board) {
                 printf("%s%d%s    ", Color_GREEN, x + 1, Color_END);
             }
 
-            char piece = printPiece(board->playingfield[posToIdx(x, y)]);
-            if (COLOR(board->playingfield[posToIdx(x, y)]) == BLACK) {
+            char piece = printPiece(board->playing_field[posToIdx(x, y)]);
+            if (COLOR(board->playing_field[posToIdx(x, y)]) == BLACK) {
                 printf("%s", Color_CYAN);
             }
             printf("%c%s  ", piece, Color_END);

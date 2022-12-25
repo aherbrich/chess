@@ -137,7 +137,7 @@ void book_addline(char *moveline) {
     book_moveindex = 0;
 
     board_t *board = init_board();
-    loadByFEN(board, STARTING_FEN);
+    load_by_FEN(board, STARTING_FEN);
 
     int limit = (int)strlen(moveline);
     int nrmoves = limit / 5;
@@ -334,13 +334,13 @@ void init_book() {
 }
 
 int book_possible(board_t *board) {
-    if (board->plynr >= MAXDEPTH_LINE - 1) {
+    if (board->ply_no >= MAXDEPTH_LINE - 1) {
         return 0;
     }
 
     for (int i = 0; i < MAXNR_LINES; i++) {
-        if (book[i][board->plynr].possible == 1) {
-            if (book[i][board->plynr].hash == zobrist(board)) {
+        if (book[i][board->ply_no].possible == 1) {
+            if (book[i][board->ply_no].hash == zobrist(board)) {
                 return 1;
             } else {
                 for (int j = 0; j < MAXDEPTH_LINE; j++) {
@@ -357,9 +357,9 @@ move_t *getRandomBook(board_t *board) {
     node_t *possibleBookMoves = init_list();
 
     for (int i = 0; i < MAXNR_LINES; i++) {
-        if (book[i][board->plynr].possible == 1) {
-            if (book[i][board->plynr].hash == zobrist(board)) {
-                add(possibleBookMoves, copy_move(book[i][board->plynr].move));
+        if (book[i][board->ply_no].possible == 1) {
+            if (book[i][board->ply_no].hash == zobrist(board)) {
+                add(possibleBookMoves, copy_move(book[i][board->ply_no].move));
             }
         }
     }

@@ -22,7 +22,7 @@ char TEST9_FEN[] = "8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -";
 
 int main() {
     board_t *board = init_board();
-    loadByFEN(board, STARTING_FEN);
+    load_by_FEN(board, STARTING_FEN);
 
     clock_t end;
     clock_t begin;

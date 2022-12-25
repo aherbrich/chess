@@ -71,7 +71,7 @@ int countMaterial(board_t *board, player_t color) {
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            piece_t piece = board->playingfield[posToIdx(x, y)];
+            piece_t piece = board->playing_field[posToIdx(x, y)];
             if (piece == (PAWN | color)) {
                 material += PAWNVALUE;
                 if (color == WHITE) {

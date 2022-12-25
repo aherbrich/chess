@@ -69,18 +69,18 @@ typedef int8_t idx_t;
 typedef uint16_t order_t;
 
 typedef struct _board_t {
-    piece_t* playingfield;
+    piece_t* playing_field;
     player_t player;
-    flag_t castlerights;
-    flag_t eppossible;
-    piece_t epfield;
-    uint16_t plynr;
+    flag_t castle_rights;
+    flag_t ep_possible;
+    piece_t ep_field;
+    uint16_t ply_no;
 } board_t;
 
 typedef struct _oldflags_t {
-    flag_t castlerights;
-    flag_t eppossible;
-    piece_t epfield;
+    flag_t castle_rights;
+    flag_t ep_possible;
+    piece_t ep_field;
 } oldflags_t;
 
 typedef struct _move_t {
@@ -151,6 +151,8 @@ extern int isSameMove(move_t* move, move_t* move2);
 ///////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
 
+/* Clears the board */
+extern void clear_board(board_t *board);
 /* Allocate memory for a empty board */
 extern board_t* init_board();
 /* Make deep cop of board */
@@ -158,7 +160,7 @@ extern board_t* copy_board(board_t* board);
 /* Free memory of board */
 extern void free_board(board_t* board);
 /* Load a game position based on FEN */
-extern void loadByFEN(board_t* board, char* FEN);
+extern void load_by_FEN(board_t* board, char* FEN);
 
 /////////////////////////////////////////////////////////////
 // PERFT TESTER

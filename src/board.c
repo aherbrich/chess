@@ -3,42 +3,52 @@
 ///////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
 
+/* clears the board */
+void clear_board(board_t *board) {
+    /* clears the playing field */
+    for(int row = 0; row < 8; row++) 
+        for (int col = 0; col < 8; col++)
+            board->playing_field[posToIdx(row,col)] = EMPTY;
+
+    /* reset player, en passant field/possible, castle rights and ply number */
+    board->player = 0;
+    board->ep_field = 0;
+    board->ep_possible = FALSE;
+    board->castle_rights = 0b1111;
+    board->ply_no = 0;
+}
+
 /* Allocate memory for a empty board */
 board_t* init_board() {
     board_t* board = (board_t*)malloc(sizeof(board_t));
-    board->playingfield = (piece_t*)calloc(64, sizeof(piece_t));
-
-    board->player = 0;
-    board->epfield = 0;
-    board->eppossible = FALSE;
-    board->castlerights = 0b1111;
-    board->plynr = 0;
+    board->playing_field = (piece_t*)calloc(64, sizeof(piece_t));
+    clear_board (board);
     return board;
 }
 
 /* Free memory of board */
 
 void free_board(board_t* board) {
-    free(board->playingfield);
+    free(board->playing_field);
     free(board);
 }
 
 board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
-    copy->playingfield = (piece_t*)calloc(64, sizeof(piece_t));
+    copy->playing_field = (piece_t*)calloc(64, sizeof(piece_t));
 
-    memcpy(copy->playingfield, board->playingfield, 64);
+    memcpy(copy->playing_field, board->playing_field, 64);
 
     copy->player = board->player;
-    copy->epfield = board->epfield;
-    copy->eppossible = board->eppossible;
-    copy->castlerights = board->castlerights;
+    copy->ep_field = board->ep_field;
+    copy->ep_possible = board->ep_possible;
+    copy->castle_rights = board->castle_rights;
 
     return copy;
 }
 
 /* Load a game position based on FEN */
-void loadByFEN(board_t* board, char* FEN) {
+void load_by_FEN(board_t* board, char* FEN) {
     int row = 7;
     int col = 0;
     char* ptr = FEN;
@@ -46,62 +56,62 @@ void loadByFEN(board_t* board, char* FEN) {
     while ((row != 0) || (col != 8)) {
         switch (*ptr) {
             case 'p':
-                board->playingfield[posToIdx(row, col)] = 3;
+                board->playing_field[posToIdx(row, col)] = 3;
                 ptr++;
                 col++;
                 break;
             case 'n':
-                board->playingfield[posToIdx(row, col)] = 5;
+                board->playing_field[posToIdx(row, col)] = 5;
                 ptr++;
                 col++;
                 break;
             case 'b':
-                board->playingfield[posToIdx(row, col)] = 9;
+                board->playing_field[posToIdx(row, col)] = 9;
                 ptr++;
                 col++;
                 break;
             case 'r':
-                board->playingfield[posToIdx(row, col)] = 17;
+                board->playing_field[posToIdx(row, col)] = 17;
                 ptr++;
                 col++;
                 break;
             case 'q':
-                board->playingfield[posToIdx(row, col)] = 33;
+                board->playing_field[posToIdx(row, col)] = 33;
                 ptr++;
                 col++;
                 break;
             case 'k':
-                board->playingfield[posToIdx(row, col)] = 65;
+                board->playing_field[posToIdx(row, col)] = 65;
                 ptr++;
                 col++;
                 break;
             case 'P':
-                board->playingfield[posToIdx(row, col)] = 2;
+                board->playing_field[posToIdx(row, col)] = 2;
                 ptr++;
                 col++;
                 break;
             case 'N':
-                board->playingfield[posToIdx(row, col)] = 4;
+                board->playing_field[posToIdx(row, col)] = 4;
                 ptr++;
                 col++;
                 break;
             case 'B':
-                board->playingfield[posToIdx(row, col)] = 8;
+                board->playing_field[posToIdx(row, col)] = 8;
                 ptr++;
                 col++;
                 break;
             case 'R':
-                board->playingfield[posToIdx(row, col)] = 16;
+                board->playing_field[posToIdx(row, col)] = 16;
                 ptr++;
                 col++;
                 break;
             case 'Q':
-                board->playingfield[posToIdx(row, col)] = 32;
+                board->playing_field[posToIdx(row, col)] = 32;
                 ptr++;
                 col++;
                 break;
             case 'K':
-                board->playingfield[posToIdx(row, col)] = 64;
+                board->playing_field[posToIdx(row, col)] = 64;
                 ptr++;
                 col++;
                 break;
@@ -158,24 +168,24 @@ void loadByFEN(board_t* board, char* FEN) {
 
     ptr += 2;
 
-    board->castlerights = 0;
+    board->castle_rights = 0;
     while (*ptr != ' ') {
         switch (*ptr) {
             case 'K':
                 ptr++;
-                board->castlerights = board->castlerights | SHORTSIDEW;
+                board->castle_rights = board->castle_rights | SHORTSIDEW;
                 break;
             case 'k':
                 ptr++;
-                board->castlerights = board->castlerights | SHORTSIDEB;
+                board->castle_rights = board->castle_rights | SHORTSIDEB;
                 break;
             case 'Q':
                 ptr++;
-                board->castlerights = board->castlerights | LONGSIDEW;
+                board->castle_rights = board->castle_rights | LONGSIDEW;
                 break;
             case 'q':
                 ptr++;
-                board->castlerights = board->castlerights | LONGSIDEB;
+                board->castle_rights = board->castle_rights | LONGSIDEB;
                 break;
             case '-':
                 ptr++;
@@ -185,8 +195,8 @@ void loadByFEN(board_t* board, char* FEN) {
     ptr++;
 
     if (*ptr == '-') {
-        board->epfield = 0;
-        board->eppossible = FALSE;
+        board->ep_field = 0;
+        board->ep_possible = FALSE;
         ptr += 2;
     } else {
         piece_t idx = 0;
@@ -243,8 +253,8 @@ void loadByFEN(board_t* board, char* FEN) {
             }
             ptr++;
         }
-        board->eppossible = TRUE;
-        board->epfield = idx;
+        board->ep_possible = TRUE;
+        board->ep_field = idx;
         ptr++;
     }
 

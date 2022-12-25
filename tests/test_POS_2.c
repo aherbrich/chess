@@ -14,7 +14,7 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 int main() {
     int result[] = {48, 2039, 97862, 4085603, 193690690};
     board_t* board = init_board();
-    loadByFEN(board, TEST2_FEN);
+    load_by_FEN(board, TEST2_FEN);
 
     clock_t end;
     clock_t begin;

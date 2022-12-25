@@ -132,71 +132,71 @@ void free_movelst(node_t *movelst) {
 void playMove(board_t *board, move_t *move, player_t playerwhomademove) {
     if (move->typeofmove == NORMALMOVE) {
         // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = move->piece_was;
+        board->playing_field[move->start] = EMPTY;
+        board->playing_field[move->end] = move->piece_was;
 
         // castle rights
-        board->castlerights = move->newcr;
+        board->castle_rights = move->newcr;
 
         // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+        board->ep_possible = FALSE;
+        board->ep_field = 0;
     }
 
     else if (move->typeofmove == PROMOTIONMOVE) {
         // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = move->piece_is;
+        board->playing_field[move->start] = EMPTY;
+        board->playing_field[move->end] = move->piece_is;
 
         // castle rights
-        board->castlerights = move->newcr;
+        board->castle_rights = move->newcr;
 
         // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+        board->ep_possible = FALSE;
+        board->ep_field = 0;
     }
 
     else if (move->typeofmove == EPPOSSIBLEMOVE) {
         // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = move->piece_was;
+        board->playing_field[move->start] = EMPTY;
+        board->playing_field[move->end] = move->piece_was;
 
         // castle rights
-        board->castlerights = board->castlerights;
+        board->castle_rights = board->castle_rights;
 
         // en passant
-        board->eppossible = TRUE;
-        board->epfield = move->newep;
+        board->ep_possible = TRUE;
+        board->ep_field = move->newep;
     }
 
     else if (move->typeofmove == CASTLEMOVE) {
         // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = (move->end <= 7) ? KING : (KING | BLACK);
-        board->playingfield[move->startopt] = EMPTY;
-        board->playingfield[move->endopt] = (move->endopt <= 7) ? ROOK : (ROOK | BLACK);
+        board->playing_field[move->start] = EMPTY;
+        board->playing_field[move->end] = (move->end <= 7) ? KING : (KING | BLACK);
+        board->playing_field[move->startopt] = EMPTY;
+        board->playing_field[move->endopt] = (move->endopt <= 7) ? ROOK : (ROOK | BLACK);
 
         // castle rights
-        board->castlerights = move->newcr;
+        board->castle_rights = move->newcr;
 
         // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+        board->ep_possible = FALSE;
+        board->ep_field = 0;
     }
 
     else if (move->typeofmove == ENPASSANTMOVE) {
         // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = (playerwhomademove == WHITE) ? PAWN : (PAWN | BLACK);
+        board->playing_field[move->start] = EMPTY;
+        board->playing_field[move->end] = (playerwhomademove == WHITE) ? PAWN : (PAWN | BLACK);
         idx_t captured = (playerwhomademove == WHITE) ? (move->end - 8) : (move->end + 8);
-        board->playingfield[captured] = EMPTY;
+        board->playing_field[captured] = EMPTY;
 
         // castle rights
-        board->castlerights = board->castlerights;
+        board->castle_rights = board->castle_rights;
 
         // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+        board->ep_possible = FALSE;
+        board->ep_field = 0;
     }
 
     // switch player
@@ -207,44 +207,44 @@ void playMove(board_t *board, move_t *move, player_t playerwhomademove) {
 void reverseMove(board_t *board, move_t *move, player_t playerwhomademove) {
     if (move->typeofmove == NORMALMOVE) {
         // start and end field
-        board->playingfield[move->start] = move->piece_was;
-        board->playingfield[move->end] = move->piece_cap;
+        board->playing_field[move->start] = move->piece_was;
+        board->playing_field[move->end] = move->piece_cap;
     }
 
     else if (move->typeofmove == PROMOTIONMOVE) {
         // start and end field
-        board->playingfield[move->start] = move->piece_was;
-        board->playingfield[move->end] = move->piece_cap;
+        board->playing_field[move->start] = move->piece_was;
+        board->playing_field[move->end] = move->piece_cap;
     }
 
     else if (move->typeofmove == EPPOSSIBLEMOVE) {
         // start and end field
-        board->playingfield[move->start] = move->piece_was;
-        board->playingfield[move->end] = EMPTY;
+        board->playing_field[move->start] = move->piece_was;
+        board->playing_field[move->end] = EMPTY;
     }
 
     else if (move->typeofmove == CASTLEMOVE) {
         // start and end field
-        board->playingfield[move->start] = (move->end <= 7) ? KING : (KING | BLACK);
-        board->playingfield[move->end] = EMPTY;
-        board->playingfield[move->startopt] = (move->endopt <= 7) ? ROOK : (ROOK | BLACK);
-        board->playingfield[move->endopt] = EMPTY;
+        board->playing_field[move->start] = (move->end <= 7) ? KING : (KING | BLACK);
+        board->playing_field[move->end] = EMPTY;
+        board->playing_field[move->startopt] = (move->endopt <= 7) ? ROOK : (ROOK | BLACK);
+        board->playing_field[move->endopt] = EMPTY;
     }
 
     else if (move->typeofmove == ENPASSANTMOVE) {
         // start and end field
-        board->playingfield[move->start] = (playerwhomademove == WHITE) ? PAWN : (PAWN | BLACK);
-        board->playingfield[move->end] = EMPTY;
+        board->playing_field[move->start] = (playerwhomademove == WHITE) ? PAWN : (PAWN | BLACK);
+        board->playing_field[move->end] = EMPTY;
         idx_t captured = (playerwhomademove == WHITE) ? (move->end - 8) : (move->end + 8);
-        board->playingfield[captured] = (playerwhomademove == WHITE) ? (PAWN | BLACK) : PAWN;
+        board->playing_field[captured] = (playerwhomademove == WHITE) ? (PAWN | BLACK) : PAWN;
     }
 
     // castle rights
-    board->castlerights = move->oldflags->castlerights;
+    board->castle_rights = move->oldflags->castle_rights;
 
     // en passant
-    board->eppossible = move->oldflags->eppossible;
-    board->epfield = move->oldflags->epfield;
+    board->ep_possible = move->oldflags->ep_possible;
+    board->ep_field = move->oldflags->ep_field;
 
     // switch player
     board->player = playerwhomademove;

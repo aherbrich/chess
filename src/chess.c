@@ -4,7 +4,7 @@
 //  MOVE LOGIC
 
 flag_t newCastleRightsByCapture(board_t* board, piece_t captured, idx_t pos) {
-    flag_t cr = board->castlerights;
+    flag_t cr = board->castle_rights;
 
     if (board->player == BLACK) {
         if (captured == ROOK) {
@@ -86,8 +86,8 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
     //  if WHITE at turn
     if (board->player == WHITE) {
         // one step foward
-        if (board->playingfield[idx + 8] == EMPTY) {
-            flag_t newcr = board->castlerights;
+        if (board->playing_field[idx + 8] == EMPTY) {
+            flag_t newcr = board->castle_rights;
             // if promotion
             if ((idx + 8) >= 56) {
                 add(movelst, create_promotionmove(PAWN, KNIGHT, 0, idx, idx + 8, newcr, copyflags(board)));
@@ -103,14 +103,14 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
 
         // two step foward
         if (idx >= 8 && idx <= 15) {
-            if (board->playingfield[idx + 8] == EMPTY && board->playingfield[idx + 16] == EMPTY) {
+            if (board->playing_field[idx + 8] == EMPTY && board->playing_field[idx + 16] == EMPTY) {
                 add(movelst, create_eppossiblemove(PAWN, idx, idx + 16, idx + 8, copyflags(board)));
             }
         }
 
         // if can take to left
         piece_t totakeleft;
-        if (idx % 8 != 0 && (totakeleft = board->playingfield[idx + 7]) != EMPTY) {
+        if (idx % 8 != 0 && (totakeleft = board->playing_field[idx + 7]) != EMPTY) {
             if (COLOR(totakeleft) == BLACK) {
                 flag_t newcr = newCastleRightsByCapture(board, totakeleft, idx + 7);
                 // if promotion
@@ -129,7 +129,7 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
 
         // if can take to right
         piece_t totakeright;
-        if (idx % 8 != 7 && (totakeright = board->playingfield[idx + 9]) != EMPTY) {
+        if (idx % 8 != 7 && (totakeright = board->playing_field[idx + 9]) != EMPTY) {
             if (COLOR(totakeright) == BLACK) {
                 flag_t newcr = newCastleRightsByCapture(board, totakeright, idx + 9);
                 // if promotion
@@ -150,8 +150,8 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
     //  if BLACK at turn
     else {
         // one step foward
-        if (board->playingfield[idx - 8] == EMPTY) {
-            flag_t newcr = board->castlerights;
+        if (board->playing_field[idx - 8] == EMPTY) {
+            flag_t newcr = board->castle_rights;
             // if promotion
             if ((idx - 8) <= 7) {
                 add(movelst, create_promotionmove(PAWN | BLACK, KNIGHT | BLACK, 0, idx, idx - 8, newcr, copyflags(board)));
@@ -167,14 +167,14 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
 
         // two step foward
         if (idx >= 48 && idx <= 55) {
-            if (board->playingfield[idx - 8] == EMPTY && board->playingfield[idx - 16] == EMPTY) {
+            if (board->playing_field[idx - 8] == EMPTY && board->playing_field[idx - 16] == EMPTY) {
                 add(movelst, create_eppossiblemove(PAWN | BLACK, idx, idx - 16, idx - 8, copyflags(board)));
             }
         }
 
         // if can take to left
         piece_t totakeleft;
-        if (idx % 8 != 7 && (totakeleft = board->playingfield[idx - 7]) != EMPTY) {
+        if (idx % 8 != 7 && (totakeleft = board->playing_field[idx - 7]) != EMPTY) {
             if (COLOR(totakeleft) == WHITE) {
                 flag_t newcr = newCastleRightsByCapture(board, totakeleft, idx - 7);
                 // if promotion
@@ -193,7 +193,7 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
 
         // if can take to right
         piece_t totakeright;
-        if (idx % 8 != 0 && (totakeright = board->playingfield[idx - 9]) != EMPTY) {
+        if (idx % 8 != 0 && (totakeright = board->playing_field[idx - 9]) != EMPTY) {
             if (COLOR(totakeright) == WHITE) {
                 flag_t newcr = newCastleRightsByCapture(board, totakeright, idx - 9);
                 // if promotion
@@ -215,10 +215,10 @@ void generatePawnMoves(board_t* board, node_t* movelst, idx_t idx) {
 void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
     // TWO UP ONE RIGHT
     if ((idx - 48 < 0) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 17];
+        piece_t captured = board->playing_field[idx + 17];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx + 17);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 17, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 17, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx + 17, newcr, copyflags(board)));
         }
@@ -226,10 +226,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // TWO UP ONE LEFT
     if ((idx - 48 < 0) && (idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx + 15];
+        piece_t captured = board->playing_field[idx + 15];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx + 15);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 15, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 15, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx + 15, newcr, copyflags(board)));
         }
@@ -237,10 +237,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // ONE UP TWO RIGHT
     if ((idx - 56 < 0) && (idx % 8 != 7) && (idx % 8 != 6)) {
-        piece_t captured = board->playingfield[idx + 10];
+        piece_t captured = board->playing_field[idx + 10];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx + 10);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 10, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 10, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx + 10, newcr, copyflags(board)));
         }
@@ -248,10 +248,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // ONE UP TWO LEFT
     if ((idx - 56 < 0) && (idx % 8 != 0) && (idx % 8 != 1)) {
-        piece_t captured = board->playingfield[idx + 6];
+        piece_t captured = board->playing_field[idx + 6];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx + 6);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 6, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx + 6, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx + 6, newcr, copyflags(board)));
         }
@@ -259,10 +259,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // TWO DOWN ONE RIGHT
     if ((idx - 16 >= 0) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 15];
+        piece_t captured = board->playing_field[idx - 15];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx - 15);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 15, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 15, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx - 15, newcr, copyflags(board)));
         }
@@ -270,10 +270,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // TWO DOWN ONE LEFT
     if ((idx - 16 >= 0) && (idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 17];
+        piece_t captured = board->playing_field[idx - 17];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx - 17);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 17, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 17, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx - 17, newcr, copyflags(board)));
         }
@@ -281,10 +281,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // ONE DOWN TWO RIGHT
     if ((idx - 8 >= 0) && (idx % 8 != 6) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 6];
+        piece_t captured = board->playing_field[idx - 6];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx - 6);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 6, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 6, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx - 6, newcr, copyflags(board)));
         }
@@ -292,10 +292,10 @@ void generateKnightMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // ONE DOWN TWO LEFT
     if ((idx - 8 >= 0) && (idx % 8 != 0) && (idx % 8 != 1)) {
-        piece_t captured = board->playingfield[idx - 10];
+        piece_t captured = board->playing_field[idx - 10];
         piece_t newcr = newCastleRightsByCapture(board, captured, idx - 10);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 10, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(KNIGHT | (board->player), 0, idx, idx - 10, board->castle_rights, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(KNIGHT | (board->player), captured, idx, idx - 10, newcr, copyflags(board)));
         }
@@ -307,9 +307,9 @@ void generateRookMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH
     while (idx + 8 < 64) {
-        piece_t captured = board->playingfield[idx + 8];
+        piece_t captured = board->playing_field[idx + 8];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 8);
-        newcr = newCastleRightsByMove(board, board->playingfield[start], start, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[start], start, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(ROOK | (board->player), 0, start, idx + 8, newcr, copyflags(board)));
             idx += 8;
@@ -325,9 +325,9 @@ void generateRookMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // EAST
     while (((idx + 1) % 8) != 0) {
-        piece_t captured = board->playingfield[idx + 1];
+        piece_t captured = board->playing_field[idx + 1];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 1);
-        newcr = newCastleRightsByMove(board, board->playingfield[start], start, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[start], start, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(ROOK | (board->player), 0, start, idx + 1, newcr, copyflags(board)));
             idx += 1;
@@ -343,9 +343,9 @@ void generateRookMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH
     while (idx - 8 >= 0) {
-        piece_t captured = board->playingfield[idx - 8];
+        piece_t captured = board->playing_field[idx - 8];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 8);
-        newcr = newCastleRightsByMove(board, board->playingfield[start], start, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[start], start, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(ROOK | (board->player), 0, start, idx - 8, newcr, copyflags(board)));
             idx -= 8;
@@ -361,9 +361,9 @@ void generateRookMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // WEST
     while ((idx - 1 >= 0) && (((idx - 1) % 8) != 7)) {
-        piece_t captured = board->playingfield[idx - 1];
+        piece_t captured = board->playing_field[idx - 1];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 1);
-        newcr = newCastleRightsByMove(board, board->playingfield[start], start, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[start], start, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(ROOK | (board->player), 0, start, idx - 1, newcr, copyflags(board)));
             idx -= 1;
@@ -381,10 +381,10 @@ void generateBishopMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH EAST
     while ((idx + 9 < 64) && ((idx) % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 9];
+        piece_t captured = board->playing_field[idx + 9];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 9);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx + 9, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx + 9, board->castle_rights, copyflags(board)));
             idx += 9;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(BISHOP | (board->player), captured, start, idx + 9, newcr, copyflags(board)));
@@ -398,10 +398,10 @@ void generateBishopMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH EAST
     while ((idx - 7 >= 0) && ((idx) % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 7];
+        piece_t captured = board->playing_field[idx - 7];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 7);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx - 7, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx - 7, board->castle_rights, copyflags(board)));
             idx -= 7;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(BISHOP | (board->player), captured, start, idx - 7, newcr, copyflags(board)));
@@ -415,10 +415,10 @@ void generateBishopMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH WEST
     while ((idx - 9 >= 0) && ((idx) % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 9];
+        piece_t captured = board->playing_field[idx - 9];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 9);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx - 9, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx - 9, board->castle_rights, copyflags(board)));
             idx -= 9;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(BISHOP | (board->player), captured, start, idx - 9, newcr, copyflags(board)));
@@ -432,10 +432,10 @@ void generateBishopMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH WEST
     while ((idx + 7 < 64) && ((idx) % 8 != 0)) {
-        piece_t captured = board->playingfield[idx + 7];
+        piece_t captured = board->playing_field[idx + 7];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 7);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx + 7, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(BISHOP | (board->player), 0, start, idx + 7, board->castle_rights, copyflags(board)));
             idx += 7;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(BISHOP | (board->player), captured, start, idx + 7, newcr, copyflags(board)));
@@ -451,10 +451,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH
     while (idx + 8 < 64) {
-        piece_t captured = board->playingfield[idx + 8];
+        piece_t captured = board->playing_field[idx + 8];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 8);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 8, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 8, board->castle_rights, copyflags(board)));
             idx += 8;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx + 8, newcr, copyflags(board)));
@@ -468,10 +468,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // EAST
     while (((idx + 1) % 8) != 0) {
-        piece_t captured = board->playingfield[idx + 1];
+        piece_t captured = board->playing_field[idx + 1];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 1);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 1, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 1, board->castle_rights, copyflags(board)));
             idx += 1;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx + 1, newcr, copyflags(board)));
@@ -485,10 +485,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH
     while (idx - 8 >= 0) {
-        piece_t captured = board->playingfield[idx - 8];
+        piece_t captured = board->playing_field[idx - 8];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 8);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 8, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 8, board->castle_rights, copyflags(board)));
             idx -= 8;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx - 8, newcr, copyflags(board)));
@@ -502,10 +502,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // WEST
     while ((idx - 1 >= 0) && (((idx - 1) % 8) != 7)) {
-        piece_t captured = board->playingfield[idx - 1];
+        piece_t captured = board->playing_field[idx - 1];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 1);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 1, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 1, board->castle_rights, copyflags(board)));
             idx -= 1;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx - 1, newcr, copyflags(board)));
@@ -519,10 +519,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH EAST
     while ((idx + 9 < 64) && ((idx) % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 9];
+        piece_t captured = board->playing_field[idx + 9];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 9);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 9, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 9, board->castle_rights, copyflags(board)));
             idx += 9;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx + 9, newcr, copyflags(board)));
@@ -536,10 +536,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH EAST
     while ((idx - 7 >= 0) && ((idx) % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 7];
+        piece_t captured = board->playing_field[idx - 7];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 7);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 7, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 7, board->castle_rights, copyflags(board)));
             idx -= 7;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx - 7, newcr, copyflags(board)));
@@ -553,10 +553,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH WEST
     while ((idx - 9 >= 0) && ((idx) % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 9];
+        piece_t captured = board->playing_field[idx - 9];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 9);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 9, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx - 9, board->castle_rights, copyflags(board)));
             idx -= 9;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx - 9, newcr, copyflags(board)));
@@ -570,10 +570,10 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH WEST
     while ((idx + 7 < 64) && ((idx) % 8 != 0)) {
-        piece_t captured = board->playingfield[idx + 7];
+        piece_t captured = board->playing_field[idx + 7];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 7);
         if (captured == EMPTY) {
-            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 7, board->castlerights, copyflags(board)));
+            add(movelst, create_normalmove(QUEEN | (board->player), 0, start, idx + 7, board->castle_rights, copyflags(board)));
             idx += 7;
         } else if (COLOR(captured) == OPPONENT(board->player)) {
             add(movelst, create_normalmove(QUEEN | (board->player), captured, start, idx + 7, newcr, copyflags(board)));
@@ -587,9 +587,9 @@ void generateQueenMoves(board_t* board, node_t* movelst, idx_t idx) {
 void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
     // NORTH
     if (idx + 8 < 64) {
-        piece_t captured = board->playingfield[idx + 8];
+        piece_t captured = board->playing_field[idx + 8];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 8);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx + 8, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -599,9 +599,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH EAST
     if ((idx + 9 < 64) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 9];
+        piece_t captured = board->playing_field[idx + 9];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 9);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx + 9, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -611,9 +611,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // EAST
     if ((idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 1];
+        piece_t captured = board->playing_field[idx + 1];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 1);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx + 1, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -623,9 +623,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH EAST
     if ((idx - 7 >= 0) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 7];
+        piece_t captured = board->playing_field[idx - 7];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 7);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx - 7, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -635,9 +635,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH
     if ((idx - 8 >= 0)) {
-        piece_t captured = board->playingfield[idx - 8];
+        piece_t captured = board->playing_field[idx - 8];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 8);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx - 8, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -647,9 +647,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // SOUTH WEST
     if ((idx - 9 >= 0) && (idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 9];
+        piece_t captured = board->playing_field[idx - 9];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 9);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx - 9, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -659,9 +659,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // WEST
     if ((idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 1];
+        piece_t captured = board->playing_field[idx - 1];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx - 1);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx - 1, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -671,9 +671,9 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
     // NORTH WEST
     if ((idx + 7 < 64) && (idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx + 7];
+        piece_t captured = board->playing_field[idx + 7];
         flag_t newcr = newCastleRightsByCapture(board, captured, idx + 7);
-        newcr = newCastleRightsByMove(board, board->playingfield[idx], idx, newcr);
+        newcr = newCastleRightsByMove(board, board->playing_field[idx], idx, newcr);
         if (captured == EMPTY) {
             add(movelst, create_normalmove(KING | (board->player), 0, idx, idx + 7, newcr, copyflags(board)));
         } else if (COLOR(captured) == OPPONENT(board->player)) {
@@ -684,40 +684,40 @@ void generateKingMoves(board_t* board, node_t* movelst, idx_t idx) {
 
 void generateCastleMoves(board_t* board, node_t* movelst) {
     if (board->player == WHITE) {
-        piece_t A1 = board->playingfield[0];
-        piece_t B1 = board->playingfield[1];
-        piece_t C1 = board->playingfield[2];
-        piece_t D1 = board->playingfield[3];
-        piece_t E1 = board->playingfield[4];
-        piece_t F1 = board->playingfield[5];
-        piece_t G1 = board->playingfield[6];
-        piece_t H1 = board->playingfield[7];
+        piece_t A1 = board->playing_field[0];
+        piece_t B1 = board->playing_field[1];
+        piece_t C1 = board->playing_field[2];
+        piece_t D1 = board->playing_field[3];
+        piece_t E1 = board->playing_field[4];
+        piece_t F1 = board->playing_field[5];
+        piece_t G1 = board->playing_field[6];
+        piece_t H1 = board->playing_field[7];
 
         // LONGSIDE
-        if (A1 == ROOK && B1 == EMPTY && C1 == EMPTY && D1 == EMPTY && E1 == KING && (board->castlerights & LONGSIDEW) != 0) {
-            add(movelst, create_castlemove(4, 2, 0, 3, board->castlerights & (~(LONGSIDEW | SHORTSIDEW)), copyflags(board)));
+        if (A1 == ROOK && B1 == EMPTY && C1 == EMPTY && D1 == EMPTY && E1 == KING && (board->castle_rights & LONGSIDEW) != 0) {
+            add(movelst, create_castlemove(4, 2, 0, 3, board->castle_rights & (~(LONGSIDEW | SHORTSIDEW)), copyflags(board)));
         }
         // SHORTSIDE
-        if (H1 == ROOK && G1 == EMPTY && F1 == EMPTY && E1 == KING && (board->castlerights & SHORTSIDEW) != 0) {
-            add(movelst, create_castlemove(4, 6, 7, 5, board->castlerights & (~(LONGSIDEW | SHORTSIDEW)), copyflags(board)));
+        if (H1 == ROOK && G1 == EMPTY && F1 == EMPTY && E1 == KING && (board->castle_rights & SHORTSIDEW) != 0) {
+            add(movelst, create_castlemove(4, 6, 7, 5, board->castle_rights & (~(LONGSIDEW | SHORTSIDEW)), copyflags(board)));
         }
     } else {
-        piece_t A8 = board->playingfield[56];
-        piece_t B8 = board->playingfield[57];
-        piece_t C8 = board->playingfield[58];
-        piece_t D8 = board->playingfield[59];
-        piece_t E8 = board->playingfield[60];
-        piece_t F8 = board->playingfield[61];
-        piece_t G8 = board->playingfield[62];
-        piece_t H8 = board->playingfield[63];
+        piece_t A8 = board->playing_field[56];
+        piece_t B8 = board->playing_field[57];
+        piece_t C8 = board->playing_field[58];
+        piece_t D8 = board->playing_field[59];
+        piece_t E8 = board->playing_field[60];
+        piece_t F8 = board->playing_field[61];
+        piece_t G8 = board->playing_field[62];
+        piece_t H8 = board->playing_field[63];
 
         // LONGSIDE
-        if (A8 == (ROOK | BLACK) && B8 == EMPTY && C8 == EMPTY && D8 == EMPTY && E8 == (KING | BLACK) && (board->castlerights & LONGSIDEB) != 0) {
-            add(movelst, create_castlemove(60, 58, 56, 59, board->castlerights & (~(LONGSIDEB | SHORTSIDEB)), copyflags(board)));
+        if (A8 == (ROOK | BLACK) && B8 == EMPTY && C8 == EMPTY && D8 == EMPTY && E8 == (KING | BLACK) && (board->castle_rights & LONGSIDEB) != 0) {
+            add(movelst, create_castlemove(60, 58, 56, 59, board->castle_rights & (~(LONGSIDEB | SHORTSIDEB)), copyflags(board)));
         }
         // SHORTSIDE
-        if (H8 == (ROOK | BLACK) && G8 == EMPTY && F8 == EMPTY && E8 == (KING | BLACK) && (board->castlerights & SHORTSIDEB) != 0) {
-            add(movelst, create_castlemove(60, 62, 63, 61, board->castlerights & (~(LONGSIDEB | SHORTSIDEB)), copyflags(board)));
+        if (H8 == (ROOK | BLACK) && G8 == EMPTY && F8 == EMPTY && E8 == (KING | BLACK) && (board->castle_rights & SHORTSIDEB) != 0) {
+            add(movelst, create_castlemove(60, 62, 63, 61, board->castle_rights & (~(LONGSIDEB | SHORTSIDEB)), copyflags(board)));
         }
     }
 }
@@ -725,23 +725,23 @@ void generateCastleMoves(board_t* board, node_t* movelst) {
 void generateEnpassantMoves(board_t* board, node_t* movelst) {
     if (board->player == WHITE) {
         // FROM THE RIGHT
-        if ((board->epfield != 47) && board->playingfield[board->epfield - 7] == PAWN) {
-            add(movelst, create_epmove(board->epfield - 7, board->epfield, copyflags(board)));
+        if ((board->ep_field != 47) && board->playing_field[board->ep_field - 7] == PAWN) {
+            add(movelst, create_epmove(board->ep_field - 7, board->ep_field, copyflags(board)));
         }
 
         // FROM THE LEFT
-        if ((board->epfield != 40) && board->playingfield[board->epfield - 9] == PAWN) {
-            add(movelst, create_epmove(board->epfield - 9, board->epfield, copyflags(board)));
+        if ((board->ep_field != 40) && board->playing_field[board->ep_field - 9] == PAWN) {
+            add(movelst, create_epmove(board->ep_field - 9, board->ep_field, copyflags(board)));
         }
     } else {
         // FROM THE RIGHT
-        if ((board->epfield != 23) && board->playingfield[board->epfield + 9] == (PAWN | BLACK)) {
-            add(movelst, create_epmove(board->epfield + 9, board->epfield, copyflags(board)));
+        if ((board->ep_field != 23) && board->playing_field[board->ep_field + 9] == (PAWN | BLACK)) {
+            add(movelst, create_epmove(board->ep_field + 9, board->ep_field, copyflags(board)));
         }
 
         // FROM THE LEFT
-        if ((board->epfield != 16) && board->playingfield[board->epfield + 7] == (PAWN | BLACK)) {
-            add(movelst, create_epmove(board->epfield + 7, board->epfield, copyflags(board)));
+        if ((board->ep_field != 16) && board->playing_field[board->ep_field + 7] == (PAWN | BLACK)) {
+            add(movelst, create_epmove(board->ep_field + 7, board->ep_field, copyflags(board)));
         }
     }
 }
@@ -752,7 +752,7 @@ int isLegalMove(board_t* board) {
 
     // find idx of king of player who made a (possibly illegal) move
 
-    while (board->playingfield[idx] != (KING | playerwhomademove)) {
+    while (board->playing_field[idx] != (KING | playerwhomademove)) {
         idx++;
     }
 
@@ -760,7 +760,7 @@ int isLegalMove(board_t* board) {
 
     // NORTH
     while (idx + 8 < 64) {
-        piece_t captured = board->playingfield[idx + 8];
+        piece_t captured = board->playing_field[idx + 8];
         if (captured == EMPTY) {
             idx += 8;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -780,7 +780,7 @@ int isLegalMove(board_t* board) {
 
     // EAST
     while (((idx + 1) % 8) != 0) {
-        piece_t captured = board->playingfield[idx + 1];
+        piece_t captured = board->playing_field[idx + 1];
         if (captured == EMPTY) {
             idx += 1;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -800,7 +800,7 @@ int isLegalMove(board_t* board) {
 
     // SOUTH
     while (idx - 8 >= 0) {
-        piece_t captured = board->playingfield[idx - 8];
+        piece_t captured = board->playing_field[idx - 8];
         if (captured == EMPTY) {
             idx -= 8;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -820,7 +820,7 @@ int isLegalMove(board_t* board) {
 
     // WEST
     while ((idx - 1 >= 0) && (((idx - 1) % 8) != 7)) {
-        piece_t captured = board->playingfield[idx - 1];
+        piece_t captured = board->playing_field[idx - 1];
         if (captured == EMPTY) {
             idx -= 1;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -840,7 +840,7 @@ int isLegalMove(board_t* board) {
 
     // NORTH EAST
     while ((idx + 9 < 64) && ((idx) % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 9];
+        piece_t captured = board->playing_field[idx + 9];
         if (captured == EMPTY) {
             idx += 9;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -863,7 +863,7 @@ int isLegalMove(board_t* board) {
 
     // SOUTH EAST
     while ((idx - 7 >= 0) && ((idx) % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 7];
+        piece_t captured = board->playing_field[idx - 7];
         if (captured == EMPTY) {
             idx -= 7;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -886,7 +886,7 @@ int isLegalMove(board_t* board) {
 
     // SOUTH WEST
     while ((idx - 9 >= 0) && ((idx) % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 9];
+        piece_t captured = board->playing_field[idx - 9];
         if (captured == EMPTY) {
             idx -= 9;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -909,7 +909,7 @@ int isLegalMove(board_t* board) {
 
     // NORTH WEST
     while ((idx + 7 < 64) && ((idx) % 8 != 0)) {
-        piece_t captured = board->playingfield[idx + 7];
+        piece_t captured = board->playing_field[idx + 7];
         if (captured == EMPTY) {
             idx += 7;
         } else if (COLOR(captured) == OPPONENT(playerwhomademove)) {
@@ -932,7 +932,7 @@ int isLegalMove(board_t* board) {
 
     // TWO UP ONE RIGHT
     if ((idx - 48 < 0) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx + 17];
+        piece_t captured = board->playing_field[idx + 17];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -941,7 +941,7 @@ int isLegalMove(board_t* board) {
 
     // TWO UP ONE LEFT
     if ((idx - 48 < 0) && (idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx + 15];
+        piece_t captured = board->playing_field[idx + 15];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -950,7 +950,7 @@ int isLegalMove(board_t* board) {
 
     // ONE UP TWO RIGHT
     if ((idx - 56 < 0) && (idx % 8 != 7) && (idx % 8 != 6)) {
-        piece_t captured = board->playingfield[idx + 10];
+        piece_t captured = board->playing_field[idx + 10];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -959,7 +959,7 @@ int isLegalMove(board_t* board) {
 
     // ONE UP TWO LEFT
     if ((idx - 56 < 0) && (idx % 8 != 0) && (idx % 8 != 1)) {
-        piece_t captured = board->playingfield[idx + 6];
+        piece_t captured = board->playing_field[idx + 6];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -968,7 +968,7 @@ int isLegalMove(board_t* board) {
 
     // TWO DOWN ONE RIGHT
     if ((idx - 16 >= 0) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 15];
+        piece_t captured = board->playing_field[idx - 15];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -977,7 +977,7 @@ int isLegalMove(board_t* board) {
 
     // TWO DOWN ONE LEFT
     if ((idx - 16 >= 0) && (idx % 8 != 0)) {
-        piece_t captured = board->playingfield[idx - 17];
+        piece_t captured = board->playing_field[idx - 17];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -986,7 +986,7 @@ int isLegalMove(board_t* board) {
 
     // ONE DOWN TWO RIGHT
     if ((idx - 8 >= 0) && (idx % 8 != 6) && (idx % 8 != 7)) {
-        piece_t captured = board->playingfield[idx - 6];
+        piece_t captured = board->playing_field[idx - 6];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -995,7 +995,7 @@ int isLegalMove(board_t* board) {
 
     // ONE DOWN TWO LEFT
     if ((idx - 8 >= 0) && (idx % 8 != 0) && (idx % 8 != 1)) {
-        piece_t captured = board->playingfield[idx - 10];
+        piece_t captured = board->playing_field[idx - 10];
         if (captured == EMPTY) {
         } else if (COLOR(captured) == OPPONENT(playerwhomademove) && FIGURE(captured) == KNIGHT) {
             return 0;
@@ -1104,7 +1104,7 @@ node_t* generateMoves(board_t* board) {
 
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            piece_t piece = board->playingfield[posToIdx(x, y)];
+            piece_t piece = board->playing_field[posToIdx(x, y)];
             if (board->player == WHITE) {
                 switch (piece) {
                     case 2:
@@ -1157,7 +1157,7 @@ node_t* generateMoves(board_t* board) {
 
     generateCastleMoves(board, movelst);
 
-    if (board->eppossible == TRUE) {
+    if (board->ep_possible == TRUE) {
         generateEnpassantMoves(board, movelst);
     }
 
