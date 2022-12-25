@@ -1,4 +1,5 @@
 #include "../include/chess.h"
+#include "../include/eval.h"
 #include "../include/zobrist.h"
 
 /* global counters for evaluation */
@@ -9,7 +10,7 @@ int hash_boundsadjusted = 0;
 
 int quietSearch(board_t *board, int alpha, int beta, clock_t start, double timeleft) {
     // evaluate board
-    int value = evalBoardMax(board);
+    int value = evalBoard(board);
 
     // beta cutoff
     if (value >= beta) {
@@ -103,7 +104,7 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta, clock_t 
         nodes_searched++;
         free_move(pvmove);
         return (quietSearch(board, alpha, beta, start, timeleft));
-        // return evalBoardMax(board);
+        // return evalBoard(board);
     }
 
     move_t *move;
@@ -134,7 +135,7 @@ int alphaBetaWithTT(board_t *board, uint8_t depth, int alpha, int beta, clock_t 
         free_move(pvmove);
         free_move(bestmovesofar);
         free_movelst(movelst);
-        return evalEndOfGameMax(board, depth);
+        return evalEndOfGame(board, depth);
     }
 
     while ((move = pop(movelst)) != NULL) {

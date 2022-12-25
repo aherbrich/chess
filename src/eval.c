@@ -120,7 +120,7 @@ int countMaterial(board_t *board, player_t color) {
     return material;
 }
 
-int evalEndOfGameMax(board_t *board, int depth) {
+int evalEndOfGame(board_t *board, int depth) {
     // check for stalemate
 
     board->player = OPPONENT(board->player);  // same as doing a null move
@@ -137,7 +137,7 @@ int evalEndOfGameMax(board_t *board, int depth) {
     }
 }
 
-int evalBoardMax(board_t *board) {
+int evalBoard(board_t *board) {
     int whiteEval = countMaterial(board, WHITE);
     int blackEval = countMaterial(board, BLACK);
 

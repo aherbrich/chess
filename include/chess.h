@@ -192,16 +192,6 @@ extern int isLegalMove(board_t* board);
 extern int PVMoveIsPossible(node_t* movelst, move_t* ttmove);
 
 ///////////////////////////////////////////////////////////////
-//  EVALUATION FUNCTIONS
-
-/* Counts the material and its value of a specific color */
-extern int countMaterial(board_t* board, player_t color);
-/* Simple evaluation fucntion for negamax */
-extern int evalBoardMax(board_t* board);
-/* Simple evaluation function of an ended game for negamax*/
-extern int evalEndOfGameMax(board_t* board, int depth);
-
-///////////////////////////////////////////////////////////////
 //  SEARCH
 
 /* The alpha beta search */
