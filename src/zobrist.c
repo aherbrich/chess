@@ -1,7 +1,7 @@
 #include "../include/zobrist.h"
 
 zobrist_t zob_table;
-htentry_t *ht_table;
+htentry_t **ht_table;
 
 idx_t indexing(piece_t piece) {
     switch (piece) {
@@ -50,7 +50,7 @@ void init_zobrist() {
             }
         }
     }
-    for (int i = 0; i < 13; i++) {
+    for (int i = 0; i < 14; i++) {
         zob_table.hash_flags[i] = get64rand();
     }
 }
@@ -92,29 +92,29 @@ uint64_t zobrist(board_t *board) {
         hash ^= zob_table.hash_flags[12];
     }
 
+    if (board->player == WHITE) {
+        hash ^= zob_table.hash_flags[13];
+    }
+
     return hash;
 }
 
 void init_hashtable() {
-    ht_table = (htentry_t *)malloc(sizeof(htentry_t) * HTSIZE);
+    ht_table = (htentry_t **)malloc(sizeof(htentry_t *) * HTSIZE);
     for (int i = 0; i < HTSIZE; i++) {
-        ht_table[i].flags = 0;
-        ht_table[i].eval = 0;
-
-        ht_table[i].depth = -1;
-        ht_table[i].best_move = NULL;
-        ht_table[i].hash = 0;
+        ht_table[i] = NULL;
     }
+    return;
 }
 
 void clear_hashtable() {
     for (int i = 0; i < HTSIZE; i++) {
-        ht_table[i].flags = 0;
-        ht_table[i].eval = 0;
-
-        ht_table[i].depth = -1;
-        ht_table[i].best_move = NULL;
-        ht_table[i].hash = 0;
+        while(ht_table[i]) {
+            htentry_t *tmp = ht_table[i]->next;
+            free_move(ht_table[i]->best_move);
+            free(ht_table[i]);
+            ht_table[i] = tmp;            
+        }
     }
 }
 
@@ -122,20 +122,98 @@ void storeTableEntry(board_t *board, int8_t flags, int16_t value, move_t *move, 
     uint64_t hash = zobrist(board);
     uint64_t key = hash % HTSIZE;
 
-    ht_table[key].flags = flags;
-    ht_table[key].depth = depth;
-    ht_table[key].eval = value;
-    ht_table[key].hash = hash;
-    free_move(ht_table[key].best_move);
-    ht_table[key].best_move = copy_move(move);
+    htentry_t *new = NULL;
+    /* if there is not entry, just create a new one ... */
+    if(!ht_table[key]) {
+        ht_table[key] = (htentry_t *) malloc (sizeof(htentry_t));
+        new = ht_table[key];
+    } else {
+        /* otherwise, check if there already is an entry in the list with the same hash */
+        htentry_t *cur = ht_table[key];
+        htentry_t *prev = cur;
+        while(cur) {
+            /* if there is one, just update it ... */
+            if(cur->hash == hash) {
+                cur->flags = flags;
+                cur->depth = depth;
+                cur->eval = value;
+                free_move(cur->best_move);
+                cur->best_move = copy_move(move);
+                return;
+            }
+            prev = cur;
+            cur = cur->next;
+        }
+        /* ... otherwise, create a new one at the end */
+        prev->next = (htentry_t *) malloc (sizeof(htentry_t));
+        new = prev->next;
+    }
+    
+    /* finally, fill the new one with the data */
+    new->flags = flags;
+    new->depth = depth;
+    new->eval = value;
+    new->hash = hash;
+    new->best_move = copy_move(move);
+    return;
 }
 
-void probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth) {
+int probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth) {
     uint64_t hash = zobrist(board);
     uint64_t key = hash % HTSIZE;
 
-    *flags = ht_table[key].flags;
-    *depth = ht_table[key].depth;
-    *value = ht_table[key].eval;
-    *move = copy_move(ht_table[key].best_move);
+    htentry_t *cur = ht_table[key];
+    /* search the list for the entry with the same hash */
+    while(cur) {
+        /* if there is one, return the values by reference copy and indicate by returning 1 */
+        if(cur->hash == hash) {
+            *flags = cur->flags;
+            *depth = cur->depth;
+            *value = cur->eval;
+            *move = copy_move(cur->best_move);
+            return (1);
+        }
+        cur = cur->next;
+    }
+
+    /* otherwise, return 0 */
+    return (0);
+}
+
+/* Gets the best move from the hashtable for the board position (or NULL, if there is not one) */
+move_t *get_best_move(board_t* board) {
+    uint64_t hash = zobrist(board);
+    uint64_t key = hash % HTSIZE;
+
+    htentry_t *cur = ht_table[key];
+    /* search the list for the entry with the same hash */
+    while(cur) {
+        /* if there is one, return a deep copy of the best move */
+        if(cur->hash == hash) {
+            return (copy_move(cur->best_move));
+        }
+        cur = cur->next;
+    }
+
+    /* otherwise, return NULL */
+    return (NULL);
+}
+
+/* Gets the eval from the hashtable for the board position */
+int get_eval(board_t* board) {
+    uint64_t hash = zobrist(board);
+    uint64_t key = hash % HTSIZE;
+
+    htentry_t *cur = ht_table[key];
+    /* search the list for the entry with the same hash */
+    while(cur) {
+        /* if there is one, return the value */
+        if(cur->hash == hash) {
+            return (cur->eval);
+        }
+        cur = cur->next;
+    }
+
+    /* otherwise, return 0 */
+    return 0;  // TODO
 }

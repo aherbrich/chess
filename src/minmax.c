@@ -38,9 +38,7 @@ int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_
         if (time_diff > time_left) {
             free_move(move);
             free_move_list(move_list);
-            uint64_t hash = zobrist(board);
-            uint64_t key = hash % HTSIZE;
-            return ht_table[key].eval;
+            return get_eval(board);
         }
 
         alpha = max(value, alpha);
@@ -73,14 +71,14 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     int old_alpha = alpha;
     move_t *best_move_so_far = NULL;
 
-    move_t *pv_move;
+    move_t *pv_move = NULL;
     int16_t pv_value;
     int8_t pv_flags;
     int8_t pv_depth;
 
-    probeTableEntry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
+    int entry_found = probeTableEntry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
 
-    if (pv_depth == depth) {
+    if (entry_found && pv_depth == depth) {
         nodes_searched++;
         if (pv_flags == FLG_EXCACT) {
             hash_used++;
@@ -114,7 +112,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     node_t *move_list = generate_moves(board);
     move_list = sort_moves(move_list);
 
-    if (pv_depth >= 0 && PVMove_is_possible(move_list, pv_move)) {
+    if (entry_found && PVMove_is_possible(move_list, pv_move)) {
         nodes_searched++;
 
         play_move(board, pv_move, player_at_turn);
@@ -145,7 +143,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
         if (time_diff > time_left) {
             free_move(move);
             free_move_list(move_list);
-            return pv_value;
+            return (entry_found) ? pv_value : 0;   // TODO
         }
 
         if (pv_move != NULL && is_same_move(move, pv_move)) {
@@ -204,10 +202,8 @@ move_t *iterative_search(board_t *board, int8_t maxdepth, double maxtime) {
     for (int i = 1; i <= maxdepth; i++) {
         begin = clock();
         alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, clock(), time_left);
-        uint64_t hash = zobrist(board);
-        hash = hash % HTSIZE;
         free_move(best_move);
-        best_move = copy_move(ht_table[hash].best_move);
+        best_move = get_best_move(board);
         clock_t end = clock();
 
         // print_move(best_move);
