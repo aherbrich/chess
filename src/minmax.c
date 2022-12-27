@@ -144,7 +144,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
         if (time_diff > time_left) {
             free_move(move);
             free_move_list(move_list);
-            return (entry_found) ? pv_value : NEGINFINITY;
+            return (entry_found) ? pv_value : -20000;
         }
 
         if (pv_move != NULL && is_same_move(move, pv_move)) {
@@ -197,13 +197,15 @@ move_t *iterative_search(board_t *board, int8_t max_depth, double maxtime) {
     hash_bounds_adjusted = 0;
 
     int maxdepth = (max_depth == -1)?100:max_depth;
-    double time_left = (maxtime == -1)?5.0:maxtime;
+    double time_left = maxtime;
     move_t *best_move = NULL;
-    clock_t begin;
+    clock_t begin = clock();
+    
+    clear_hashtable();
 
     for (int i = 1; i <= maxdepth; i++) {
         begin = clock();
-        alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, clock(), time_left);
+        alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, begin, time_left);
         free_move(best_move);
         best_move = get_best_move_from_hashtable(board);
         clock_t end = clock();

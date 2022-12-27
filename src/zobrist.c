@@ -162,6 +162,7 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *
     new->eval = value;
     new->hash = hash;
     new->best_move = copy_move(move);
+    new->next = NULL;
     return;
 }
 
@@ -223,5 +224,5 @@ int get_eval_from_hashtable(board_t* board) {
     }
 
     /* otherwise, return 0 */
-    return NEGINFINITY;
+    return -20000;
 }
