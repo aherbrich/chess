@@ -3,13 +3,36 @@
 #include "../include/zobrist.h"
 #include "../include/prettyprint.h"
 
+#define TOLERANCE 50 //ms
+
 /* global counters for evaluation */
 int nodes_searched = 0;
 int hash_used = 0;
 int hash_bounds_adjusted = 0;
 
 
-int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_left) {
+int calculate_time(search_data *data){
+    int time_available = 0;
+
+    /* if max time for move is given */
+    if(data->max_time != -1){
+        time_available += data->max_time;
+        time_available = (data->board->player == WHITE)?(time_available+data->winc):(time_available+data->binc);
+        time_available -= TOLERANCE;
+        return time_available;
+    } 
+    /* else if whites/blacks remaining time is given*/
+    else if ((data->board->player == WHITE && data->wtime != -1) || (data->board->player == BLACK && data->btime != -1)){
+        time_available = (data->board->player == WHITE)?((int)((double) data->wtime/30.0)):((int)((double) data->btime/30.0));
+        time_available = (data->board->player == WHITE)?(time_available+data->winc):(time_available+data->binc);
+        time_available -= TOLERANCE;
+        return time_available;
+    }
+    /* no time is given so infinite search */
+    return 0;
+}
+
+int quietSearch(board_t *board, int alpha, int beta, search_data *data) {
     // evaluate board
     int value = eval_board(board);
 
@@ -35,8 +58,7 @@ int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_
     while ((move = pop(move_list)) != NULL) {
         nodes_searched++;
 
-        double time_diff = (double)(clock() - start) / CLOCKS_PER_SEC;
-        if (time_diff > time_left) {
+        if ((!data->run_infinite && (int) (int) ((double) (clock() - data->start_time) / 1000) >= data->time_available) || (data->stop))  {
             free_move(move);
             free_move_list(move_list);
             return get_eval_from_hashtable(board);
@@ -45,7 +67,7 @@ int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_
         alpha = max(value, alpha);
 
         play_move(board, move, player_at_turn);
-        int value = -quietSearch(board, -beta, -alpha, start, time_left);
+        int value = -quietSearch(board, -beta, -alpha, data);
         reverse_move(board, move, player_at_turn);
 
         if (value > best_value) {
@@ -57,7 +79,7 @@ int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_
         }
         free_move(move);
     }
-beta_cutoff:
+    beta_cutoff:
 
     // free the remaining move list
     while ((move = pop(move_list)) != NULL) {
@@ -68,7 +90,7 @@ beta_cutoff:
     return best_value;
 }
 
-int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_t start, double time_left) {
+int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, search_data *data) {
     int old_alpha = alpha;
     move_t *best_move_so_far = NULL;
 
@@ -102,8 +124,8 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     if (depth == 0) {
         nodes_searched++;
         free_move(pv_move);
-        return (quietSearch(board, alpha, beta, start, time_left));
-        // return eval_board(board);
+        return (quietSearch(board, alpha, beta, data));
+        //return eval_board(board);
     }
 
     move_t *move;
@@ -116,15 +138,13 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     if (entry_found && PVMove_is_possible(move_list, pv_move)) {
         nodes_searched++;
 
-        double time_diff = (double)(clock() - start) / CLOCKS_PER_SEC;
-        if (time_diff > time_left) {
-            free_move(move);
+        if ((!data->run_infinite && (int) (int) ((double) (clock() - data->start_time) / 1000) >= data->time_available) || (data->stop))  {
             free_move_list(move_list);
             return (entry_found) ? pv_value : -16000;
         }
 
         play_move(board, pv_move, player_at_turn);
-        best_value = -alphaBeta_with_TT(board, depth - 1, -beta, -alpha, start, time_left);
+        best_value = -alphaBeta_with_TT(board, depth - 1, -beta, -alpha, data);
         reverse_move(board, pv_move, player_at_turn);
 
         free_move(best_move_so_far);
@@ -147,8 +167,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     while ((move = pop(move_list)) != NULL) {
         nodes_searched++;
 
-        double time_diff = (double)(clock() - start) / CLOCKS_PER_SEC;
-        if (time_diff > time_left) {
+         if ((!data->run_infinite && (int) (((double) clock() - data->start_time) / 1000) >= data->time_available) || (data->stop))  {
             free_move(move);
             free_move_list(move_list);
             return (entry_found) ? pv_value : -16000;
@@ -161,7 +180,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
 
         alpha = max(best_value, alpha);
         play_move(board, move, player_at_turn);
-        int value = -alphaBeta_with_TT(board, depth - 1, -beta, -alpha, start, time_left);
+        int value = -alphaBeta_with_TT(board, depth - 1, -beta, -alpha, data);
         reverse_move(board, move, player_at_turn);
 
         if (value > best_value) {
@@ -197,41 +216,53 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     return best_value;
 }
 
-move_t *iterative_search(board_t *board, int8_t max_depth, double maxtime) {
+move_t *iterative_search(search_data* data) {
     /* reset the performance counters */
     nodes_searched = 0;
     hash_used = 0;
     hash_bounds_adjusted = 0;
 
-    int maxdepth = (max_depth == -1)?100:max_depth;
-    double time_left = maxtime;
+    int maxdepth = (data->max_depth == -1)?100:data->max_depth;
     move_t *best_move = NULL;
-    clock_t begin = clock();
-    
+
+    data->time_available = calculate_time(data);
+
     clear_hashtable();
 
     for (int i = 1; i <= maxdepth; i++) {
-        clock_t begin_eval = clock();
-        int evaluation = alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, begin_eval, time_left);
+        int evaluation = alphaBeta_with_TT(data->board, i, NEGINFINITY, INFINITY, data);
 
         free_move(best_move);
-        best_move = get_best_move_from_hashtable(board);
-        clock_t end = clock();
+        best_move = get_best_move_from_hashtable(data->board);
 
-        time_left -= (double)(end - begin_eval) / CLOCKS_PER_SEC;
-
-        printf("info score cp %d depth %d nodes %d time %d pv ", evaluation, i, nodes_searched, (int) ((double)(end - begin) / CLOCKS_PER_SEC*1000));
-        print_line(board, i);
-        printf("\n");
+        if(evaluation > 16000){
+            printf("info score mate %d depth %d nodes %d time %d pv ", (int) i/2, i, nodes_searched, (int) ((double)(clock() - (data->start_time)) / CLOCKS_PER_SEC*1000));
+            print_line(data->board, i);
+            printf("\n");
+            goto search_finished;
+        } else if (evaluation < -16000){
+            printf("info score mate %d depth %d nodes %d time %d pv ", -1*((int) i/2), i, nodes_searched, (int) ((double)(clock() - (data->start_time)) / CLOCKS_PER_SEC*1000));
+            print_line(data->board, i);
+            printf("\n");
+            goto search_finished;
+        } else{
+            printf("info score cp %d depth %d nodes %d time %d pv ", evaluation, i, nodes_searched, (int) ((double)(clock() - (data->start_time)) / CLOCKS_PER_SEC*1000));
+            print_line(data->board, i);
+            printf("\n");
+        }
+        
 
         
-        if (time_left <= 0) {
+        /* if stop signal set or time over stop the search */
+        if ((!data->run_infinite && (int) (((double) clock() - data->start_time) / 1000)  >= data->time_available) || (data->stop))  {
             fprintf(stderr, "%sDepth searched: %d%s\n", Color_PURPLE,i,Color_END);
             goto search_finished;
         }
     }
 
     search_finished:
+    
+    data->best_move = best_move;
 
     return best_move;
 }

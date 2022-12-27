@@ -122,6 +122,8 @@ typedef struct _search_data {
     int run_infinite;       /* tells the engine to run aslong as stop != 1 */
     int stop;               /* tells the engine to stop search when stop == 1*/
     move_t *best_move;      /* computed best move (so far) */
+    clock_t start_time;     /* time the search was initiated by gui */
+    int time_available;     /* time for search precalculated */
 }  search_data;
 
 /////////////////////////////////////////////////////////////
@@ -217,7 +219,7 @@ extern int PVMove_is_possible(node_t* movelst, move_t* ttmove);
 //  SEARCH
 
 /* The alpha beta search */
-extern int alphaBeta_with_TT(board_t* board, uint8_t depth, int alpha, int beta, clock_t start, double timeleft);
-extern move_t* iterative_search(board_t* board, int8_t maxdepth, double maxtime);
+extern int alphaBeta_with_TT(board_t* board, uint8_t depth, int alpha, int beta, search_data *data);
+extern move_t* iterative_search(search_data *data);
 
 #endif

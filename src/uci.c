@@ -262,7 +262,8 @@ search_data* init_search_data(board_t *board){
     data->run_infinite = 0;           /* tells the engine to run aslong as stop != 1 */
     data->stop = 0;                   /* tells the engine to stop search when stop == 1*/
     data->best_move = NULL;           /* computed best move (so far) */
-
+    data->start_time = clock();       /* time the search was initiated by the gui */
+    data->time_available = 0;
     return data;
 }
 
@@ -280,16 +281,14 @@ pthread_t game_thread = 0;
 void *start_search(void *args) {
     /* initialize options */
     search_data *data = (search_data *) args;
-    clock_t begin;
+    clock_t begin = clock();
+
     if (book_possible(data->board) == 1) {
         fprintf(stderr, "%sBook move possible. Searching...%s\n", Color_PURPLE, Color_END);
-        begin = clock();
         data->best_move = get_random_book(data->board);
     } else {
         fprintf(stderr, "%sNo book move possible. Searching...%s\n", Color_PURPLE, Color_END);
-        begin = clock();
-        double max_time = (double) data->max_time/1000.0;
-        data->best_move = iterative_search(data->board, data->max_depth, max_time);
+        iterative_search(data);
     }
 
     /* output the best move to stdout */

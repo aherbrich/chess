@@ -78,7 +78,8 @@ int main() {
                 best_move = get_random_book(board);
             } else {
                 printf("No book moves possible!\n");
-                best_move = iterative_search(board, maxdepth, maxtime);
+                /* wont work in future but needed files to compile */
+                best_move = iterative_search(NULL);
 
                 printf("\nNodes Explored:\t%d\n", nodes_searched);
                 printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);
