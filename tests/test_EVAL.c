@@ -38,12 +38,13 @@ int main() {
     init_hashtable();
     init_book();
 
-    int maxdepth = 40;
-    double maxtime = 5.0;
+    search_data* data = init_search_data(board);
+    data->max_depth = 40;
+    data->max_time = 5000;
 
     for (int i = 0; i < 1; i++) {
         /* wont work in future but needed files to compile */
-        move_t *best_move = iterative_search(NULL);
+        move_t *best_move = iterative_search(data);
 
         fprintf(stderr, "\nNodes Explored:\t%d\n", nodes_searched);
         fprintf(stderr,"Hashes used:\t%d \t(%4.2f)\n", hash_used,

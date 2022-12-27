@@ -221,5 +221,7 @@ extern int PVMove_is_possible(node_t* movelst, move_t* ttmove);
 /* The alpha beta search */
 extern int alphaBeta_with_TT(board_t* board, uint8_t depth, int alpha, int beta, search_data *data);
 extern move_t* iterative_search(search_data *data);
+extern search_data* init_search_data(board_t *board);
+extern void free_search_data(search_data *data);
 
 #endif

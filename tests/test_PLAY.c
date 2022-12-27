@@ -65,8 +65,9 @@ int main() {
             hash_used = 0;
             hash_bounds_adjusted = 0;
 
-            int maxdepth = 40;
-            double maxtime = 5.0;
+            search_data* data = init_search_data(board);
+            data->max_depth = 40;
+            data->max_time = 5000;
 
             begin = clock();
 
@@ -79,7 +80,7 @@ int main() {
             } else {
                 printf("No book moves possible!\n");
                 /* wont work in future but needed files to compile */
-                best_move = iterative_search(NULL);
+                best_move = iterative_search(data);
 
                 printf("\nNodes Explored:\t%d\n", nodes_searched);
                 printf("Hashes used:\t%d \t(%4.2f)\n", hash_used, (float)hash_used / (float)nodes_searched);

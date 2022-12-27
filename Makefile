@@ -1,6 +1,6 @@
 BUILD_DIR = build
 
-CHESS_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c src/eval.c src/minmax.c src/zobrist.c src/book.c
+CHESS_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c src/eval.c src/minmax.c src/zobrist.c src/book.c src/search.c
 CHESS_OBJ = $(addprefix $(BUILD_DIR)/, $(CHESS_SRC:%.c=%.o))
 
 UCI_SRC = src/uci.c
