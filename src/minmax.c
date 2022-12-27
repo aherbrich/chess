@@ -1,6 +1,7 @@
 #include "../include/chess.h"
 #include "../include/eval.h"
 #include "../include/zobrist.h"
+#include "../include/prettyprint.h"
 
 /* global counters for evaluation */
 int nodes_searched = 0;
@@ -191,13 +192,14 @@ beta_cutoff:
     return best_value;
 }
 
-move_t *iterative_search(board_t *board, int8_t maxdepth, double maxtime) {
+move_t *iterative_search(board_t *board, int8_t max_depth, double maxtime) {
     /* reset the performance counters */
     nodes_searched = 0;
     hash_used = 0;
     hash_bounds_adjusted = 0;
 
-    double time_left = maxtime;
+    int maxdepth = (max_depth == -1)?100:max_depth;
+    double time_left = (maxtime == -1)?5.0:maxtime;
     move_t *best_move = NULL;
     clock_t begin;
 
@@ -210,19 +212,19 @@ move_t *iterative_search(board_t *board, int8_t maxdepth, double maxtime) {
         best_move = copy_move(ht_table[hash].best_move);
         clock_t end = clock();
 
-        // print_move(best_move);
-        //  printf("\t\t\t Time:\t%fs\n",
-        //          (double)(end - begin) / CLOCKS_PER_SEC);
-
-        // print_line(board, i);
-        // printf("\n");
 
         time_left -= (double)(end - begin) / CLOCKS_PER_SEC;
         if (time_left <= 0) {
             fprintf(stderr, "Depth searched: %d\n", i);
-            break;
+            goto search_finished;
         }
     }
 
+    search_finished:
+
+    printf("bestmove ");
+    print_LAN_move(best_move);
+    printf("\n");
+    
     return best_move;
 }

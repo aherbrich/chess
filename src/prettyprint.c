@@ -101,7 +101,8 @@ void print_moves(node_t* move_list) {
 }
 
 /* Print the list of best possible moves until a depth (PV line) */
-void print_line(board_t* board, int depth) {
+void print_line(board_t* the_board, int depth) {
+    board_t *board = copy_board(the_board);
     uint64_t hash;
     uint64_t hash_mod;
     player_t player_at_turn = board->player;
@@ -114,15 +115,21 @@ void print_line(board_t* board, int depth) {
         best_move = copy_move(ht_table[hash_mod].best_move);
 
         if (best_move == NULL) {
+            free_board(board);
             return;
         }
+
         play_move(board, best_move, player_at_turn);
-        print_move(best_move);
-        printf("\t");
+        print_LAN_move(best_move);
+        printf(" ");
         print_line(board, depth - 1);
         reverse_move(board, best_move, player_at_turn);
         free_move(best_move);
     } else {
+        free_board(board);
         return;
+    }
+    if(board){
+        free_board(board);
     }
 }

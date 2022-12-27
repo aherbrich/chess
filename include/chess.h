@@ -108,6 +108,22 @@ typedef struct _node_t {
     struct _node_t* next;
 } node_t;
 
+typedef struct _search_data {
+    board_t *board;         /* pointer to the actual board */
+    int max_depth;          /* maximum search depth in plies */
+    int max_seldepth;       /* maximum search depth with quiescence search */
+    int max_nodes;          /* maximum nodes allowed to search */
+    int max_time;           /* maximum time allowed */
+    int wtime;              /* time white has left on clock in ms*/
+    int btime;              /* time black has left on clock in ms*/
+    int winc;               /* white time increment in ms */      
+    int binc;               /* black time increment in ms */ 
+    int ponder;             /* tells engine to start search at ponder move */
+    int run_infinite;       /* tells the engine to run aslong as stop != 1 */
+    int stop;               /* tells the engine to stop search when stop == 1*/
+    move_t *best_move;      /* computed best move (so far) */
+}  search_data;
+
 /////////////////////////////////////////////////////////////
 //  GLOBAL PERFORMANCE COUNTER
 
