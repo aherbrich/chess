@@ -1070,7 +1070,7 @@ node_t* filterIllegalMoves(board_t* board, node_t* movelst) {
                     zwmove = create_normal_move(KING | playerwhomademove, 0, 60, 61, move->new_cr, copy_flags_from_move(move));
                     break;
                 default:
-                    printf("Something went wrong\n");
+                    fprintf(stderr,"%sSomething went wrong%s\n", Color_PURPLE, Color_END);
                     break;
             }
 
@@ -1090,7 +1090,7 @@ node_t* filterIllegalMoves(board_t* board, node_t* movelst) {
                 free_move(move);
             }
         } else {
-            printf("Weird move: %d", move->type_of_move);
+            fprintf(stderr, "%sWeird move: %d%s", Color_PURPLE, move->type_of_move, Color_END);
         }
     }
     free(movelst);

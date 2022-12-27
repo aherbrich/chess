@@ -251,7 +251,7 @@ move_t *get_random_book(board_t *board) {
         }
     }
 
-    printf("Possible Book Moves: %d\n", len(possibleBookMoves));
+    fprintf(stderr, "%sPossible Book Moves: %d%s\n", Color_PURPLE,len(possibleBookMoves), Color_END);
 
     int rand_idx = rand() % len(possibleBookMoves) - 1;
     node_t *tmp = possibleBookMoves->next;

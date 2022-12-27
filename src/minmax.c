@@ -116,6 +116,13 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     if (entry_found && PVMove_is_possible(move_list, pv_move)) {
         nodes_searched++;
 
+        double time_diff = (double)(clock() - start) / CLOCKS_PER_SEC;
+        if (time_diff > time_left) {
+            free_move(move);
+            free_move_list(move_list);
+            return (entry_found) ? pv_value : -16000;
+        }
+
         play_move(board, pv_move, player_at_turn);
         best_value = -alphaBeta_with_TT(board, depth - 1, -beta, -alpha, start, time_left);
         reverse_move(board, pv_move, player_at_turn);
@@ -144,7 +151,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
         if (time_diff > time_left) {
             free_move(move);
             free_move_list(move_list);
-            return (entry_found) ? pv_value : -20000;
+            return (entry_found) ? pv_value : -16000;
         }
 
         if (pv_move != NULL && is_same_move(move, pv_move)) {
@@ -170,7 +177,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
         free_move(move);
     }
 
-beta_cutoff:
+    beta_cutoff:
 
     if (best_value <= old_alpha) {
         store_hashtable_entry(board, FLG_ALL, best_value, best_move_so_far, depth);
@@ -204,25 +211,27 @@ move_t *iterative_search(board_t *board, int8_t max_depth, double maxtime) {
     clear_hashtable();
 
     for (int i = 1; i <= maxdepth; i++) {
-        begin = clock();
-        alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, begin, time_left);
+        clock_t begin_eval = clock();
+        int evaluation = alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, begin_eval, time_left);
+
         free_move(best_move);
         best_move = get_best_move_from_hashtable(board);
         clock_t end = clock();
 
+        time_left -= (double)(end - begin_eval) / CLOCKS_PER_SEC;
 
-        time_left -= (double)(end - begin) / CLOCKS_PER_SEC;
+        printf("info score cp %d depth %d nodes %d time %d pv ", evaluation, i, nodes_searched, (int) ((double)(end - begin) / CLOCKS_PER_SEC*1000));
+        print_line(board, i);
+        printf("\n");
+
+        
         if (time_left <= 0) {
-            fprintf(stderr, "Depth searched: %d\n", i);
+            fprintf(stderr, "%sDepth searched: %d%s\n", Color_PURPLE,i,Color_END);
             goto search_finished;
         }
     }
 
     search_finished:
 
-    printf("bestmove ");
-    print_LAN_move(best_move);
-    printf("\n");
-    
     return best_move;
 }

@@ -47,19 +47,19 @@ void print_board(board_t* board) {
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
             if (y == 0) {
-                printf("%s%d%s    ", Color_GREEN, x + 1, Color_END);
+                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
             }
 
             char piece = print_piece(board->playing_field[pos_to_idx(x, y)]);
             if (COLOR(board->playing_field[pos_to_idx(x, y)]) == BLACK) {
-                printf("%s", Color_CYAN);
+                fprintf(stderr, "%s", Color_CYAN);
             }
-            printf("%c%s  ", piece, Color_END);
+            fprintf(stderr, "%c%s  ", piece, Color_END);
         }
-        printf("\n");
+        fprintf(stderr, "\n");
     }
-    printf("\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
-    printf("\n");
+    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
+    fprintf(stderr, "\n");
 }
 
 /* Print move */
@@ -67,12 +67,12 @@ void print_move(move_t* move) {
     char* start_field = FIELD[move->start];
     char* end_field = FIELD[move->end];
     if (move->type_of_move == PROMOTIONMOVE) {
-        printf("%.2s-%.2s-(%c)", start_field, end_field, print_piece(move->piece_is));
+        fprintf(stderr, "%s%.2s-%.2s-(%c)%s",Color_PURPLE, start_field, end_field, print_piece(move->piece_is),Color_END);
 
     } else if (move->type_of_move == CASTLEMOVE) {
-        printf("%.2s-%.2s-C", start_field, end_field);
+        fprintf(stderr, "%s%.2s-%.2s-C%s", Color_PURPLE, start_field, end_field, Color_END);
     } else {
-        printf("%.2s-%.2s-%c", start_field, end_field, print_piece(move->piece_was));
+        fprintf(stderr, "%s%.2s-%.2s-%c%s",Color_PURPLE, start_field, end_field, print_piece(move->piece_was), Color_END);
     }
 }
 
@@ -94,27 +94,27 @@ void print_moves(node_t* move_list) {
     node_t* ptr = move_list->next;
     while (ptr != NULL) {
         print_move(ptr->move);
-        printf("\n");
+        fprintf(stderr, "\n");
         ptr = ptr->next;
     }
-    printf("\n");
+    fprintf(stderr, "\n");
 }
 
 /* Print the list of best possible moves until a depth (PV line) */
 void print_line(board_t* board, int depth) {
     /* make a copy of the board */
     board_t *board_copy = copy_board(board);
-    player_t player_at_turn = board_copy->player;
 
     /* for all depth, figure out the best move from the hash-table and print it */
     for (int d = depth; d > 0; d--) {
         move_t* best_move = get_best_move_from_hashtable(board_copy);
         if (best_move == NULL) {
-            free_board(board);
+            free_board(board_copy);
             return;
         }
-        play_move(board_copy, best_move, player_at_turn);
-        print_move(best_move);
+
+        play_move(board_copy, best_move, board_copy->player);
+        print_LAN_move(best_move);
         printf(" ");
         free_move(best_move);
     }

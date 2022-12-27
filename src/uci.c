@@ -124,7 +124,7 @@ void print_options(options_t *head) {
                 printf("type string default %s", head->value.string_value);
                 break;
             default:
-                fprintf(stderr, "Internal error!\n");
+                fprintf(stderr, "%sInternal error!\n%s", Color_PURPLE, Color_END);
                 exit(-1);
         }
         printf("\n");
@@ -151,7 +151,7 @@ void free_options(options_t *head) {
 
 /* handles the clear hash table */
 void on_clear_hashtable(options_t *opt) {
-    printf("Clear Hash Table called\n");
+    fprintf(stderr, "%sClear Hash Table called%s\n", Color_PURPLE, Color_END);
     clear_hashtable();
     return;
 
@@ -210,7 +210,7 @@ void handle_position(char *token, board_t *board) {
         load_by_FEN(board, STARTING_FEN);
         token = strtok(NULL, delim);
         if (token && strcmp(token, "moves")) {
-            fprintf(stderr, "Incorrect syntax in the 'position startpos' command: %s\n", token);
+            fprintf(stderr, "%sIncorrect syntax in the 'position startpos' command: %s%s\n",Color_PURPLE, token, Color_END);
             return;
         }
     } else if (!strcmp(token, "fen")) {
@@ -226,23 +226,23 @@ void handle_position(char *token, board_t *board) {
         fen[fen_idx] = '\0';
         load_by_FEN(board, fen);
     } else {
-        fprintf(stderr, "Incorrect syntax in the 'position' command: %s\n", token);
+        fprintf(stderr, "%sIncorrect syntax in the 'position' command: %s%s\n",Color_PURPLE, token, Color_END);
     }
 
     /* finally, read all the moves, if there are any */
     if (token) 
         while((token = strtok(NULL, delim))) {
             move_t *move = str_to_move(board, token);
-            if (move) 
+            if (move){
                 play_move(board, move, board->player);
+                board->ply_no++;
+                free_move(move);
+            }
             else {
-                fprintf(stderr, "Invalid move: %s\n", token);
+                fprintf(stderr, "%sInvalid move: %s%s\n",Color_PURPLE, token, Color_END);
                 exit(-1);
             }
         }
-
-    // print_board(board);
-    // printf("\n");
 
     return;
 }
@@ -266,6 +266,12 @@ search_data* init_search_data(board_t *board){
     return data;
 }
 
+void free_search_data(search_data *data){
+    free(data->board);          
+    free(data->best_move);
+    free(data);
+}
+
 /* structure to exchange information to the background thread for search */
 
 pthread_t game_thread = 0;
@@ -276,24 +282,29 @@ void *start_search(void *args) {
     search_data *data = (search_data *) args;
     clock_t begin;
     if (book_possible(data->board) == 1) {
-        fprintf(stderr, "Book move possible. Searching...\n");
+        fprintf(stderr, "%sBook move possible. Searching...%s\n", Color_PURPLE, Color_END);
         begin = clock();
         data->best_move = get_random_book(data->board);
     } else {
-        fprintf(stderr, "No book move possible. Searching...\n");
+        fprintf(stderr, "%sNo book move possible. Searching...%s\n", Color_PURPLE, Color_END);
         begin = clock();
         double max_time = (double) data->max_time/1000.0;
         data->best_move = iterative_search(data->board, data->max_depth, max_time);
     }
 
     /* output the best move to stdout */
-    printf("bestmove:\n");
+    printf("bestmove ");
     print_LAN_move(data->best_move);
-    fprintf(stderr, "\nTime: %f", (double)(clock() - begin) / CLOCKS_PER_SEC);
     printf("\n");
 
+    fprintf(stderr, "%sTime: %f%s\n", Color_PURPLE,(double)(clock()-begin)/CLOCKS_PER_SEC, Color_END);
+    /* signal communication thread that search is finished*/
     game_thread = 0;
 
+    /* free search data including copy of board and the bestmove */
+    free_search_data(data);
+
+    /* exit search thread */
     pthread_exit(NULL);
 }
 
@@ -305,7 +316,7 @@ search_data* handle_go(char *token, board_t *board) {
     while ((token = strtok(NULL, delim))) {
         if(!strcmp(token, "searchmoves")) {
             // TODO
-            fprintf(stderr, "Cant handle %s command yet!\n", token);
+            fprintf(stderr, "%sCant handle %s command yet!%s\n", Color_PURPLE, token, Color_END);
             exit(-1);
         }
         if(!strcmp(token, "ponder")) {
@@ -313,7 +324,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "wtime")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing time left for white\n");
+                fprintf(stderr, "%sMissing time left for white%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->wtime = atoi(token);
@@ -321,7 +332,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "btime")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing time left for black\n");
+                fprintf(stderr, "%sMissing time left for black%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->btime = atoi(token);
@@ -329,7 +340,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "winc")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing time left for white increment\n");
+                fprintf(stderr, "%sMissing time left for white increment%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->winc = atoi(token);
@@ -337,7 +348,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "binc")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing time left for black increment\n");
+                fprintf(stderr, "%sMissing time left for black increment%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->binc = atoi(token);
@@ -345,7 +356,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "movestogo")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing moves to go\n");
+                fprintf(stderr, "%sMissing moves to go%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 // TODO
@@ -353,7 +364,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "depth")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing depth\n");
+                fprintf(stderr, "%sMissing depth%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->max_depth = atoi(token);
@@ -361,7 +372,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "nodes")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing nodes\n");
+                fprintf(stderr, "%sMissing nodes%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->max_nodes = atoi(token);
@@ -369,7 +380,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "mate")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing mate number\n");
+                fprintf(stderr, "%sMissing mate number%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 // TODO
@@ -377,7 +388,7 @@ search_data* handle_go(char *token, board_t *board) {
         } else if(!strcmp(token, "movetime")) {
             token = strtok(NULL, delim);
             if (!token) {
-                fprintf(stderr, "Missing movetime\n");
+                fprintf(stderr, "%sMissing movetime%s\n", Color_PURPLE, Color_END);
                 exit(-1);
             } else {
                 data->max_time = atoi(token);
@@ -386,12 +397,12 @@ search_data* handle_go(char *token, board_t *board) {
             data->run_infinite = 1;
             break;
         } else {
-            fprintf(stderr, "incorrect command: %s\n", token);
+            fprintf(stderr, "%sincorrect command: %s%s\n", Color_PURPLE, token, Color_END);
         }
     }
 
     while (game_thread) {
-        fprintf (stderr, "Search underway ... sleeping for 1 second\n");
+        fprintf (stderr, "%sSearch underway ... sleeping for 1 second%s\n", Color_PURPLE, Color_END);
         sleep (1);
     }
 
@@ -411,8 +422,6 @@ void *main_interface_loop(void *args) {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     printf("id name AChess 0.1\nid author Alexander Herbrich\n\n");
-    // printf("\n");
-    // print_options(options);
     printf("uciok\n");
 
     while (1) {
@@ -438,8 +447,6 @@ void *main_interface_loop(void *args) {
         } else if (!strcmp(token, "uci")) {
             /* handle 'uci' command */
             printf("id name AChess 0.1\nid author Alexander Herbrich\n\n");
-            // printf("\n");
-            // print_options(options);
             printf("uciok\n");
         } else if (!strcmp(token, "setoption")) {
             /* handle 'setoption' command */

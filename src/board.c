@@ -37,12 +37,13 @@ board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
     copy->playing_field = (piece_t*)calloc(64, sizeof(piece_t));
 
-    memcpy(copy->playing_field, board->playing_field, 64);
+    memcpy(copy->playing_field, board->playing_field, 64 * sizeof(piece_t));
 
     copy->player = board->player;
     copy->ep_field = board->ep_field;
     copy->ep_possible = board->ep_possible;
     copy->castle_rights = board->castle_rights;
+    copy->ply_no = board->ply_no;
 
     return copy;
 }

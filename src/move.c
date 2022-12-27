@@ -413,11 +413,11 @@ piece_t str_to_piece(char p_char) {
             return(KING | WHITE);
             break;
         default:
-            fprintf(stderr, "parsing error ('%c')\n", p_char);
+            fprintf(stderr, "%sparsing error ('%c')%s\n",Color_PURPLE, p_char, Color_END);
             exit(-1);
     }
 
-    fprintf(stderr, "parsing error ('%c')\n", p_char);
+    fprintf(stderr, "%sparsing error ('%c')%s\n", Color_PURPLE, p_char, Color_END);
     exit(-1);
     return(-1);
 }
@@ -427,7 +427,7 @@ move_t *str_to_move(board_t *board, char *move_str) {
     /* extracts the from and to position of the move */
     idx_t from = str_to_idx(move_str, 2);
     idx_t to = str_to_idx(&(move_str[2]), 2);
-    piece_t new_piece = (strlen(move_str) == 5) ? str_to_piece(move_str[4]) : EMPTY;
+    piece_t new_piece = (strlen(move_str) == 5) ? FIGURE(str_to_piece(move_str[4])) : EMPTY;
 
     /* generate all possible moves in the current position ... */
     node_t *move_list = generate_moves(board);
@@ -437,7 +437,7 @@ move_t *str_to_move(board_t *board, char *move_str) {
     while ((node = node->next)) {
         if (node->move->start == from && node->move->end == to) {
             if ((node->move->type_of_move != PROMOTIONMOVE && new_piece == EMPTY) ||
-                (node->move->type_of_move == PROMOTIONMOVE && node->move->piece_is == new_piece)) {
+                (node->move->type_of_move == PROMOTIONMOVE && FIGURE(node->move->piece_is) == new_piece)) {
                 move = copy_move(node->move);
                 break;
             }

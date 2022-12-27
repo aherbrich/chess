@@ -44,19 +44,18 @@ int main() {
     for (int i = 0; i < 1; i++) {
         move_t *best_move = iterative_search(board, maxdepth, maxtime);
 
-        printf("\nNodes Explored:\t%d\n", nodes_searched);
-        printf("Hashes used:\t%d \t(%4.2f)\n", hash_used,
+        fprintf(stderr, "\nNodes Explored:\t%d\n", nodes_searched);
+        fprintf(stderr,"Hashes used:\t%d \t(%4.2f)\n", hash_used,
                (float)hash_used / (float)nodes_searched);
-        printf("Bounds adj.:\t%d\n", hash_bounds_adjusted);
-        printf("Found move:\t");
+        fprintf(stderr,"Bounds adj.:\t%d\n", hash_bounds_adjusted);
+        fprintf(stderr,"Found move:\t");
         print_move(best_move);
-        // printf("\nEvalution: %d", evaluation);
 
         end = clock();
-        printf("\t\t\t Time:\t%fs\n",
+        fprintf(stderr,"\t\t\t Time:\t%fs\n",
                (double)(end - tmp_begin) / CLOCKS_PER_SEC);
         tmp_begin = clock();
-        printf("\n");
+        fprintf(stderr,"\n");
 
         play_move(board, best_move, board->player);
         print_board(board);
@@ -64,7 +63,7 @@ int main() {
 
     ///////////
     end = clock();
-    printf("Overall Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
+    fprintf(stderr,"Overall Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
     free_board(board);
 }
