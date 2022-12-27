@@ -24,21 +24,21 @@ typedef struct _htentry_t {
 
 extern htentry_t** ht_table;
 
-/* Initializes the global zobrist table */
+/* Initializes the global Zobrist table */
 extern void init_zobrist();
-/* Zobrist-hashes a board using the zobrist table */
+/* Zobrist-hashes a board using the Zobrist table */
 extern uint64_t zobrist(board_t* board);
 /* Initializes a global hashtable */
 extern void init_hashtable();
-/* Clears the hashtable */
+/* Clears the global hashtable */
 extern void clear_hashtable();
-/* Stores key value pair in hashtable */
-extern void storeTableEntry(board_t* board, int8_t flags, int16_t value, move_t* move, int8_t depth);
+/* Stores key value pair in the global hashtable */
+extern void store_hashtable_entry(board_t* board, int8_t flags, int16_t value, move_t* move, int8_t depth);
 /* Probes table entry from hashtable and returns 1, if the entry is found (otherwise 0) */
-extern int probeTableEntry(board_t* board, int8_t* flags, int16_t* value, move_t** move, int8_t* depth);
+extern int get_hashtable_entry(board_t* board, int8_t* flags, int16_t* value, move_t** move, int8_t* depth);
 /* Gets the best move from the hashtable for the board position (or NULL, if there is not one) */
-extern move_t *get_best_move(board_t* board);
+extern move_t *get_best_move_from_hashtable(board_t* board);
 /* Gets the eval from the hashtable for the board position */
-extern int get_eval(board_t* board);
+extern int get_eval_from_hashtable(board_t* board);
 
 #endif

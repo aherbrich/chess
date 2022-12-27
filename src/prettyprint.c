@@ -108,7 +108,7 @@ void print_line(board_t* board, int depth) {
 
     /* for all depth, figure out the best move from the hash-table and print it */
     for (int d = depth; d > 0; d--) {
-        move_t* best_move = get_best_move(board_copy);
+        move_t* best_move = get_best_move_from_hashtable(board_copy);
         if (best_move == NULL) {
             return;
         }

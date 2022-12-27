@@ -38,7 +38,7 @@ int quietSearch(board_t *board, int alpha, int beta, clock_t start, double time_
         if (time_diff > time_left) {
             free_move(move);
             free_move_list(move_list);
-            return get_eval(board);
+            return get_eval_from_hashtable(board);
         }
 
         alpha = max(value, alpha);
@@ -76,7 +76,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
     int8_t pv_flags;
     int8_t pv_depth;
 
-    int entry_found = probeTableEntry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
+    int entry_found = get_hashtable_entry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
 
     if (entry_found && pv_depth == depth) {
         nodes_searched++;
@@ -172,11 +172,11 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
 beta_cutoff:
 
     if (best_value <= old_alpha) {
-        storeTableEntry(board, FLG_ALL, best_value, best_move_so_far, depth);
+        store_hashtable_entry(board, FLG_ALL, best_value, best_move_so_far, depth);
     } else if (best_value >= beta) {
-        storeTableEntry(board, FLG_CUT, best_value, best_move_so_far, depth);
+        store_hashtable_entry(board, FLG_CUT, best_value, best_move_so_far, depth);
     } else {
-        storeTableEntry(board, FLG_EXCACT, best_value, best_move_so_far, depth);
+        store_hashtable_entry(board, FLG_EXCACT, best_value, best_move_so_far, depth);
     }
 
     /* free the remaining move list */
@@ -203,7 +203,7 @@ move_t *iterative_search(board_t *board, int8_t maxdepth, double maxtime) {
         begin = clock();
         alphaBeta_with_TT(board, i, NEGINFINITY, INFINITY, clock(), time_left);
         free_move(best_move);
-        best_move = get_best_move(board);
+        best_move = get_best_move_from_hashtable(board);
         clock_t end = clock();
 
         // print_move(best_move);

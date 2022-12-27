@@ -3,6 +3,7 @@
 zobrist_t zob_table;
 htentry_t **ht_table;
 
+/* Helper function that computes an index into the Zobrist hashtable based on the piece on the board */
 idx_t indexing(piece_t piece) {
     switch (piece) {
         case PAWN | WHITE:
@@ -35,6 +36,7 @@ idx_t indexing(piece_t piece) {
     }
 }
 
+/* Helper function that generates a random 64-bit number */
 uint64_t get64rand() {
     return (((uint64_t)rand() << 0) & 0x000000000000FFFFull) |
            (((uint64_t)rand() << 16) & 0x00000000FFFF0000ull) |
@@ -42,6 +44,7 @@ uint64_t get64rand() {
            (((uint64_t)rand() << 48) & 0xFFFF000000000000ull);
 }
 
+/* Initializes the global Zobrist table */
 void init_zobrist() {
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
@@ -55,6 +58,7 @@ void init_zobrist() {
     }
 }
 
+/* Zobrist-hashes a board using the Zobrist table */
 uint64_t zobrist(board_t *board) {
     int hash = 0;
 
@@ -62,8 +66,8 @@ uint64_t zobrist(board_t *board) {
         for (int y = 0; y < 8; y++) {
             piece_t piece = board->playing_field[pos_to_idx(x, y)];
             if (piece != EMPTY) {
-                idx_t pieceidx = indexing(piece);
-                hash ^= zob_table.hash_value[x][y][pieceidx];
+                idx_t piece_idx = indexing(piece);
+                hash ^= zob_table.hash_value[x][y][piece_idx];
             }
         }
     }
@@ -99,6 +103,7 @@ uint64_t zobrist(board_t *board) {
     return hash;
 }
 
+/* Initializes a global hashtable */
 void init_hashtable() {
     ht_table = (htentry_t **)malloc(sizeof(htentry_t *) * HTSIZE);
     for (int i = 0; i < HTSIZE; i++) {
@@ -107,6 +112,7 @@ void init_hashtable() {
     return;
 }
 
+/* Clears the global hashtable */
 void clear_hashtable() {
     for (int i = 0; i < HTSIZE; i++) {
         while(ht_table[i]) {
@@ -118,7 +124,8 @@ void clear_hashtable() {
     }
 }
 
-void storeTableEntry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth) {
+/* Stores key value pair in the global hashtable */
+void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth) {
     uint64_t hash = zobrist(board);
     uint64_t key = hash % HTSIZE;
 
@@ -158,7 +165,8 @@ void storeTableEntry(board_t *board, int8_t flags, int16_t value, move_t *move, 
     return;
 }
 
-int probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth) {
+/* Probes table entry from hashtable and returns 1, if the entry is found (otherwise 0) */
+int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth) {
     uint64_t hash = zobrist(board);
     uint64_t key = hash % HTSIZE;
 
@@ -181,7 +189,7 @@ int probeTableEntry(board_t *board, int8_t *flags, int16_t *value, move_t **move
 }
 
 /* Gets the best move from the hashtable for the board position (or NULL, if there is not one) */
-move_t *get_best_move(board_t* board) {
+move_t *get_best_move_from_hashtable(board_t* board) {
     uint64_t hash = zobrist(board);
     uint64_t key = hash % HTSIZE;
 
@@ -200,7 +208,7 @@ move_t *get_best_move(board_t* board) {
 }
 
 /* Gets the eval from the hashtable for the board position */
-int get_eval(board_t* board) {
+int get_eval_from_hashtable(board_t* board) {
     uint64_t hash = zobrist(board);
     uint64_t key = hash % HTSIZE;
 
