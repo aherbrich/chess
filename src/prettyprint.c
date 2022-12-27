@@ -101,35 +101,26 @@ void print_moves(node_t* move_list) {
 }
 
 /* Print the list of best possible moves until a depth (PV line) */
-void print_line(board_t* the_board, int depth) {
-    board_t *board = copy_board(the_board);
-    uint64_t hash;
-    uint64_t hash_mod;
-    player_t player_at_turn = board->player;
-    move_t* best_move;
+void print_line(board_t* board, int depth) {
+    /* make a copy of the board */
+    board_t *board_copy = copy_board(board);
+    player_t player_at_turn = board_copy->player;
 
-    if (depth > 0) {
-        hash = zobrist(board);
-        hash_mod = hash % HTSIZE;
-
-        best_move = copy_move(ht_table[hash_mod].best_move);
-
+    /* for all depth, figure out the best move from the hash-table and print it */
+    for (int d = depth; d > 0; d--) {
+        move_t* best_move = get_best_move_from_hashtable(board_copy);
         if (best_move == NULL) {
             free_board(board);
             return;
         }
-
-        play_move(board, best_move, player_at_turn);
-        print_LAN_move(best_move);
+        play_move(board_copy, best_move, player_at_turn);
+        print_move(best_move);
         printf(" ");
-        print_line(board, depth - 1);
-        reverse_move(board, best_move, player_at_turn);
         free_move(best_move);
-    } else {
-        free_board(board);
-        return;
     }
-    if(board){
-        free_board(board);
-    }
+
+    /* free the board */
+    free_board(board_copy);
+
+    return;
 }
