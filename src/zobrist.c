@@ -223,5 +223,5 @@ int get_eval_from_hashtable(board_t* board) {
     }
 
     /* otherwise, return 0 */
-    return 0;  // TODO
+    return NEGINFINITY;
 }

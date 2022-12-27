@@ -144,7 +144,7 @@ int alphaBeta_with_TT(board_t *board, uint8_t depth, int alpha, int beta, clock_
         if (time_diff > time_left) {
             free_move(move);
             free_move_list(move_list);
-            return (entry_found) ? pv_value : 0;   // TODO
+            return (entry_found) ? pv_value : NEGINFINITY;
         }
 
         if (pv_move != NULL && is_same_move(move, pv_move)) {
