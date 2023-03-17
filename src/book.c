@@ -6,8 +6,10 @@ int book_line_index;
 int book_move_index;
 
 void book_add(board_t *board, char *move_str) {
+    /* parse move in LAN notation to move */
     move_t *move = str_to_move(board, move_str);
 
+    /* add move into book (if it can be played on the current board) */
     if (move != NULL) {
         book[book_line_index][book_move_index].possible = 1;
         book[book_line_index][book_move_index].move = move;
@@ -44,6 +46,7 @@ void book_add_line(char *move_line) {
     return;
 }
 
+/* loads most frequently used opening lines into book table */
 void book_load() {
     // Four knights
 
@@ -205,6 +208,8 @@ void book_load() {
     book_add_line("g1f3 d7d5 c2c4 d5c4 e2e3 c7c5 f1c4 e7e6 e1g1 g8f6 b2b3 b8c6 c1b2 a7a6 a2a4 f8e7");
 }
 
+
+/* initializes book table and loads several opening lines into table */
 void init_book() {
     book_line_index = 0;
     book_move_index = 0;
@@ -220,6 +225,7 @@ void init_book() {
     book_load();
 }
 
+/* checks if a book move is possible in a given position */
 int book_possible(board_t *board) {
     if (board->ply_no >= MAXDEPTH_LINE - 1) {
         return 0;
@@ -240,9 +246,15 @@ int book_possible(board_t *board) {
     return 0;
 }
 
+
+/*  returns a random book move   
+    WARNING: book_possible should be called first 
+             otherwise this function might return NULL 
+*/
 move_t *get_random_book(board_t *board) {
     node_t *possibleBookMoves = init_list();
 
+    /* extract all possible book moves */
     for (int i = 0; i < MAXNR_LINES; i++) {
         if (book[i][board->ply_no].possible == 1) {
             if (book[i][board->ply_no].hash == zobrist(board)) {
@@ -253,6 +265,7 @@ move_t *get_random_book(board_t *board) {
 
     fprintf(stderr, "%sPossible Book Moves: %d%s\n", Color_PURPLE,len(possibleBookMoves), Color_END);
 
+    /* choose a random move out of all possible book moves */
     int rand_idx = rand() % len(possibleBookMoves) - 1;
     node_t *tmp = possibleBookMoves->next;
 

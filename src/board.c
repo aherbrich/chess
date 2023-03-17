@@ -18,7 +18,7 @@ void clear_board(board_t *board) {
     board->ply_no = 0;
 }
 
-/* Allocate memory for a empty board */
+/* Allocate memory for a empty board and initialize its values */
 board_t* init_board() {
     board_t* board = (board_t*)malloc(sizeof(board_t));
     board->playing_field = (piece_t*)calloc(64, sizeof(piece_t));
@@ -27,12 +27,12 @@ board_t* init_board() {
 }
 
 /* Free memory of board */
-
 void free_board(board_t* board) {
     free(board->playing_field);
     free(board);
 }
 
+/* creates a deep copy of a board */
 board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
     copy->playing_field = (piece_t*)calloc(64, sizeof(piece_t));

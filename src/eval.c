@@ -69,6 +69,10 @@ int kingpos[64] = {-30, -40, -40, -50, -50, -40, -40, -30,
 int count_material(board_t *board, player_t color) {
     int material = 0;
 
+    /* determine the value of all pieces of a specific color on the board */
+    /* each piece has a (1) static value 
+                        (2) dynamic positional value
+    */
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
             piece_t piece = board->playing_field[pos_to_idx(x, y)];
@@ -122,16 +126,15 @@ int count_material(board_t *board, player_t color) {
 
 int eval_end_of_game(board_t *board, int depth) {
     // check for stalemate
-
     board->player = OPPONENT(board->player);  // same as doing a null move
-    int inCheck = !is_legal_move(board);        // are we in check?
+    int inCheck = !is_legal_move(board);      // are we in check?
     board->player = OPPONENT(board->player);  // reverse the null move
 
-    // if in check
+    // if in check return the worst possible evaluation
     if (inCheck) {
         return -16000 - depth;
     }
-    // stalemate has been reached
+    // else stalemate has been reached and evaluate to a draw
     else {
         return 0;
     }
@@ -141,9 +144,13 @@ int eval_board(board_t *board) {
     int whiteEval = count_material(board, WHITE);
     int blackEval = count_material(board, BLACK);
 
+    /* eval = NEGATIVE if black has advantage 
+            = POSTIVE  if white has advantage */
     int eval = whiteEval - blackEval;
 
+    /* since each player is maximizing */
     if (board->player == BLACK) {
+        /* we might have to adjust the eval depending on who is playing */
         eval = eval * -1;
     }
     return eval;

@@ -218,10 +218,13 @@ extern int PVMove_is_possible(node_t* movelst, move_t* ttmove);
 ///////////////////////////////////////////////////////////////
 //  SEARCH
 
-/* The alpha beta search */
+/* alpha beta search with transposition table */
 extern int alphaBeta_with_TT(board_t* board, uint8_t depth, int alpha, int beta, search_data *data);
+/* iterative search */
 extern move_t* iterative_search(search_data *data);
+/* allocates memory for a search data structure */
 extern search_data* init_search_data(board_t *board);
+/* frees search data */
 extern void free_search_data(search_data *data);
 
 #endif

@@ -14,8 +14,11 @@ typedef struct _bookentry_t {
 
 extern bookentry_t book[MAXNR_LINES][MAXDEPTH_LINE];
 
+/* initialize book table */
 extern void init_book();
+/* checks if a book move is still possible */
 extern int book_possible(board_t* board);
+/* return a random book move */
 extern move_t* get_random_book(board_t* board);
 
 #endif
