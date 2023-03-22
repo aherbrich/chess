@@ -63,6 +63,37 @@ board_t* copy_board(board_t* board) {
     return copy;
 }
 
+/* Copy board into different board structure */
+void recover_board(board_t* board, board_t* old_board){
+    /* copy the playing field */
+    board->whitepawns = old_board->whitepawns;
+    board->whiteknights = old_board->whiteknights;
+    board->whitebishops = old_board->whitebishops;
+    board->whiterooks = old_board->whiterooks;
+    board->whitequeens = old_board->whitequeens;
+    board->whiteking = old_board->whiteking;
+
+    board->blackpawns = old_board->blackpawns;
+    board->blackknights = old_board->blackknights;
+    board->blackbishops = old_board->blackbishops;
+    board->blackrooks = old_board->blackrooks;
+    board->blackqueens = old_board->blackqueens;
+    board->blackking = old_board->blackking;
+
+    board->black = old_board->black;
+    board->white = old_board->white;
+    board->all = old_board->all;
+    
+    /* copy player, en passant field/possible, castle rights and ply number */
+    board->player = old_board->player;
+    board->ep_field = old_board->ep_field;
+    board->ep_possible = old_board->ep_possible;
+    board->castle_rights = old_board->castle_rights;
+    board->ply_no = old_board->ply_no;
+
+    free(old_board);
+}
+
 /* Allocate memory for a empty board */
 board_t* init_board() {
     board_t* board = (board_t*) malloc(sizeof(board_t));

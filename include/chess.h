@@ -54,6 +54,13 @@
 #define RCPROM 14
 #define QCPROM 15
 
+#define PAWN 0
+#define KNIGHT 1
+#define BISHOP 2
+#define ROOK 3
+#define QUEEN 4
+#define KING 5
+
 
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
@@ -88,12 +95,22 @@ typedef struct _move_t {
     idx_t from;
     idx_t to;
     flag_t flags;
+    flag_t piece;
 } move_t;
 
 typedef struct _node_t {
     move_t* move;
+    board_t* board;
     struct _node_t* next;
+    struct _node_t* prev;
 } node_t;
+
+
+typedef struct _list_t{
+    int len;
+    node_t *first;
+    node_t *last;
+} list_t;
 
 extern bitboard_t MASK_FILE[8];
 extern bitboard_t MASK_RANK[8];
@@ -134,6 +151,7 @@ extern void print_move_on_board(move_t *move);
 
 extern board_t* init_board();
 extern board_t* copy_board(board_t* board);
+extern void recover_board(board_t* board, board_t* old_board);
 extern void clear_board(board_t *board);
 extern void free_board(board_t* board);
 extern void load_by_FEN(board_t* board, char* FEN);
@@ -142,16 +160,22 @@ extern void update_white_black_all_boards(board_t *board);
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION
 
-extern void generate_pseudo_moves(board_t *board);
+extern list_t* generate_pseudo_moves(board_t *board);
 
 /////////////////////////////////////////////////////////////
 //  LIST STRUCTURE & FUNCTIONS
 
-extern node_t* init_list();
-extern void add(node_t* head, move_t* move);
-extern void delete(node_t* head);
-extern move_t* pop(node_t* head);
-extern int len(node_t* head);
+//extern node_t* init_list();
+//extern void add(node_t* head, move_t* move);
+//extern void delete(node_t* head);
+//extern move_t* pop(node_t* head);
+//extern int len(node_t* head);
+
+extern list_t* new_list();
+extern move_t* pop(list_t* head);
+extern void push(list_t* head, move_t* move);
+extern void push_old_state(list_t* head, board_t *board);
+extern board_t* pop_old_state(list_t* head);
 
 /////////////////////////////////////////////////////////////
 //  MOVE
@@ -160,6 +184,8 @@ extern move_t *generate_move(idx_t from, idx_t to, flag_t flags);
 extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
 extern void free_move_list(node_t *movelst);
+void do_move(board_t* board, move_t* move, list_t* old_state_stack);
+void undo_move(board_t* board, move_t* move, list_t* old_state_stack);
 
 /////////////////////////////////////////////////////////////
 //  MAGIC BITBOARDS
@@ -170,3 +196,9 @@ extern bitboard_t rook_mask(int sq);
 extern bitboard_t bishop_mask(int sq);
 extern bitboard_t rook_attacks(int sq, bitboard_t block);
 extern bitboard_t bishop_attacks(int sq, bitboard_t block);
+
+
+///////////////////////////////////////////////////////////////
+// PERFT
+
+int move_gen(board_t* board, list_t* old_state_stack, int depth);

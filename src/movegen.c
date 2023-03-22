@@ -221,7 +221,7 @@ bitboard_t get_rook_attacks(int sq, board_t *board){
 }
 
 /* DONE */
-void generate_knight_moves(bitboard_t knights, board_t *board, node_t *movelst){
+void generate_knight_moves(bitboard_t knights, board_t *board, list_t *movelst){
     while(knights){
         idx_t from = pop_1st_bit(&knights);
         bitboard_t attacks = get_knight_attacks(from, board);
@@ -235,13 +235,13 @@ void generate_knight_moves(bitboard_t knights, board_t *board, node_t *movelst){
             else{
                 move = generate_move(from, to, QUIET);
             }
-            add(movelst, move);
+            push(movelst, move);
         }
     }
 }
 
 /* DONE */
-void generate_king_moves(bitboard_t kings, board_t *board, node_t *movelst){
+void generate_king_moves(bitboard_t kings, board_t *board, list_t *movelst){
     idx_t from = pop_1st_bit(&kings);
     bitboard_t attacks = get_king_attacks(from, board);
 
@@ -254,12 +254,12 @@ void generate_king_moves(bitboard_t kings, board_t *board, node_t *movelst){
         else{
             move = generate_move(from, to, QUIET);
         }
-        add(movelst, move);
+        push(movelst, move);
     }
 }
 
 /* DONE */
-void generate_bishop_moves(bitboard_t bishops, board_t *board, node_t *movelst){
+void generate_bishop_moves(bitboard_t bishops, board_t *board, list_t *movelst){
     while(bishops){
         idx_t from = pop_1st_bit(&bishops);
         bitboard_t attacks = get_bishop_attacks(from, board);
@@ -273,13 +273,13 @@ void generate_bishop_moves(bitboard_t bishops, board_t *board, node_t *movelst){
             else{
                 move = generate_move(from, to, QUIET);
             }
-            add(movelst, move);
+            push(movelst, move);
         }
     }
 }
 
 /* DONE */
-void generate_rook_moves(bitboard_t rooks, board_t *board, node_t *movelst){
+void generate_rook_moves(bitboard_t rooks, board_t *board, list_t *movelst){
     while(rooks){
         idx_t from = pop_1st_bit(&rooks);
         bitboard_t attacks = get_rook_attacks(from, board);
@@ -293,19 +293,19 @@ void generate_rook_moves(bitboard_t rooks, board_t *board, node_t *movelst){
             else{
                 move = generate_move(from, to, QUIET);
             }
-            add(movelst, move);
+            push(movelst, move);
         }
     }
 }
 
 /* DONE */
-void generate_queen_moves(bitboard_t queens, board_t *board, node_t *movelst){
+void generate_queen_moves(bitboard_t queens, board_t *board, list_t *movelst){
     generate_bishop_moves(queens, board, movelst);
     generate_rook_moves(queens, board, movelst);
 }
 
 /* DONE */
-void generate_white_pawn_moves(board_t *board, node_t *movelst){
+void generate_white_pawn_moves(board_t *board, list_t *movelst){
     bitboard_t pawns = board->whitepawns;
     while(pawns){
         idx_t from = pop_1st_bit(&pawns);
@@ -317,29 +317,29 @@ void generate_white_pawn_moves(board_t *board, node_t *movelst){
             /* if move  is a promotion move */
             if(to >= 56 && to <= 63){
                 if(is_capture(to, board)){
-                    add(movelst, generate_move(from, to, KCPROM));
-                    add(movelst, generate_move(from, to, BCPROM));
-                    add(movelst, generate_move(from, to, RCPROM));
-                    add(movelst, generate_move(from, to, QCPROM));
+                    push(movelst, generate_move(from, to, KCPROM));
+                    push(movelst, generate_move(from, to, BCPROM));
+                    push(movelst, generate_move(from, to, RCPROM));
+                    push(movelst, generate_move(from, to, QCPROM));
                 }
                 else{
-                    add(movelst, generate_move(from, to, KPROM));
-                    add(movelst, generate_move(from, to, BPROM));
-                    add(movelst, generate_move(from, to, RPROM));
-                    add(movelst, generate_move(from, to, QPROM));
+                    push(movelst, generate_move(from, to, KPROM));
+                    push(movelst, generate_move(from, to, BPROM));
+                    push(movelst, generate_move(from, to, RPROM));
+                    push(movelst, generate_move(from, to, QPROM));
                 }
             }
             /* if move is a double pawn push */ 
             else if((to - 16) == from){
-                add(movelst, generate_move(from, to, DOUBLEP));
+                push(movelst, generate_move(from, to, DOUBLEP));
             }
             /* if move is a quiet or capture move */
             else{
                 if(is_capture(to, board)){
-                    add(movelst, generate_move(from, to, CAPTURE));
+                    push(movelst, generate_move(from, to, CAPTURE));
                 }
                 else{
-                    add(movelst, generate_move(from, to, QUIET));
+                    push(movelst, generate_move(from, to, QUIET));
                 }
             }
         }
@@ -347,7 +347,7 @@ void generate_white_pawn_moves(board_t *board, node_t *movelst){
 }
 
 /* DONE */
-void generate_black_pawn_moves(board_t *board, node_t *movelst){
+void generate_black_pawn_moves(board_t *board, list_t *movelst){
     bitboard_t pawns = board->blackpawns;
     while(pawns){
         idx_t from = pop_1st_bit(&pawns);
@@ -359,37 +359,37 @@ void generate_black_pawn_moves(board_t *board, node_t *movelst){
             /* if move  is a promotion move */
             if(to >= 0 && to <= 7){
                 if(is_capture(to, board)){
-                    add(movelst, generate_move(from, to, KCPROM));
-                    add(movelst, generate_move(from, to, BCPROM));
-                    add(movelst, generate_move(from, to, RCPROM));
-                    add(movelst, generate_move(from, to, QCPROM));
+                    push(movelst, generate_move(from, to, KCPROM));
+                    push(movelst, generate_move(from, to, BCPROM));
+                    push(movelst, generate_move(from, to, RCPROM));
+                    push(movelst, generate_move(from, to, QCPROM));
                 }
                 else{
-                    add(movelst, generate_move(from, to, KPROM));
-                    add(movelst, generate_move(from, to, BPROM));
-                    add(movelst, generate_move(from, to, RPROM));
-                    add(movelst, generate_move(from, to, QPROM));
+                    push(movelst, generate_move(from, to, KPROM));
+                    push(movelst, generate_move(from, to, BPROM));
+                    push(movelst, generate_move(from, to, RPROM));
+                    push(movelst, generate_move(from, to, QPROM));
                 }
             }
             /* if move is a double pawn push */ 
             else if((to + 16) == from){
-                add(movelst, generate_move(from, to, DOUBLEP));
+                push(movelst, generate_move(from, to, DOUBLEP));
             }
             /* if move is a quiet or capture move */
             else{
                 if(is_capture(to, board)){
-                    add(movelst, generate_move(from, to, CAPTURE));
+                    push(movelst, generate_move(from, to, CAPTURE));
                 }
                 else{
-                    add(movelst, generate_move(from, to, QUIET));
+                    push(movelst, generate_move(from, to, QUIET));
                 }
             }
         }
     }
 }
 
-
-void generate_white_enpassant_moves(board_t *board, node_t *movelst){
+/* DONE */
+void generate_white_enpassant_moves(board_t *board, list_t *movelst){
     bitboard_t pawns = board->whitepawns;
     if(board->ep_possible){
         bitboard_t ep = (1ULL << board->ep_field);
@@ -400,7 +400,7 @@ void generate_white_enpassant_moves(board_t *board, node_t *movelst){
 
             while(attacks){
                 idx_t to = pop_1st_bit(&attacks);
-                add(movelst, generate_move(from, to, EPCAPTURE));
+                push(movelst, generate_move(from, to, EPCAPTURE));
             }
         }
     }
@@ -408,7 +408,8 @@ void generate_white_enpassant_moves(board_t *board, node_t *movelst){
     return;
 } 
 
-void generate_black_enpassant_moves(board_t *board, node_t *movelst){
+/* DONE */
+void generate_black_enpassant_moves(board_t *board, list_t *movelst){
     bitboard_t pawns = board->blackpawns;
     if(board->ep_possible){
         bitboard_t ep = (1ULL << board->ep_field);
@@ -419,7 +420,7 @@ void generate_black_enpassant_moves(board_t *board, node_t *movelst){
 
             while(attacks){
                 idx_t to = pop_1st_bit(&attacks);
-                add(movelst, generate_move(from, to, EPCAPTURE));
+                push(movelst, generate_move(from, to, EPCAPTURE));
             }
         }
     }
@@ -427,30 +428,33 @@ void generate_black_enpassant_moves(board_t *board, node_t *movelst){
     return;
 } 
 
-void generate_white_castle_moves(board_t *board, node_t *movelst){
+/* DONE */
+void generate_white_castle_moves(board_t *board, list_t *movelst){
     // king/shortside
     if((board->all & ((1ULL << 5) | (1ULL << 6))) == 0 && (board->castle_rights & SHORTSIDEW)){
-        add(movelst, generate_move(4, 6, KCASTLE));
+        push(movelst, generate_move(4, 6, KCASTLE));
     }
     // queen/longside
     if((board->all & ((1ULL << 1) | (1ULL << 2) | (1ULL << 3))) == 0 && (board->castle_rights & LONGSIDEW)){
-        add(movelst, generate_move(4, 2, QCASTLE));
+        push(movelst, generate_move(4, 2, QCASTLE));
     }
 } 
 
-void generate_black_castle_moves(board_t *board, node_t *movelst){
+/* DONE */
+void generate_black_castle_moves(board_t *board, list_t *movelst){
     // king/shortside
     if((board->all & ((1ULL << 61) | (1ULL << 62))) == 0 && (board->castle_rights & SHORTSIDEB)){
-        add(movelst, generate_move(60, 62, KCASTLE));
+        push(movelst, generate_move(60, 62, KCASTLE));
     }
     // queen/longside
     if((board->all & ((1ULL << 57) | (1ULL << 58) | (1ULL << 59))) == 0 && (board->castle_rights & LONGSIDEB)){
-        add(movelst, generate_move(60, 58, QCASTLE));
+        push(movelst, generate_move(60, 58, QCASTLE));
     }
 } 
 
-void generate_pseudo_moves(board_t *board){
-    node_t *movelst = init_list();
+/* DONE */
+list_t* generate_pseudo_moves(board_t *board){
+    list_t *movelst = new_list();
 
     if(board->player == WHITE){
         generate_knight_moves(board->whiteknights, board, movelst);
@@ -472,11 +476,7 @@ void generate_pseudo_moves(board_t *board){
         generate_black_castle_moves(board, movelst);
     }
 
-    fprintf(stderr, "%d",len(movelst));
-    while(len(movelst) != 0){
-        move_t *move = pop(movelst);
-        //print_move_on_board(move);
-        free(move);
-    }
-    free(movelst);
+    //fprintf(stderr, "%d\n", movelst->len);
+
+    return(movelst);
 }

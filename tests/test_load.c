@@ -27,7 +27,6 @@ int main() {
     for(int i = 0; i < 1; i++){
         generate_pseudo_moves(board);
     }
-    
 
     end = clock();
     fprintf(stderr, "\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
