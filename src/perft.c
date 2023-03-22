@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////
 // PERFT TESTER
 
-int move_gen(board_t* board, list_t* old_state_stack, int depth) {
+int move_gen(board_t* board, int depth) {
     if (depth == 0) {
         return 1;
     }
@@ -17,9 +17,9 @@ int move_gen(board_t* board, list_t* old_state_stack, int depth) {
 
 
     while ((move = pop(move_list)) != NULL) {
-        do_move(board, move, old_state_stack);
-        num_positions += move_gen(board, old_state_stack, depth - 1);
-        undo_move(board, move, old_state_stack);
+        do_move(board, move);
+        num_positions += move_gen(board, depth - 1);
+        undo_move(board, move);
         free_move(move);
     }
     free(move_list);

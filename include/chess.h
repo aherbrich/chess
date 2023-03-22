@@ -128,7 +128,7 @@ extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64]; 
 extern bitboard_t KING_ATTACK[64];
 
-
+extern board_t* OLDSTATE[128];
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
@@ -183,9 +183,9 @@ extern board_t* pop_old_state(list_t* head);
 extern move_t *generate_move(idx_t from, idx_t to, flag_t flags);
 extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
-extern void free_move_list(node_t *movelst);
-void do_move(board_t* board, move_t* move, list_t* old_state_stack);
-void undo_move(board_t* board, move_t* move, list_t* old_state_stack);
+extern void free_move_list(list_t *movelst);
+void do_move(board_t* board, move_t* move);
+void undo_move(board_t* board, move_t* move);
 
 /////////////////////////////////////////////////////////////
 //  MAGIC BITBOARDS
@@ -201,4 +201,4 @@ extern bitboard_t bishop_attacks(int sq, bitboard_t block);
 ///////////////////////////////////////////////////////////////
 // PERFT
 
-int move_gen(board_t* board, list_t* old_state_stack, int depth);
+int move_gen(board_t* board, int depth);
