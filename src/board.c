@@ -1,6 +1,5 @@
 #include "../include/chess.h"
-#include <stdlib.h>
-#include <stdio.h>
+
 
 /* Clear the board */
 void clear_board(board_t *board) {
@@ -18,6 +17,10 @@ void clear_board(board_t *board) {
     board->blackrooks = 0;
     board->blackqueens = 0;
     board->blackking = 0;
+
+    board->black = 0;
+    board->white = 0;
+    board->all = 0;
 
     /* reset player, en passant field/possible, castle rights and ply number */
     board->player = WHITE;
@@ -45,6 +48,10 @@ board_t* copy_board(board_t* board) {
     copy->blackrooks = board->blackrooks;
     copy->blackqueens = board->blackqueens;
     copy->blackking = board->blackking;
+
+    copy->black = board->black;
+    copy->white = board->white;
+    copy->all = board->all;
     
     /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;
@@ -66,6 +73,13 @@ board_t* init_board() {
 /* Free memory of board */
 void free_board(board_t* board) {
     free(board);
+}
+
+/* Updates the white, the black and the all bitboard */
+void update_white_black_all_boards(board_t *board){
+    board->black = board->blackpawns | board->blackknights | board->blackbishops | board->blackrooks | board->blackqueens | board->blackking;
+    board->white = board->whitepawns | board->whiteknights | board->whitebishops | board->whiterooks | board->whitequeens | board->whiteking;
+    board->all = board->black | board->white;
 }
 
 /* Load a game position based on FEN */
@@ -157,6 +171,8 @@ void load_by_FEN(board_t* board, char* FEN) {
         }
         ptr++;
     }
+
+    update_white_black_all_boards(board);
 
     ptr++;
 

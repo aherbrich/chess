@@ -1,6 +1,6 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c
+EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/list.c src/magic.c
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 TEST_DIR = tests
@@ -51,7 +51,7 @@ $(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
 
-$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/prettyprint.o
+$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/prettyprint.o $(BUILD_DIR)/src/movegen.o $(BUILD_DIR)/src/move.o $(BUILD_DIR)/src/list.o  $(BUILD_DIR)/src/magic.o
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o$@ $^
 

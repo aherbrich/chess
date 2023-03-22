@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "../include/chess.h"
 
 /* Formats the string representing the board */
@@ -85,4 +83,80 @@ void print_board(board_t* board) {
     fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
     fprintf(stderr, "\n");
     free(board_string);
+}
+
+/* Prints a bitboard 0/1 */
+void print_bitboard(bitboard_t board){
+    char *string = (char *) malloc(64);
+    for(int i = 0; i < 64; i++){string[i]='-';}
+
+    int idx;
+    while((idx = pop_1st_bit(&board)) != -1){
+        string[idx] = 'o';
+    }
+
+    // print the chessboard-string row for row
+    for (int x = 7; x >= 0; x--) {
+        for (int y = 0; y < 8; y++) {
+            if (y == 0) {
+                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
+            }
+            char piece = string[pos_to_idx(x, y)];
+            if(piece >= 97 && piece <= 122){
+                fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
+            }
+            else{
+                fprintf(stderr, "%c  ", piece);
+            }
+            
+        }
+        fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
+    fprintf(stderr, "\n");
+    free(string);
+}
+
+
+/* Prints move on board */
+void print_move_on_board(move_t *move){
+    char *string = (char *) malloc(64);
+    for(int i = 0; i < 64; i++){string[i]='-';}
+
+    string[move->from] = 'o';
+    if(move->flags == QUIET){
+        string[move->to] = 'X';
+    } else if (move->flags == CAPTURE){
+        string[move->to] = 'T';
+    } else if (move->flags == DOUBLEP){
+        string[move->to] = 'D';
+    } else if (move->flags >= 8){
+        string[move->to] = 'P';
+    } else if (move->flags == EPCAPTURE){
+        string[move->to] = 'E';
+    } else{
+        string[move->to] = 'C';
+    }
+    
+
+    // print the chessboard-string row for row
+    for (int x = 7; x >= 0; x--) {
+        for (int y = 0; y < 8; y++) {
+            if (y == 0) {
+                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
+            }
+            char piece = string[pos_to_idx(x, y)];
+            if(piece >= 97 && piece <= 122){
+                fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
+            }
+            else{
+                fprintf(stderr, "%c  ", piece);
+            }
+            
+        }
+        fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
+    fprintf(stderr, "\n");
+    free(string);
 }

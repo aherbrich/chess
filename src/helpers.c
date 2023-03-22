@@ -1,5 +1,4 @@
 #include "../include/chess.h"
-#include <stdio.h>
 #include <assert.h>
 
 /* Calculate idx based on a row & column */
@@ -37,4 +36,74 @@ int pop_1st_bit(bitboard_t *bitboard){
     int idx = find_1st_bit(*bitboard);
     *bitboard &= *bitboard - 1;
     return idx;
+}
+
+void initialize_attack_boards(){
+    /* bishop attacks */
+    for(int sq = 0; sq < 64; sq++){
+        bitboard_t mask = bishop_mask(sq);
+
+        for(int i = 0; i < (1 << BISHOP_BITS[sq]); i++) {
+            bitboard_t blockermap = index_to_bitboard(i, BISHOP_BITS[sq], mask);
+            int j = transform(blockermap, BISHOP_MAGIC[sq], BISHOP_BITS[sq]);
+            BISHOP_ATTACK[sq][j] = bishop_attacks(sq, blockermap);
+        }
+    }
+    /* rook attacks */
+    for(int sq = 0; sq < 64; sq++){
+        bitboard_t mask = rook_mask(sq);
+        
+        for(int i = 0; i < (1 << ROOK_BITS[sq]); i++) {
+            bitboard_t blockermap = index_to_bitboard(i, ROOK_BITS[sq], mask);
+            int j = transform(blockermap, ROOK_MAGIC[sq], ROOK_BITS[sq]);
+            ROOK_ATTACK[sq][j] = rook_attacks(sq, blockermap);
+        }
+    }
+    /* knight attacks */
+    for(int sq = 0; sq < 64; sq++){
+        bitboard_t knight = (1ULL << sq);
+        bitboard_t attacks = ((knight & CLEAR_FILE[A] & CLEAR_FILE [B]) << 6 | (knight & CLEAR_FILE[A] & CLEAR_FILE [B]) >> 10) |
+                            ((knight & CLEAR_FILE[G] & CLEAR_FILE [H]) << 10 | (knight & CLEAR_FILE[G] & CLEAR_FILE [H]) >> 6) | 
+                            ((knight & CLEAR_FILE[A]) << 15 | (knight & CLEAR_FILE[A]) >> 17) | 
+                            ((knight & CLEAR_FILE[H]) << 17 | (knight & CLEAR_FILE[H]) >> 15);
+        KNIGHT_ATTACK[sq] = attacks;
+    }
+    /* king attacks */
+    for(int sq = 0; sq < 64; sq++){
+        bitboard_t king = (1ULL << sq);
+        bitboard_t attacks = ((king & CLEAR_FILE[A]) >> 1 | (king & CLEAR_FILE[A]) >> 9 | (king & CLEAR_FILE[A]) << 7) |
+                            ((king & CLEAR_FILE[H]) << 1 | (king & CLEAR_FILE[H]) << 9 | (king & CLEAR_FILE[H]) >> 7) |
+                            ((king >> 8) | (king << 8));
+        KING_ATTACK[sq] = attacks;
+    }
+    
+}
+
+void initialize_helper_boards(){
+    // MASK RANK
+    for(int i = 0; i < 8; i++){
+        MASK_RANK[i] = 255ULL << (i*8);
+    }
+
+    // CLEAR RANK
+    for(int i = 0; i < 8; i++){
+        CLEAR_RANK[i] = ~MASK_RANK[i];
+    }
+
+    // MASK FILE
+    for(int i = 0; i < 8; i++){
+        bitboard_t mask = 0;
+        for(int j = i; j < 64; j = j+8){
+            mask |= (1ULL << j);
+        }
+        MASK_FILE[i] = mask;
+    }
+
+    // CLEAR FILE
+    for(int i = 0; i < 8; i++){
+        CLEAR_FILE[i] = ~MASK_FILE[i];
+    }
+
+    // UNIVERSAL BOARD
+    UNIBOARD = 18446744073709551615ULL;
 }

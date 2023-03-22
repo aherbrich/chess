@@ -12,9 +12,10 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
-
 int main() {
     board_t* board = init_board();
+    initialize_helper_boards();
+    initialize_attack_boards();
     load_by_FEN(board, TEST2_FEN);
 
     clock_t end;
@@ -22,8 +23,14 @@ int main() {
 
     begin = clock();
     print_board(board);
+
+    for(int i = 0; i < 1; i++){
+        generate_pseudo_moves(board);
+    }
+    
+
     end = clock();
-    printf("\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
+    fprintf(stderr, "\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
     free_board(board);
 }
