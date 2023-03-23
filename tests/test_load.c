@@ -17,7 +17,7 @@ int main() {
     board_t* board = init_board();
     initialize_helper_boards();
     initialize_attack_boards();
-    load_by_FEN(board, STARTING_FEN);
+    load_by_FEN(board, TEST4_FEN);
 
     clock_t end;
     clock_t begin;
@@ -25,9 +25,12 @@ int main() {
     begin = clock();
     print_board(board);
 
-    for(int i = 0; i < 1; i++){
-        generate_pseudo_moves(board);
-    }
+    int result[] = {6, 264, 9467, 422333, 15833292};
+    printf("Expected: \t%d\n", result[3]);
+    int genresult = move_gen(board, 4);
+    printf("Found: \t\t%d\n", genresult);
+
+    if(result[3] != genresult) exit(1);
 
     end = clock();
     fprintf(stderr, "\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);

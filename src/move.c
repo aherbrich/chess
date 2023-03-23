@@ -52,6 +52,10 @@ void do_move(board_t* board, move_t* move){
 
     if(move->flags == QUIET || move->flags == CAPTURE){
         if(board->player == WHITE){
+            if((1ULL << move->from) == board->whiteking) board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
+            if(((1ULL << move->from) & board->whiterooks) != 0 && move->from == 0) board->castle_rights &= ~(LONGSIDEW);
+            if(((1ULL << move->from) & board->whiterooks) != 0 && move->from == 7) board->castle_rights &= ~(SHORTSIDEW);
+
             if(board->whitepawns & (1ULL << move->from)){
                 board->whitepawns |= (1ULL << move->to);
                 board->whitepawns &= ~(1ULL << move->from);
@@ -91,9 +95,16 @@ void do_move(board_t* board, move_t* move){
                 board->blackrooks &= board->black;
                 board->blackqueens &= board->black;
                 board->blackking &= board->black;
+
+                if(move->to == 63) board->castle_rights &= ~(SHORTSIDEB); 
+                if(move->to == 56) board->castle_rights &= ~(LONGSIDEB);
             }
             
         } else {
+            if((1ULL << move->from) == board->blackking) board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
+            if(((1ULL << move->from) & board->blackrooks) != 0 && move->from == 56) board->castle_rights &= ~(LONGSIDEB);
+            if(((1ULL << move->from) & board->blackrooks) != 0 && move->from == 63) board->castle_rights &= ~(SHORTSIDEB);
+
             if(board->blackpawns & (1ULL << move->from)){
                 board->blackpawns |= (1ULL << move->to);
                 board->blackpawns &= ~(1ULL << move->from);
@@ -134,6 +145,9 @@ void do_move(board_t* board, move_t* move){
                 board->whiterooks &= board->white;
                 board->whitequeens &= board->white;
                 board->whiteking &= board->white;
+
+                if(move->to == 7) board->castle_rights &= ~(SHORTSIDEW); 
+                if(move->to == 0) board->castle_rights &= ~(LONGSIDEW); 
             }
         }
     }
@@ -154,12 +168,12 @@ void do_move(board_t* board, move_t* move){
             board->whiteking = (1ULL << 6);
             board->whiterooks |= (1ULL << 5);
             board->whiterooks &= ~(1ULL << 7);
-            board->castle_rights &= ~(SHORTSIDEW);
+            board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
         } else{
             board->blackking = (1ULL << 62);
             board->blackrooks |= (1ULL << 61);
             board->blackrooks &= ~(1ULL << 63);
-            board->castle_rights &= ~(SHORTSIDEB);
+            board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
         }
     }
     else if(move->flags == QCASTLE){
@@ -167,12 +181,12 @@ void do_move(board_t* board, move_t* move){
             board->whiteking = (1ULL << 2);
             board->whiterooks |= (1ULL << 3);
             board->whiterooks &= ~(1ULL << 0);
-            board->castle_rights &= ~(LONGSIDEW);
+            board->castle_rights &= ~(LONGSIDEW | SHORTSIDEW);
         } else{
             board->blackking = (1ULL << 58);
             board->blackrooks |= (1ULL << 59);
             board->blackrooks &= ~(1ULL << 56);
-            board->castle_rights &= ~(LONGSIDEB);
+            board->castle_rights &= ~(LONGSIDEB | SHORTSIDEB);
         }
     }
     else if(move->flags == EPCAPTURE){
@@ -234,6 +248,9 @@ void do_move(board_t* board, move_t* move){
             board->blackrooks &= board->black;
             board->blackqueens &= board->black;
             board->blackking &= board->black;
+
+            if(move->to == 63) board->castle_rights &= ~(SHORTSIDEB); 
+            if(move->to == 56) board->castle_rights &= ~(LONGSIDEB);
         } else {
             board->blackpawns &= ~(1ULL << move->from);
             board->blackknights |= (1ULL << move->to);
@@ -245,6 +262,9 @@ void do_move(board_t* board, move_t* move){
             board->whiterooks &= board->white;
             board->whitequeens &= board->white;
             board->whiteking &= board->white;
+
+            if(move->to == 7) board->castle_rights &= ~(SHORTSIDEW); 
+            if(move->to == 0) board->castle_rights &= ~(LONGSIDEW); 
         }
     }
     else if(move->flags == BCPROM){
@@ -259,6 +279,9 @@ void do_move(board_t* board, move_t* move){
             board->blackrooks &= board->black;
             board->blackqueens &= board->black;
             board->blackking &= board->black;
+
+            if(move->to == 63) board->castle_rights &= ~(SHORTSIDEB); 
+            if(move->to == 56) board->castle_rights &= ~(LONGSIDEB);
         } else {
             board->blackpawns &= ~(1ULL << move->from);
             board->blackbishops |= (1ULL << move->to);
@@ -270,6 +293,9 @@ void do_move(board_t* board, move_t* move){
             board->whiterooks &= board->white;
             board->whitequeens &= board->white;
             board->whiteking &= board->white;
+
+            if(move->to == 7) board->castle_rights &= ~(SHORTSIDEW); 
+            if(move->to == 0) board->castle_rights &= ~(LONGSIDEW); 
         }
     }
     else if(move->flags == RCPROM){
@@ -284,6 +310,9 @@ void do_move(board_t* board, move_t* move){
             board->blackrooks &= board->black;
             board->blackqueens &= board->black;
             board->blackking &= board->black;
+
+            if(move->to == 63) board->castle_rights &= ~(SHORTSIDEB); 
+            if(move->to == 56) board->castle_rights &= ~(LONGSIDEB);
         } else {
             board->blackpawns &= ~(1ULL << move->from);
             board->blackrooks |= (1ULL << move->to);
@@ -295,6 +324,9 @@ void do_move(board_t* board, move_t* move){
             board->whiterooks &= board->white;
             board->whitequeens &= board->white;
             board->whiteking &= board->white;
+
+            if(move->to == 7) board->castle_rights &= ~(SHORTSIDEW); 
+            if(move->to == 0) board->castle_rights &= ~(LONGSIDEW); 
         }
     }
     else if(move->flags == QCPROM){
@@ -309,6 +341,9 @@ void do_move(board_t* board, move_t* move){
             board->blackrooks &= board->black;
             board->blackqueens &= board->black;
             board->blackking &= board->black;
+
+            if(move->to == 63) board->castle_rights &= ~(SHORTSIDEB); 
+            if(move->to == 56) board->castle_rights &= ~(LONGSIDEB);
         } else {
             board->blackpawns &= ~(1ULL << move->from);
             board->blackqueens |= (1ULL << move->to);
@@ -320,6 +355,9 @@ void do_move(board_t* board, move_t* move){
             board->whiterooks &= board->white;
             board->whitequeens &= board->white;
             board->whiteking &= board->white;
+
+            if(move->to == 7) board->castle_rights &= ~(SHORTSIDEW); 
+            if(move->to == 0) board->castle_rights &= ~(LONGSIDEW); 
         }
     }
     else{

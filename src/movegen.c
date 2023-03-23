@@ -159,8 +159,9 @@ int is_capture(bitboard_t to, board_t *board){
 }
 
 
-int is_in_check(board_t *board){
+int is_in_check_after_move(board_t *board){
     if(board->player == BLACK){
+        if(!board->whiteking) return TRUE;
         int king_sq = find_1st_bit(board->whiteking);
 
         bitboard_t attackers;
@@ -194,6 +195,79 @@ int is_in_check(board_t *board){
 
         return FALSE;
     } else{
+        if(!board->blackking) return TRUE;
+        int king_sq = find_1st_bit(board->blackking);
+
+        bitboard_t attackers;
+        bitboard_t blockers;
+
+        /* check by knights */ 
+        attackers = KNIGHT_ATTACK[king_sq] & board->whiteknights;
+        if(attackers) return TRUE;
+
+        /* check by bishops, rooks, and queens */
+        blockers = rook_mask(king_sq) & board->all;
+        int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
+        attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
+        if(attackers) return TRUE;
+
+        blockers = bishop_mask(king_sq) & board->all;
+        int k = transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
+        attackers = BISHOP_ATTACK[king_sq][k] & board->whitebishops;
+        if(attackers) return TRUE;
+
+        attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) & board->whitequeens;
+        if(attackers) return TRUE;
+
+        /* check by pawns */
+        attackers = (((board->blackking & CLEAR_FILE[H]) >> 7) | ((board->blackking & CLEAR_FILE[A]) >> 9)) & board->whitepawns;
+        if(attackers) return TRUE;
+
+        /* 'check by king' */
+        attackers = KING_ATTACK[king_sq] & board->whiteking;
+        if(attackers) return TRUE;
+
+        return FALSE;
+    }
+}
+
+int is_in_check(board_t *board){
+    if(board->player == WHITE){
+        if(!board->whiteking) return TRUE;
+        int king_sq = find_1st_bit(board->whiteking);
+
+        bitboard_t attackers;
+        bitboard_t blockers;
+
+        /* check by knights */ 
+        attackers = KNIGHT_ATTACK[king_sq] & board->blackknights;
+        if(attackers) return TRUE;
+
+        /* check by bishops, rooks, and queens */
+        blockers = rook_mask(king_sq) & board->all;
+        int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
+        attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
+        if(attackers) return TRUE;
+
+        blockers = bishop_mask(king_sq) & board->all;
+        int k = transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
+        attackers = BISHOP_ATTACK[king_sq][k] & board->blackbishops;
+        if(attackers) return TRUE;
+
+        attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) & board->blackqueens;
+        if(attackers) return TRUE;
+
+        /* check by pawns */
+        attackers = (((board->whiteking & CLEAR_FILE[A]) << 7) | ((board->whiteking & CLEAR_FILE[H]) << 9)) & board->blackpawns;
+        if(attackers) return TRUE;
+
+        /* 'check by king' */
+        attackers = KING_ATTACK[king_sq] & board->blackking;
+        if(attackers) return TRUE;
+
+        return FALSE;
+    } else{
+        if(!board->blackking) return TRUE;
         int king_sq = find_1st_bit(board->blackking);
 
         bitboard_t attackers;
@@ -501,25 +575,43 @@ void generate_black_enpassant_moves(board_t *board, list_t *movelst){
 
 /* DONE */
 void generate_white_castle_moves(board_t *board, list_t *movelst){
+    if(is_in_check(board)) return;
     // king/shortside
     if((board->all & ((1ULL << 5) | (1ULL << 6))) == 0 && (board->castle_rights & SHORTSIDEW)){
-        push(movelst, generate_move(4, 6, KCASTLE));
+        board->whiteking = ((1ULL << 5));
+        int through_check = is_in_check(board);
+        board->whiteking = ((1ULL << 4));
+        if(!through_check) push(movelst, generate_move(4, 6, KCASTLE));
+        
     }
     // queen/longside
     if((board->all & ((1ULL << 1) | (1ULL << 2) | (1ULL << 3))) == 0 && (board->castle_rights & LONGSIDEW)){
-        push(movelst, generate_move(4, 2, QCASTLE));
+        board->whiteking = ((1ULL << 3));
+        int through_check = is_in_check(board);
+        board->whiteking = ((1ULL << 4));
+        if(!through_check) push(movelst, generate_move(4, 2, QCASTLE));
+        
     }
 } 
 
 /* DONE */
 void generate_black_castle_moves(board_t *board, list_t *movelst){
+    if(is_in_check(board)) return;
     // king/shortside
     if((board->all & ((1ULL << 61) | (1ULL << 62))) == 0 && (board->castle_rights & SHORTSIDEB)){
-        push(movelst, generate_move(60, 62, KCASTLE));
+        board->blackking = ((1ULL << 61));
+        int through_check = is_in_check(board);
+        board->blackking = ((1ULL << 60));
+        if(!through_check) push(movelst, generate_move(60, 62, KCASTLE));;
+        
     }
     // queen/longside
     if((board->all & ((1ULL << 57) | (1ULL << 58) | (1ULL << 59))) == 0 && (board->castle_rights & LONGSIDEB)){
-        push(movelst, generate_move(60, 58, QCASTLE));
+        board->blackking = ((1ULL << 59));
+        int through_check = is_in_check(board);
+        board->blackking = ((1ULL << 60));
+        if(!through_check) push(movelst, generate_move(60, 58, QCASTLE));;
+        
     }
 } 
 
@@ -554,7 +646,7 @@ list_t* generate_pseudo_moves(board_t *board){
     while(movelst->len != 0){
         move_t *move = pop(movelst);
         do_move(board, move);
-        int in_check = is_in_check(board);
+        int in_check = is_in_check_after_move(board);
         if(!in_check) push(legalmoves, move);
         undo_move(board, move);
         if(in_check) free(move);

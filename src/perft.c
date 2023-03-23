@@ -17,11 +17,28 @@ int move_gen(board_t* board, int depth) {
 
 
     while ((move = pop(move_list)) != NULL) {
+        // if(depth == 4){
+        //     fprintf(stderr, "");
+        //     print_move(move);
+        //     fprintf(stderr, "\n");
+        // }
+        // if(depth == 3){
+        //     fprintf(stderr, "\t");
+        //     print_move(move);
+        //     fprintf(stderr, "\n");
+        // }
+
         do_move(board, move);
         num_positions += move_gen(board, depth - 1);
         undo_move(board, move);
         free_move(move);
     }
     free(move_list);
+    // if(depth == 3){
+    //     fprintf(stderr, "\t%d\n\n", num_positions);
+    // }
+    // if(depth == 2){
+    //     fprintf(stderr, "\t\t%d\n\n", num_positions);
+    // }
     return num_positions;
 }

@@ -145,6 +145,7 @@ extern void initialize_helper_boards();
 extern void print_board(board_t* board);
 extern void print_bitboard(bitboard_t board);
 extern void print_move_on_board(move_t *move);
+extern void print_move(move_t* move);
 
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
