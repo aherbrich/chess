@@ -19,7 +19,7 @@ int move_gen(board_t* board, int depth) {
     while ((move = pop(move_list)) != NULL) {
         do_move(board, move);
         num_positions += move_gen(board, depth - 1);
-        undo_move(board, move);
+        undo_move(board);
         free_move(move);
     }
     free(move_list);

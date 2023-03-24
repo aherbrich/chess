@@ -186,7 +186,7 @@ extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
 extern void free_move_list(list_t *movelst);
 void do_move(board_t* board, move_t* move);
-void undo_move(board_t* board, move_t* move);
+void undo_move(board_t* board);
 
 /////////////////////////////////////////////////////////////
 //  MAGIC BITBOARDS

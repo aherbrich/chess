@@ -648,7 +648,7 @@ list_t* generate_pseudo_moves(board_t *board){
         do_move(board, move);
         int in_check = is_in_check_after_move(board);
         if(!in_check) push(legalmoves, move);
-        undo_move(board, move);
+        undo_move(board);
         if(in_check) free(move);
     }
     free(movelst);

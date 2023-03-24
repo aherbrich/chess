@@ -314,7 +314,7 @@ void do_move(board_t* board, move_t* move){
 }
 
 /* Undo a move*/
-void undo_move(board_t* board, move_t* move){
+void undo_move(board_t* board){
     board->ply_no--;
     board_t* old_board = OLDSTATE[board->ply_no];
     recover_board(board, old_board);
