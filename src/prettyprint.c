@@ -104,7 +104,7 @@ void print_bitboard(bitboard_t board){
         string[idx] = 'o';
     }
 
-    // print the chessboard-string row for row
+    /* print the chessboard-string row for row */
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
             if (y == 0) {
@@ -125,7 +125,6 @@ void print_bitboard(bitboard_t board){
     fprintf(stderr, "\n");
     free(string);
 }
-
 
 /* Prints move on board */
 void print_move_on_board(move_t *move){
@@ -148,7 +147,7 @@ void print_move_on_board(move_t *move){
     }
     
 
-    // print the chessboard-string row for row
+    /* print the chessboard-string row for row */
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
             if (y == 0) {

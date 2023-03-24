@@ -38,6 +38,7 @@ int pop_1st_bit(bitboard_t *bitboard){
     return idx;
 }
 
+/* Initializes hashtables with attack board for each square */
 void initialize_attack_boards(){
     /* bishop attacks */
     for(int sq = 0; sq < 64; sq++){
@@ -79,18 +80,19 @@ void initialize_attack_boards(){
     
 }
 
+/* Initializes hashtables with masks for ranks and files */
 void initialize_helper_boards(){
-    // MASK RANK
+    /* mask rank */
     for(int i = 0; i < 8; i++){
         MASK_RANK[i] = 255ULL << (i*8);
     }
 
-    // CLEAR RANK
+    /* clear rank */
     for(int i = 0; i < 8; i++){
         CLEAR_RANK[i] = ~MASK_RANK[i];
     }
 
-    // MASK FILE
+    /* mask file  */
     for(int i = 0; i < 8; i++){
         bitboard_t mask = 0;
         for(int j = i; j < 64; j = j+8){
@@ -99,11 +101,11 @@ void initialize_helper_boards(){
         MASK_FILE[i] = mask;
     }
 
-    // CLEAR FILE
+    /* clear file */
     for(int i = 0; i < 8; i++){
         CLEAR_FILE[i] = ~MASK_FILE[i];
     }
 
-    // UNIVERSAL BOARD
+    /* universal board */
     UNIBOARD = 18446744073709551615ULL;
 }

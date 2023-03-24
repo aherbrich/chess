@@ -10,7 +10,7 @@ int move_gen(board_t* board, int depth) {
         return 1;
     }
 
-    list_t* move_list = generate_pseudo_moves(board);
+    list_t* move_list = generate_moves(board);
     move_t* move;
 
     int num_positions = 0;

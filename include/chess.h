@@ -162,21 +162,14 @@ extern void update_white_black_all_boards(board_t *board);
 //  MOVE GENERATION
 
 extern list_t* generate_pseudo_moves(board_t *board);
+extern list_t* generate_moves(board_t *board);
 
 /////////////////////////////////////////////////////////////
 //  LIST STRUCTURE & FUNCTIONS
 
-//extern node_t* init_list();
-//extern void add(node_t* head, move_t* move);
-//extern void delete(node_t* head);
-//extern move_t* pop(node_t* head);
-//extern int len(node_t* head);
-
 extern list_t* new_list();
 extern move_t* pop(list_t* head);
 extern void push(list_t* head, move_t* move);
-extern void push_old_state(list_t* head, board_t *board);
-extern board_t* pop_old_state(list_t* head);
 
 /////////////////////////////////////////////////////////////
 //  MOVE

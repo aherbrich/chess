@@ -46,11 +46,10 @@ void free_move_list(list_t *movelst) {
     if(movelst)free(movelst);
 }
 
-
+/* Execute move */
 void do_move(board_t* board, move_t* move){
     /* save old board state */
     OLDSTATE[board->ply_no] = copy_board(board);
-
 
     /* execeute move */
     bitboard_t from_mask = 1ULL << move->from;
