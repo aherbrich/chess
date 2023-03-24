@@ -10,8 +10,8 @@ TEST_TARGET = $(notdir $(TEST_OBJ))
 DEBUG_TARGET = $(addprefix gdb_, $(TEST_TARGET))
 VALGRIND_TARGET = $(addprefix valgrind_, $(TEST_TARGET))
 
-CC = gcc
-CC_FLAGS = -Wall -Wextra -g -std=c11 -O3
+CC = clang
+CC_FLAGS = -Wall -Wextra -std=c11 -O3
 
 .PHONY: all
 all: build build_tests     # Build everything but runs nothing

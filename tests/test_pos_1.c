@@ -43,8 +43,10 @@ int main() {
         printf("Found: \t\t%d\n", genresult);
         end = clock();
         printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
+        double diff = (double)(end - begin) / CLOCKS_PER_SEC;
+        printf("NPS: \t\t%d\n", (int) (((double) genresult)/diff));
 
-        if (result[i] == genresult) {
+        if(result[i] == genresult) {
             printf("%sOk...%s\n\n", Color_GREEN, Color_END);
         } else {
             fail_counter++;

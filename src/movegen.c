@@ -303,19 +303,19 @@ int is_in_check(board_t *board){
     }
 }
 
-bitboard_t get_knight_attacks(int sq, board_t *board){
+inline bitboard_t get_knight_attacks(int sq, board_t *board){
     bitboard_t attacks = KNIGHT_ATTACK[sq];
     attacks = (board->player == WHITE)?(attacks&~board->white):(attacks&~board->black);
     return attacks;
 }
 
-bitboard_t get_king_attacks(int sq, board_t *board){
+inline bitboard_t get_king_attacks(int sq, board_t *board){
     bitboard_t attacks = KING_ATTACK[sq];
     attacks = (board->player == WHITE)?(attacks&~board->white):(attacks&~board->black);
     return attacks;
 }
 
-bitboard_t get_white_pawn_attacks(bitboard_t pawn, board_t *board){
+inline bitboard_t get_white_pawn_attacks(bitboard_t pawn, board_t *board){
 	bitboard_t pawn_one_step = (pawn << 8) & ~board->all; 
 	bitboard_t pawn_two_steps = ((pawn_one_step & MASK_RANK[RANK3]) << 8) & ~board->all; 
 	bitboard_t pawn_valid_moves = pawn_one_step | pawn_two_steps;
@@ -330,7 +330,7 @@ bitboard_t get_white_pawn_attacks(bitboard_t pawn, board_t *board){
 	return pawn_all_valid;
 }
 
-bitboard_t get_black_pawn_attacks(bitboard_t pawn, board_t *board){
+inline bitboard_t get_black_pawn_attacks(bitboard_t pawn, board_t *board){
 	bitboard_t pawn_one_step = (pawn >> 8) & ~board->all; 
 	bitboard_t pawn_two_steps = ((pawn_one_step & MASK_RANK[RANK6]) >> 8) & ~board->all; 
 	bitboard_t pawn_valid_moves = pawn_one_step | pawn_two_steps;
@@ -345,7 +345,7 @@ bitboard_t get_black_pawn_attacks(bitboard_t pawn, board_t *board){
 	return pawn_all_valid;
 }
 
-bitboard_t get_bishop_attacks(int sq, board_t *board){
+inline bitboard_t get_bishop_attacks(int sq, board_t *board){
     bitboard_t blockers = bishop_mask(sq) & board->all;
     int j = transform(blockers, BISHOP_MAGIC[sq], BISHOP_BITS[sq]);
     bitboard_t attacks = BISHOP_ATTACK[sq][j];
@@ -355,7 +355,7 @@ bitboard_t get_bishop_attacks(int sq, board_t *board){
     return(attacks);
 }
 
-bitboard_t get_rook_attacks(int sq, board_t *board){
+inline bitboard_t get_rook_attacks(int sq, board_t *board){
     bitboard_t blockers = rook_mask(sq) & board->all;
     int j = transform(blockers, ROOK_MAGIC[sq], ROOK_BITS[sq]);
     bitboard_t attacks = ROOK_ATTACK[sq][j];
