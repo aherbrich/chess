@@ -1,6 +1,9 @@
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+#include <time.h>
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"
@@ -61,6 +64,9 @@
 #define QUEEN 4
 #define KING 5
 
+#define INFINITY INT_MAX
+#define NEGINFINITY (-INFINITY)
+
 
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
@@ -112,6 +118,26 @@ typedef struct _list_t{
     node_t *last;
 } list_t;
 
+typedef struct _searchdata_t {
+    board_t *board;         /* pointer to the actual board */
+    int max_depth;          /* maximum search depth in plies */
+    int max_seldepth;       /* maximum search depth with quiescence search */
+    int max_nodes;          /* maximum nodes allowed to search */
+    int max_time;           /* maximum time allowed */
+    int wtime;              /* time white has left on clock in ms*/
+    int btime;              /* time black has left on clock in ms*/
+    int winc;               /* white time increment in ms */      
+    int binc;               /* black time increment in ms */ 
+    int ponder;             /* tells engine to start search at ponder move */
+    int run_infinite;       /* tells the engine to run aslong as stop != 1 */
+    int stop;               /* tells the engine to stop search when stop == 1*/
+    move_t *best_move;      /* computed best move (so far) */
+    clock_t start_time;     /* time the search was initiated by gui */
+    int time_available;     /* time for search precalculated */
+}  searchdata_t;
+
+extern int nodes_searched;
+
 extern bitboard_t MASK_FILE[8];
 extern bitboard_t MASK_RANK[8];
 extern bitboard_t CLEAR_FILE[8];
@@ -128,7 +154,8 @@ extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64]; 
 extern bitboard_t KING_ATTACK[64];
 
-extern board_t* OLDSTATE[128];
+extern board_t* OLDSTATE[512];
+extern move_t* BESTMOVE;
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
@@ -161,6 +188,7 @@ extern void update_white_black_all_boards(board_t *board);
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION
 
+extern int is_in_check(board_t *board);
 extern list_t* generate_pseudo_moves(board_t *board);
 extern list_t* generate_moves(board_t *board);
 
@@ -193,6 +221,18 @@ extern bitboard_t bishop_attacks(int sq, bitboard_t block);
 
 
 ///////////////////////////////////////////////////////////////
-// PERFT
+//  PERFT
 
 extern uint64_t move_gen(board_t* board, int depth);
+
+
+///////////////////////////////////////////////////////////////
+//  ALPHA BETA SEARCH
+extern int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
+extern int eval_end_of_game(board_t *board, int depth);
+extern int eval_board(board_t *board);
+
+///////////////////////////////////////////////////////////////
+//  SEARCH DATA
+extern searchdata_t* init_search_data(board_t *board);
+extern void free_search_data(searchdata_t *data);

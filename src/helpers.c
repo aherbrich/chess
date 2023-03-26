@@ -1,5 +1,4 @@
 #include "../include/chess.h"
-#include <assert.h>
 
 /* Calculate idx based on a row & column */
 idx_t pos_to_idx(int row, int col) {
