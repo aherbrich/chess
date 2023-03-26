@@ -34,12 +34,12 @@ int main() {
     begin = clock();
     print_board(board);
 
-    search_data->max_depth = 7;
-    int eval = alpha_beta_search(board, search_data->max_depth, NEGINFINITY, INFINITY, search_data);
-    printf("Eval: %d\t\t(Searched: %d)\n",eval, nodes_searched);
-    printf("Best move:\t");
+    search_data->max_depth = 8;
+    int eval = iterative_search(search_data);
+    fprintf(stderr, "Eval: \t\t%d\t\t(Searched: %d)\n",eval, nodes_searched);
+    fprintf(stderr, "Best move:\t");
     print_move(search_data->best_move);
-    printf("\n");
+    fprintf(stderr, "\n");
     end = clock();
     fprintf(stderr, "\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 

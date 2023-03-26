@@ -189,8 +189,10 @@ extern void update_white_black_all_boards(board_t *board);
 //  MOVE GENERATION
 
 extern int is_in_check(board_t *board);
+extern int is_in_check_after_move(board_t *board);
 extern list_t* generate_pseudo_moves(board_t *board);
 extern list_t* generate_moves(board_t *board);
+extern int iterative_search(searchdata_t* search_data);
 
 /////////////////////////////////////////////////////////////
 //  LIST STRUCTURE & FUNCTIONS
