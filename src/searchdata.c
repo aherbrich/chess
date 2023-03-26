@@ -5,6 +5,7 @@ searchdata_t* init_search_data(board_t *board){
     searchdata_t *data = (searchdata_t*) malloc(sizeof(searchdata_t));
     data->board = copy_board(board);  /* current board */
     data->max_depth = -1;             /* maximum search depth in plies */
+    data->current_max_depth = -1;     /* current maximum search depth in plies in iterative search*/
     data->max_seldepth = -1;          /* maximum search depth with quiescence search */
     data->max_nodes = -1;             /* maximum nodes allowed to search */
     data->max_time = -1;              /* maximum time allowed in ms */

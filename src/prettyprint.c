@@ -182,3 +182,46 @@ void print_move(move_t* move) {
         fprintf(stderr, "%s%.2s-%.2s%s",Color_PURPLE, start_field, end_field, Color_END);
     }
 }
+
+/* Print move */
+void print_LAN_move(move_t* move, player_t color_playing) {
+    char* start_field = FIELD[move->from];
+    char* end_field = FIELD[move->to];
+
+    /* if promotion move */
+    if (move->flags >= 8) {
+        flag_t prom_flag = move->flags & ~(0b11);
+        if(prom_flag == 0){
+            if(color_playing == WHITE){
+                printf("%.2s-%.2s-K", start_field, end_field);
+            }else{
+                printf("%.2s-%.2s-k", start_field, end_field);
+            }
+        }
+        else if(prom_flag == 1){
+            if(color_playing == WHITE){
+                printf("%.2s-%.2s-B", start_field, end_field);
+            }else{
+                printf("%.2s-%.2s-b", start_field, end_field);
+            }
+        }
+        else if(prom_flag == 2){
+            if(color_playing == WHITE){
+                printf("%.2s-%.2s-R", start_field, end_field);
+            }else{
+                printf("%.2s-%.2s-r", start_field, end_field);
+            }
+        }
+        else{
+            if(color_playing == WHITE){
+                printf("%.2s-%.2s-Q", start_field, end_field);
+            }else{
+                printf("%.2s-%.2s-q", start_field, end_field);
+            }
+        }
+    } 
+    /* no promotion move */
+    else{
+        printf("%.2s%.2s", start_field, end_field);
+    }
+}

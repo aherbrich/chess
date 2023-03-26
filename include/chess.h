@@ -121,6 +121,7 @@ typedef struct _list_t{
 typedef struct _searchdata_t {
     board_t *board;         /* pointer to the actual board */
     int max_depth;          /* maximum search depth in plies */
+    int current_max_depth;
     int max_seldepth;       /* maximum search depth with quiescence search */
     int max_nodes;          /* maximum nodes allowed to search */
     int max_time;           /* maximum time allowed */
@@ -173,6 +174,7 @@ extern void print_board(board_t* board);
 extern void print_bitboard(bitboard_t board);
 extern void print_move_on_board(move_t *move);
 extern void print_move(move_t* move);
+extern void print_LAN_move(move_t* move, player_t color_playing);
 
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS

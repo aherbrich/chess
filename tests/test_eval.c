@@ -20,7 +20,7 @@ int main() {
     board_t* board = init_board();
     initialize_helper_boards();
     initialize_attack_boards();
-    load_by_FEN(board, TEST4_FEN);
+    load_by_FEN(board, TEST2_FEN);
     searchdata_t* search_data = init_search_data(board);
 
     for(int i = 0; i < 512; i++){
@@ -33,15 +33,18 @@ int main() {
 
     begin = clock();
     print_board(board);
+    printf("\n");
 
-    search_data->max_depth = 8;
+    search_data->max_depth = 10;
     int eval = iterative_search(search_data);
-    fprintf(stderr, "Eval: \t\t%d\t\t(Searched: %d)\n",eval, nodes_searched);
-    fprintf(stderr, "Best move:\t");
-    print_move(search_data->best_move);
-    fprintf(stderr, "\n");
+
+    printf("\n");
+    printf("Eval: \t\t%s%d%s\n", Color_PURPLE, eval, Color_END);
+    printf("Best move:\t%s", Color_PURPLE);
+    print_LAN_move(search_data->best_move, board->player);
+    printf("\n%s", Color_END);
     end = clock();
-    fprintf(stderr, "\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
+    printf("\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
     free(board);
 }
