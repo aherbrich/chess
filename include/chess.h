@@ -195,4 +195,4 @@ extern bitboard_t bishop_attacks(int sq, bitboard_t block);
 ///////////////////////////////////////////////////////////////
 // PERFT
 
-int move_gen(board_t* board, int depth);
+extern uint64_t move_gen(board_t* board, int depth);

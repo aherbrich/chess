@@ -26,7 +26,7 @@ int main() {
     clock_t end;
     clock_t begin;
 
-    int genresult;
+    uint64_t genresult;
 
     print_board(board);
 
@@ -34,19 +34,19 @@ int main() {
 
     int fail_counter = 0;
 
-    for (unsigned long i = 0; i < (sizeof(result) / sizeof(int)); i++) {
+    for (unsigned long i = 0; i < (sizeof(result) / sizeof(uint64_t)); i++) {
         printf("%s", Color_END);
         begin = clock();
         printf("DEPTH(%d):\n", (int)i + 1);
-        printf("Expected: \t%d\n", result[i]);
+        printf("Expected: \t%llu\n", result[i]);
         genresult = move_gen(board, i + 1);
-        printf("Found: \t\t%d\n", genresult);
+        printf("Found: \t\t%llu\n", genresult);
         end = clock();
         printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
         double diff = (double)(end - begin) / CLOCKS_PER_SEC;
         printf("NPS: \t\t%d\n", (int) (((double) genresult)/diff));
 
-        if (result[i] == genresult) {
+        if(result[i] == genresult) {
             printf("%sOk...%s\n\n", Color_GREEN, Color_END);
         } else {
             fail_counter++;

@@ -12,7 +12,7 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 board_t* OLDSTATE[128];
 
 int main() {
-    int result[] = {20, 400, 8902, 197281, 4865609, 119060324};
+    uint64_t result[] = {20ULL, 400ULL, 8902ULL, 197281ULL, 4865609ULL, 119060324ULL, 3195901860ULL};
 
     board_t* board = init_board();
     initialize_helper_boards();
@@ -26,7 +26,7 @@ int main() {
     clock_t end;
     clock_t begin;
 
-    int genresult;
+    uint64_t genresult;
 
     print_board(board);
 
@@ -34,13 +34,13 @@ int main() {
 
     int fail_counter = 0;
 
-    for (unsigned long i = 0; i < (sizeof(result) / sizeof(int)); i++) {
+    for (unsigned long i = 0; i < (sizeof(result) / sizeof(uint64_t)); i++) {
         printf("%s", Color_END);
         begin = clock();
         printf("DEPTH(%d):\n", (int)i + 1);
-        printf("Expected: \t%d\n", result[i]);
+        printf("Expected: \t%llu\n", result[i]);
         genresult = move_gen(board, i + 1);
-        printf("Found: \t\t%d\n", genresult);
+        printf("Found: \t\t%llu\n", genresult);
         end = clock();
         printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
         double diff = (double)(end - begin) / CLOCKS_PER_SEC;

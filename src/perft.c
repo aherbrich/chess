@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////
 // PERFT TESTER
 
-int move_gen(board_t* board, int depth) {
+uint64_t move_gen(board_t* board, int depth) {
     if (depth == 0) {
         return 1;
     }
@@ -13,7 +13,7 @@ int move_gen(board_t* board, int depth) {
     list_t* move_list = generate_moves(board);
     move_t* move;
 
-    int num_positions = 0;
+    uint64_t num_positions = 0;
 
 
     while ((move = pop(move_list)) != NULL) {
