@@ -75,6 +75,7 @@ typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
 typedef uint8_t idx_t;
 typedef uint8_t flag_t;
+typedef uint8_t piece_t;
 
 typedef struct _board_t {
     bitboard_t whitepawns;
@@ -162,6 +163,7 @@ extern int find_1st_bit(bitboard_t bb);
 extern int pop_1st_bit(bitboard_t *bitboard);
 extern void initialize_attack_boards();
 extern void initialize_helper_boards();
+extern void initialize_oldstate_array();
 
 /////////////////////////////////////////////////////////////
 //  LIST FUNCTIONS
@@ -197,8 +199,9 @@ extern move_t *generate_move(idx_t from, idx_t to, flag_t flags);
 extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
 extern void free_move_list(list_t *movelst);
-void do_move(board_t* board, move_t* move);
-void undo_move(board_t* board);
+extern void do_move(board_t* board, move_t* move);
+extern void undo_move(board_t* board);
+extern int is_same_move(move_t* move1, move_t* move2);
 
 ///////////////////////////////////////////////////////////////
 //  PERFT

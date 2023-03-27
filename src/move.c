@@ -3,6 +3,20 @@
 ////////////////////////////////////////////////////////////////
 // MOVE FUNCTIONS
 
+/* Determines if two mves are the same */
+int is_same_move(move_t* move1, move_t* move2){
+    if(move1->from != move2->from){
+        return 0;
+    }
+    if(move1->to != move2->to){
+        return 0;
+    }
+    if(move1->flags != move2->flags){
+        return 0;
+    }
+    return 1;
+
+}
 
 /* Allocate memory for a move */
 move_t *generate_move(idx_t from, idx_t to, flag_t flags) {

@@ -124,3 +124,10 @@ void initialize_helper_boards(){
     /* universal board */
     UNIBOARD = 18446744073709551615ULL;
 }
+
+/* Initializes old state array */
+void initialize_oldstate_array(){
+    for(int i = 0; i < 512; i++){
+        OLDSTATE[i] = 0;
+    }
+}
