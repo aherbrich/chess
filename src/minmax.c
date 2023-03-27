@@ -1,4 +1,6 @@
 #include "../include/chess.h"
+#include "../include/eval.h"
+#include "../include/prettyprint.h"
 
 int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* search_data){
     if(depth == 0){

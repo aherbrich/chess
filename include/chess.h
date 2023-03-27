@@ -1,3 +1,6 @@
+#ifndef __CHESS_H__
+#define __CHESS_H__
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -103,7 +106,6 @@ typedef struct _move_t {
     flag_t flags;
     flag_t piece;
 } move_t;
-
 typedef struct _node_t {
     move_t* move;
     board_t* board;
@@ -111,13 +113,11 @@ typedef struct _node_t {
     struct _node_t* prev;
 } node_t;
 
-
 typedef struct _list_t{
     int len;
     node_t *first;
     node_t *last;
 } list_t;
-
 typedef struct _searchdata_t {
     board_t *board;         /* pointer to the actual board */
     int max_depth;          /* maximum search depth in plies */
@@ -145,36 +145,30 @@ extern bitboard_t CLEAR_FILE[8];
 extern bitboard_t CLEAR_RANK[8];
 extern bitboard_t UNIBOARD;
 
-extern const int ROOK_BITS[64];
-extern const int BISHOP_BITS[64];
-extern const uint64_t ROOK_MAGIC[64];
-extern const uint64_t BISHOP_MAGIC[64];
-
 extern bitboard_t ROOK_ATTACK[64][4096];
 extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64]; 
 extern bitboard_t KING_ATTACK[64];
 
 extern board_t* OLDSTATE[512];
-extern move_t* BESTMOVE;
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
 
+extern uint64_t random_uint64();
+extern uint64_t random_uint64_fewbits();
 extern idx_t pos_to_idx(int row, int col);
 extern int find_1st_bit(bitboard_t bb);
 extern int pop_1st_bit(bitboard_t *bitboard);
 extern void initialize_attack_boards();
 extern void initialize_helper_boards();
 
-//////////////////////////////////////////////////////////////
-//  PRINT FUNCTIONS
+/////////////////////////////////////////////////////////////
+//  LIST FUNCTIONS
 
-extern void print_board(board_t* board);
-extern void print_bitboard(bitboard_t board);
-extern void print_move_on_board(move_t *move);
-extern void print_move(move_t* move);
-extern void print_LAN_move(move_t* move, player_t color_playing);
+extern list_t* new_list();
+extern move_t* pop(list_t* head);
+extern void push(list_t* head, move_t* move);
 
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
@@ -197,13 +191,6 @@ extern list_t* generate_moves(board_t *board);
 extern int iterative_search(searchdata_t* search_data);
 
 /////////////////////////////////////////////////////////////
-//  LIST STRUCTURE & FUNCTIONS
-
-extern list_t* new_list();
-extern move_t* pop(list_t* head);
-extern void push(list_t* head, move_t* move);
-
-/////////////////////////////////////////////////////////////
 //  MOVE
 
 extern move_t *generate_move(idx_t from, idx_t to, flag_t flags);
@@ -213,30 +200,20 @@ extern void free_move_list(list_t *movelst);
 void do_move(board_t* board, move_t* move);
 void undo_move(board_t* board);
 
-/////////////////////////////////////////////////////////////
-//  MAGIC BITBOARDS
-
-extern int transform(bitboard_t mask, uint64_t magic, int bits);
-extern bitboard_t index_to_bitboard(int index, int bits, bitboard_t mask);
-extern bitboard_t rook_mask(int sq);
-extern bitboard_t bishop_mask(int sq);
-extern bitboard_t rook_attacks(int sq, bitboard_t block);
-extern bitboard_t bishop_attacks(int sq, bitboard_t block);
-
-
 ///////////////////////////////////////////////////////////////
 //  PERFT
 
 extern uint64_t move_gen(board_t* board, int depth);
 
-
 ///////////////////////////////////////////////////////////////
 //  ALPHA BETA SEARCH
+
 extern int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
-extern int eval_end_of_game(board_t *board, int depth);
-extern int eval_board(board_t *board);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH DATA
+
 extern searchdata_t* init_search_data(board_t *board);
 extern void free_search_data(searchdata_t *data);
+
+#endif

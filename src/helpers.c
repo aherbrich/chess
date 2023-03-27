@@ -1,4 +1,20 @@
 #include "../include/chess.h"
+#include "../include/magic.h"
+
+/* Generates a pseudo-random 64bit unsigned integer */
+uint64_t random_uint64() {
+    uint64_t u1, u2, u3, u4;
+    u1 = (uint64_t) (random()) & 0xFFFF;
+    u2 = (uint64_t) (random()) & 0xFFFF;
+    u3 = (uint64_t) (random()) & 0xFFFF;
+    u4 = (uint64_t) (random()) & 0xFFFF;
+    return (u1 | (u2 << 16) | (u3 << 32) | (u4 << 48));
+}
+
+/* Generates a pseudo-random 64bit unsigned integer with only few bits set */
+uint64_t random_uint64_fewbits() {
+    return random_uint64() & random_uint64() & random_uint64();
+}
 
 /* Calculate idx based on a row & column */
 idx_t pos_to_idx(int row, int col) {
