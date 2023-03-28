@@ -70,6 +70,9 @@
 #define INFINITY INT_MAX
 #define NEGINFINITY (-INFINITY)
 
+#define EXACT 0
+#define UPPERBOUND 1
+#define LOWERBOUND 2
 
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
@@ -139,6 +142,8 @@ typedef struct _searchdata_t {
 }  searchdata_t;
 
 extern int nodes_searched;
+extern int hash_used;
+extern int hash_bounds_adjusted;
 
 extern bitboard_t MASK_FILE[8];
 extern bitboard_t MASK_RANK[8];
@@ -182,6 +187,7 @@ extern void clear_board(board_t *board);
 extern void free_board(board_t* board);
 extern void load_by_FEN(board_t* board, char* FEN);
 extern void update_white_black_all_boards(board_t *board);
+extern int is_same_board(board_t *board1, board_t* board2);
 
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION

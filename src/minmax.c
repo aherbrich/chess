@@ -41,8 +41,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         /* if eval is better than alpha, adjust bound */
         if(eval > alpha){
             alpha = best_eval;
-            free(best_move);
-            best_move = copy_move(move);
         }
 
         undo_move(board);
@@ -68,11 +66,12 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         store_hashtable_entry(board, LOWERBOUND, best_eval, best_move, depth);
     }
     /* if no move was better than alpha than we can store the best evaluation as a upperbound */
-    if(best_eval <= alpha){
+    else if(best_eval <= alpha){
         store_hashtable_entry(board, UPPERBOUND, best_eval, best_move, depth);
     } 
     /* else we can store the eval as an exact evaluation of the current board */
     else{
+        printf("Saved EXCACT!\n");
         store_hashtable_entry(board, EXACT, best_eval, best_move, depth);
     }
     

@@ -207,6 +207,30 @@ move_t *get_best_move_from_hashtable(board_t* board) {
     return (NULL);
 }
 
+
+/* Probes table entry from hashtable and returns 1, if the entry is found (otherwise 0) */
+int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth) {
+    uint64_t hash = calculate_zobrist_hash(board);
+    uint64_t key = hash % HTSIZE;
+
+    htentry_t *cur = ht_table[key];
+    /* search the list for the entry with the same hash */
+    while(cur) {
+        /* if there is one, return the values by reference copy and indicate by returning 1 */
+        if(cur->hash == hash) {
+            *flags = cur->flags;
+            *depth = cur->depth;
+            *value = cur->eval;
+            *move = copy_move(cur->best_move);
+            return 1;
+        }
+        cur = cur->next;
+    }
+
+    /* otherwise, return 0 */
+    return 0;
+}
+
 /* Gets the best move from the hashtable for the board position (or NULL, if there is not one) */
 void print_move_and_board_from_hashtable(board_t* board) {
     uint64_t hash = calculate_zobrist_hash(board);

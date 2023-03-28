@@ -12,6 +12,8 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 board_t* OLDSTATE[512];
 
 int nodes_searched = 0;
+int hash_used = 0;
+int hash_bounds_adjusted = 0;
 
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
@@ -33,7 +35,7 @@ int main() {
     print_board(board);
     printf("\n");
 
-    search_data->max_depth = 10;
+    search_data->max_depth = 20;
     int eval = iterative_search(search_data);
 
     printf("\n");
