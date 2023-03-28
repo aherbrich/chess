@@ -8,26 +8,8 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         return eval_board(board);
     }
 
-    int max_value = alpha;
-
-    move_t* pvmove;
-    if((pvmove = get_best_move_from_hashtable(board))){
-        do_move(board, pvmove);
-        nodes_searched++;
-        int eval = -alpha_beta_search(board, depth-1, -beta, -max_value, search_data);
-        undo_move(board);
-
-        if(eval > max_value){
-            max_value = eval;
-            if(depth == search_data->current_max_depth){
-                store_hashtable_entry(board, 0, max_value, pvmove, depth);
-            }
-            if(max_value >= beta){
-                free_move(pvmove);
-                return max_value;
-            }
-        }
-    }
+    int best_eval = NEGINFINITY;
+    move_t* best_move = NULL;
 
     /* generate only pseudo legal moves */
     list_t* movelst = generate_pseudo_moves(board);
@@ -36,38 +18,41 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
     while(movelst->len != 0){
         move_t *move = pop(movelst);
 
-        /* filter out pvmove (since we already checked it) */
-        if(pvmove && is_same_move(pvmove, move)){
-            free(move);
-            continue;
-        }   
-
         do_move(board, move);
 
         /* filter out illegal moves */
         if(is_in_check_after_move(board)){
             undo_move(board);
-            free(move);
+            free_move(move);
             continue;
         }
         nr_legal_moves++;
         nodes_searched++;
 
         /* if legal move -> continue search */
-        int eval = -alpha_beta_search(board, depth-1, -beta, -max_value, search_data);
+        int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
+
+        /* if eval is better than the best so far */
+        if(eval > best_eval){
+            best_eval = eval;
+            free(best_move);
+            best_move = copy_move(move);
+        }
+        /* if eval is better than alpha, adjust bound */
+        if(eval > alpha){
+            alpha = best_eval;
+            free(best_move);
+            best_move = copy_move(move);
+        }
+
         undo_move(board);
 
-        if(eval > max_value){
-            max_value = eval;
-            if(depth == search_data->current_max_depth){
-                store_hashtable_entry(board, 0, max_value, move, depth);
-            }
-            if(max_value >= beta){
-                free_move(pvmove);
-                free_move(move);
-                break;
-            }
+        /* if beta cutoff */
+        if(eval >= beta){
+            free_move(move);
+            break;
         }
+
         free_move(move);
     }
     free_move_list(movelst);
@@ -78,7 +63,22 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         return eval_end_of_game(board, depth);
     }
 
-    return max_value;
+    /* if we exited early due to cutoff we cant store eval as exact */
+    if(best_eval >= beta){
+        store_hashtable_entry(board, LOWERBOUND, best_eval, best_move, depth);
+    }
+    /* if no move was better than alpha than we can store the best evaluation as a upperbound */
+    if(best_eval <= alpha){
+        store_hashtable_entry(board, UPPERBOUND, best_eval, best_move, depth);
+    } 
+    /* else we can store the eval as an exact evaluation of the current board */
+    else{
+        store_hashtable_entry(board, EXACT, best_eval, best_move, depth);
+    }
+    
+    free(best_move);
+
+    return best_eval;
 }
 
 int iterative_search(searchdata_t* search_data) {
@@ -112,7 +112,7 @@ int iterative_search(searchdata_t* search_data) {
             goto search_finished;
         } else{
             printf("info score cp %d depth %d nodes %d time %d nps %d pv ", current_evaluation, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))));
-            print_LAN_move(best_move, search_data->board->player);
+            print_line(search_data->board, i);
             printf("\n");
         }
     }
