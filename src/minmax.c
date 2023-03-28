@@ -8,8 +8,40 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         return eval_board(board);
     }
 
+    int old_alpha = alpha;
+    int old_beta = beta;
     int best_eval = NEGINFINITY;
     move_t* best_move = NULL;
+
+    move_t *pv_move = NULL;
+    int16_t pv_value;
+    int8_t pv_flags;
+    int8_t pv_depth;
+    int8_t pv_move_used = 0;
+
+    int entry_found = get_hashtable_entry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
+
+    if (entry_found && pv_depth == depth) {
+        /* if eval of pvmove is exact we can use it as the best move so far */
+        if (pv_flags == EXACT) {
+            hash_used++;
+            free_move(pv_move);
+            return pv_value;
+        }
+        else if (pv_flags == LOWERBOUND) {
+            hash_bounds_adjusted++;
+            if(pv_value > alpha) alpha = pv_value;
+        } 
+        else if (pv_flags == UPPERBOUND) {
+            hash_bounds_adjusted++;
+            if(pv_value < beta) beta = pv_value;
+        }
+        if (alpha >= beta) {
+            hash_used++;
+            free_move(pv_move);
+            return pv_value;
+        }
+    }
 
     /* generate only pseudo legal moves */
     list_t* movelst = generate_pseudo_moves(board);
@@ -40,7 +72,7 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         }
         /* if eval is better than alpha, adjust bound */
         if(eval > alpha){
-            alpha = best_eval;
+            alpha = eval;
         }
 
         undo_move(board);
@@ -62,16 +94,15 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
     }
 
     /* if we exited early due to cutoff we cant store eval as exact */
-    if(best_eval >= beta){
+    if(best_eval >= old_beta){
         store_hashtable_entry(board, LOWERBOUND, best_eval, best_move, depth);
     }
     /* if no move was better than alpha than we can store the best evaluation as a upperbound */
-    else if(best_eval <= alpha){
+    else if(best_eval <= old_alpha){
         store_hashtable_entry(board, UPPERBOUND, best_eval, best_move, depth);
     } 
     /* else we can store the eval as an exact evaluation of the current board */
     else{
-        printf("Saved EXCACT!\n");
         store_hashtable_entry(board, EXACT, best_eval, best_move, depth);
     }
     
