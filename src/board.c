@@ -1,6 +1,32 @@
 #include "../include/chess.h"
 
+/* Checks if two boards are the same */
+int is_same_board(board_t *board1, board_t* board2){
+    if(board1->all != board2->all) return 0;
+    if(board1->white != board2->white) return 0;
+    if(board1->black != board2->black) return 0;
 
+    if(board1->whitepawns != board2->whitepawns) return 0;
+    if(board1->whiteknights != board2->whiteknights) return 0;
+    if(board1->whitebishops != board2->whitebishops) return 0;
+    if(board1->whiterooks != board2->whiterooks) return 0;
+    if(board1->whitequeens != board2->whitequeens) return 0;
+    if(board1->whiteking != board2->whiteking) return 0;
+
+    if(board1->blackpawns != board2->blackpawns) return 0;
+    if(board1->blackknights != board2->blackknights) return 0;
+    if(board1->blackbishops != board2->blackbishops) return 0;
+    if(board1->blackrooks != board2->blackrooks) return 0;
+    if(board1->blackqueens != board2->blackqueens) return 0;
+    if(board1->blackking != board2->blackking) return 0;
+
+    if(board1->ep_possible != board2->ep_possible) return 0;
+    if(board1->ep_field != board2->ep_field) return 0;
+    if(board1->castle_rights != board2->castle_rights) return 0;
+    if(board1->player != board2->player) return 0;
+
+    return 1;
+}
 /* Clear the board */
 void clear_board(board_t *board) {
     /* clear the playing field */

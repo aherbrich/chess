@@ -1,4 +1,5 @@
 #include "../include/chess.h"
+#include "../include/zobrist.h"
 
 char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
                      "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
@@ -193,30 +194,30 @@ void print_LAN_move(move_t* move, player_t color_playing) {
         flag_t prom_flag = move->flags & ~(0b11);
         if(prom_flag == 0){
             if(color_playing == WHITE){
-                printf("%.2s-%.2s-K", start_field, end_field);
+                printf("%.2s%.2sN", start_field, end_field);
             }else{
-                printf("%.2s-%.2s-k", start_field, end_field);
+                printf("%.2s%.2sn", start_field, end_field);
             }
         }
         else if(prom_flag == 1){
             if(color_playing == WHITE){
-                printf("%.2s-%.2s-B", start_field, end_field);
+                printf("%.2s%.2sB", start_field, end_field);
             }else{
-                printf("%.2s-%.2s-b", start_field, end_field);
+                printf("%.2s%.2sb", start_field, end_field);
             }
         }
         else if(prom_flag == 2){
             if(color_playing == WHITE){
-                printf("%.2s-%.2s-R", start_field, end_field);
+                printf("%.2s%.2sR", start_field, end_field);
             }else{
-                printf("%.2s-%.2s-r", start_field, end_field);
+                printf("%.2s%.2sr", start_field, end_field);
             }
         }
         else{
             if(color_playing == WHITE){
-                printf("%.2s-%.2s-Q", start_field, end_field);
+                printf("%.2s%.2sQ", start_field, end_field);
             }else{
-                printf("%.2s-%.2s-q", start_field, end_field);
+                printf("%.2s%.2sq", start_field, end_field);
             }
         }
     } 
@@ -224,4 +225,41 @@ void print_LAN_move(move_t* move, player_t color_playing) {
     else{
         printf("%.2s%.2s", start_field, end_field);
     }
+}
+
+/* Prints all moves in a movelist */
+void print_movelist(list_t* movelst){
+    move_t *move;
+    while((move = pop(movelst))){
+        print_move(move);
+        fprintf(stderr, " ");
+        free_move(move);
+    }
+    free_move_list(movelst);
+    fprintf(stderr, "\n");
+}
+
+/* Print the list of best possible moves until a depth (PV line) */
+void print_line(board_t* board, int depth) {
+    /* make a copy of the board */
+    board_t *board_copy = copy_board(board);
+
+    /* for all depth, figure out the best move from the hash-table and print it */
+    for (int d = depth; d > 0; d--) {
+        move_t* best_move = get_best_move_from_hashtable(board_copy);
+        if (best_move == NULL) {
+            printf("NULL ");
+            free_board(board_copy);
+            return;
+        }
+        print_LAN_move(best_move, board_copy->player);
+        printf(" ");
+        do_move(board_copy, best_move);
+        free_move(best_move);
+    }
+
+    /* free the board */
+    free_board(board_copy);
+
+    return;
 }
