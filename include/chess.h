@@ -60,12 +60,12 @@
 #define RCPROM 14
 #define QCPROM 15
 
-#define PAWN 0
-#define KNIGHT 1
-#define BISHOP 2
-#define ROOK 3
-#define QUEEN 4
-#define KING 5
+#define PAWN 1
+#define KNIGHT 2
+#define BISHOP 3
+#define ROOK 4
+#define QUEEN 5
+#define KING 6
 
 #define INFINITY INT_MAX
 #define NEGINFINITY (-INFINITY)
@@ -108,11 +108,10 @@ typedef struct _move_t {
     idx_t from;
     idx_t to;
     flag_t flags;
-    flag_t piece;
+    uint16_t value;
 } move_t;
 typedef struct _node_t {
     move_t* move;
-    board_t* board;
     struct _node_t* next;
     struct _node_t* prev;
 } node_t;
@@ -201,7 +200,7 @@ extern int iterative_search(searchdata_t* search_data);
 /////////////////////////////////////////////////////////////
 //  MOVE
 
-extern move_t *generate_move(idx_t from, idx_t to, flag_t flags);
+extern move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
 extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
 extern void free_move_list(list_t *movelst);

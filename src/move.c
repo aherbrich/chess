@@ -19,12 +19,14 @@ int is_same_move(move_t* move1, move_t* move2){
 }
 
 /* Allocate memory for a move */
-move_t *generate_move(idx_t from, idx_t to, flag_t flags) {
+move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value) {
     move_t *move = (move_t *)malloc(sizeof(move_t));
 
     move->from = from;
     move->to = to;
     move->flags = flags;
+    move->value = value;
+
     return move;
 }
 
@@ -39,6 +41,7 @@ move_t *copy_move(move_t *move) {
     copy->from = move->from;
     copy->to = move->to;
     copy->flags = move->flags;
+    copy->value = move->value;
 
     return copy;
 }
