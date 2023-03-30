@@ -191,7 +191,7 @@ void print_LAN_move(move_t* move, player_t color_playing) {
 
     /* if promotion move */
     if (move->flags >= 8) {
-        flag_t prom_flag = move->flags & ~(0b11);
+        flag_t prom_flag = move->flags & (0b11);
         if(prom_flag == 0){
             if(color_playing == WHITE){
                 printf("%.2s%.2sN", start_field, end_field);
