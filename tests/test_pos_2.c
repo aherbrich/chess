@@ -1,6 +1,5 @@
 #include "../include/chess.h"
-#include <stdio.h>
-#include <time.h>
+#include "../include/prettyprint.h"
 
 char STARTING_FEN[] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 char TEST2_FEN[] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
@@ -11,17 +10,19 @@ char TEST6_FEN[] = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK
 char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 board_t* OLDSTATE[512];
 
+int nodes_searched = 0;
+int hash_used = 0;
+int hash_bounds_adjusted = 0;
+int pv_node_hit= 0;
+
 int main() {
     uint64_t result[] = {48ULL, 2039ULL, 97862ULL, 4085603ULL, 193690690ULL, 8031647685ULL};
 
     board_t* board = init_board();
+    initialize_oldstate_array();
     initialize_helper_boards();
     initialize_attack_boards();
     load_by_FEN(board, TEST2_FEN);
-
-    for(int i = 0; i < 512; i++){
-        OLDSTATE[i] = 0;
-    }
 
     clock_t end;
     clock_t begin;

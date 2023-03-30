@@ -14,6 +14,7 @@ board_t* OLDSTATE[512];
 int nodes_searched = 0;
 int hash_used = 0;
 int hash_bounds_adjusted = 0;
+int pv_node_hit= 0;
 
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
