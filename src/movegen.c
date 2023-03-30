@@ -533,8 +533,7 @@ void filter_illegal_moves(board_t* board, maxpq_t *movelst){
         undo_move(board);
         if(in_check) free(move);
     }
-    maxpq_t test;
-    initialize_maxpq(&test);
+    
     memcpy((*movelst).array, legalmoves.array, sizeof((*movelst).array));
     (*movelst).nr_elem = legalmoves.nr_elem;
 }

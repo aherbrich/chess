@@ -51,6 +51,7 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
 
         best_eval = eval;
+        free_move(best_move);
         best_move = copy_move(pv_move);
 
         /* if eval is better than alpha, adjust bound */
@@ -118,6 +119,7 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
     /* if player had no legal moves */
     if(!nr_legal_moves){
         /* game over (in this branch) */
+        free(best_move);
         return eval_end_of_game(board, depth);
     }
 
@@ -135,6 +137,7 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
     }
     
     free(best_move);
+    free_pq(&movelst);
 
     return best_eval;
 }
@@ -142,7 +145,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
 int iterative_search(searchdata_t* search_data) {
     /* if max depth given use it, else search up to 100 plies */
     int maxdepth = (search_data->max_depth == -1)?100:search_data->max_depth;
-
     /* variables to keep track of best move and evaluation */
     move_t *best_move = NULL;
     int evaluation = 0;
@@ -157,6 +159,7 @@ int iterative_search(searchdata_t* search_data) {
         search_data->current_max_depth = i;
         int current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);
 
+        if(best_move) free_move(best_move);
         best_move = get_best_move_from_hashtable(search_data->board);
         evaluation = current_evaluation;
 
@@ -174,6 +177,7 @@ int iterative_search(searchdata_t* search_data) {
             printf("info score cp %d depth %d nodes %d time %d nps %d hashfull %d pv ", current_evaluation, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (start_search)) / CLOCKS_PER_SEC))), hashtable_full_permill());
             print_line(search_data->board, i);
             printf("\n");
+            fprintf(stderr, "Hashtable size: %.2f MBytes\t (%.1f%%)\n", (float) ((float) get_memory_usage_hashtable_in_bytes())/(1024.0*1024.0), ((float) hashtable_full_permill())/10.0);
         }
     }
 

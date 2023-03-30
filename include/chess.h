@@ -105,10 +105,10 @@ typedef struct _board_t {
 } board_t;
 
 typedef struct _move_t {
+    uint16_t value;
     idx_t from;
     idx_t to;
     flag_t flags;
-    uint16_t value;
 } move_t;
 typedef struct _node_t {
     move_t* move;
@@ -194,6 +194,7 @@ extern void swim(maxpq_t* pq, int k);
 extern void insert(maxpq_t* pq, move_t* elem);
 extern move_t* pop_max(maxpq_t* pq);
 
+void free_pq(maxpq_t* pq);
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
 

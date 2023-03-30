@@ -151,6 +151,22 @@ int hashtable_full_permill(){
     return ((int) ((count * 1000)/HTSIZE));
 }
 
+uint64_t get_memory_usage_hashtable_in_bytes(){
+    uint64_t count = 0;
+    for (int i = 0; i < HTSIZE; i++) {
+        htentry_t* tmp = ht_table[i];
+        count += sizeof(htentry_t*);
+        while(tmp){
+            count += sizeof(htentry_t);         // 32 bytes
+            count += sizeof(move_t);            // 6 bytes
+            count += 10;                        // It seems like memory is allocated 16 Byte aligned
+                                                // which leads to 10 mysterious extra bytes
+            tmp = tmp->next;
+        } 
+    }
+    return count;
+}
+
 /* Stores key value pair in the global hashtable */
 void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth) {
     uint64_t hash = calculate_zobrist_hash(board);
@@ -174,7 +190,6 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *
                     cur->eval = value;
                     free_move(cur->best_move);
                     cur->best_move = copy_move(move);
-                    cur->board = copy_board(board);
                 }
                 return;
             }
@@ -192,7 +207,6 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *
     new->eval = value;
     new->hash = hash;
     new->best_move = copy_move(move);
-    new->board = copy_board(board);
     new->next = NULL;
     return;
 }
@@ -240,26 +254,3 @@ int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value, move_t **
     return 0;
 }
 
-/* Gets the best move from the hashtable for the board position (or NULL, if there is not one) */
-void print_move_and_board_from_hashtable(board_t* board) {
-    uint64_t hash = calculate_zobrist_hash(board);
-    uint64_t key = hash % HTSIZE;
-
-    htentry_t *cur = ht_table[key];
-    /* search the list for the entry with the same hash */
-    while(cur) {
-        /* if there is one, return a deep copy of the best move */
-        if(cur->hash == hash) {
-            print_board(board);
-            printf("Real board with hash: \t%llu\n", hash);
-            print_board(cur->board);
-            printf("TT board with hash: \t%llu\n", calculate_zobrist_hash(cur->board));
-            print_LAN_move(cur->best_move, cur->board->player);
-            return;
-        }
-        cur = cur->next;
-    }
-
-    /* otherwise, return NULL */
-    printf("No move found!\n");
-}

@@ -2,26 +2,26 @@
 #include "../include/prettyprint.h"
 
 int less(maxpq_t* pq, int i, int j){
-    return((*pq).array[i]->value < (*pq).array[j]->value);
+    return(pq->array[i]->value < pq->array[j]->value);
 }
 
 void swap(maxpq_t* pq, int i, int j){
-    move_t* tmp = (*pq).array[i];
-    (*pq).array[i] = (*pq).array[j];
-    (*pq).array[j] = tmp; 
+    move_t* tmp = pq->array[i];
+    pq->array[i] = pq->array[j];
+    pq->array[j] = tmp; 
 }
 
 void initialize_maxpq(maxpq_t* pq){
-    (*pq).size = sizeof((*pq).array)/sizeof(move_t*)-1;
-    (*pq).nr_elem = 0;
-    for(int i = 0; i < (*pq).size+1; i++){
-        (*pq).array[i] = NULL;
+    pq->size = sizeof(pq->array)/sizeof(move_t*)-1;
+    pq->nr_elem = 0;
+    for(int i = 0; i < pq->size+1; i++){
+        pq->array[i] = NULL;
     }
 }
 
 void print_pq(maxpq_t* pq){
-    for(int i = 1; i < (*pq).nr_elem+1; i++){
-        print_move((*pq).array[i]);
+    for(int i = 1; i < pq->nr_elem+1; i++){
+        print_move(pq->array[i]);
         fprintf(stderr, "   ");
     }
     printf("\n");
@@ -35,11 +35,11 @@ void swim(maxpq_t* pq, int k){
 }
 
 void sink(maxpq_t* pq, int k){
-    while(2*k <= (*pq).nr_elem){
+    while(2*k <= pq->nr_elem){
         // index of first child
         int j = 2*k;
         // set j to index of child with higher value
-        if(j < (*pq).nr_elem && less(pq, j, j+1)) j++;
+        if(j < pq->nr_elem && less(pq, j, j+1)) j++;
         // if k'th element has higher value than both children we can exit early
         if(!less(pq, k, j)) break; 
         //else
@@ -49,27 +49,34 @@ void sink(maxpq_t* pq, int k){
 }
 
 void insert(maxpq_t* pq, move_t* elem){
-    (*pq).nr_elem++;
-    if((*pq).nr_elem > (*pq).size){
+    pq->nr_elem++;
+    if(pq->nr_elem > pq->size){
         printf("Out of space!\n");
         exit(1);
     }
 
-    (*pq).array[(*pq).nr_elem] = copy_move(elem);
-    swim(pq, (*pq).nr_elem);
+    pq->array[pq->nr_elem] = elem;
+    swim(pq, pq->nr_elem);
 }
 
 move_t* pop_max(maxpq_t* pq){
     /* if no elements in array return NULL to indicate empty array */
-    if((*pq).nr_elem == 0){
+    if(pq->nr_elem == 0){
         return NULL;
     }
     
     /* else */
-    move_t* max = (*pq).array[1];
-    (*pq).array[1] = (*pq).array[(*pq).nr_elem];
-    (*pq).array[(*pq).nr_elem] = NULL;
-    (*pq).nr_elem--;
+    move_t* max = pq->array[1];
+    pq->array[1] = pq->array[pq->nr_elem];
+    pq->array[pq->nr_elem] = NULL;
+    pq->nr_elem--;
     sink(pq, 1);
     return max;
+}
+
+void free_pq(maxpq_t* pq){
+    if(pq->nr_elem==0) return;
+    for(int i = 1; i < pq->nr_elem+1; i++){
+        free_move(pq->array[i]);
+    }
 }
