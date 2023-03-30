@@ -179,9 +179,22 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *
         new = ht_table[key];
     } else {
         /* otherwise, check if there already is an entry in the list with the same hash */
+        int counter = 0;
         htentry_t *cur = ht_table[key];
         htentry_t *prev = cur;
         while(cur) {
+            /* we want to limit bucket size to 4 */
+            /* if we checked 4 slots but found no entry, replace last entry in bucket */
+            /* we need this to ensure that our hashtable doesnt grow into infinity */
+            if(counter > 2) {
+                cur->flags = flags;
+                cur->depth = depth;
+                cur->eval = value;
+                free_move(cur->best_move);
+                cur->best_move = copy_move(move);
+                cur->hash = hash;
+                return;
+            }
             /* if there is one, replace if it has a higher/same depth ... */
             if(cur->hash == hash) {
                 if(depth >= cur->depth){
@@ -195,6 +208,7 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *
             }
             prev = cur;
             cur = cur->next;
+            counter++;
         }
         /* ... otherwise, create a new one at the end */
         prev->next = (htentry_t *) malloc (sizeof(htentry_t));
