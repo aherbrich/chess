@@ -17,7 +17,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
     int16_t pv_value;
     int8_t pv_flags;
     int8_t pv_depth;
-    int8_t pv_move_used = 0;
 
     int entry_found = get_hashtable_entry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
 
@@ -43,13 +42,43 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         }
     }
 
+    /* search pv move first */
+    if(entry_found){
+        do_move(board, pv_move);
+
+        nodes_searched++;
+
+        int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
+
+        best_eval = eval;
+        best_move = copy_move(pv_move);
+
+        /* if eval is better than alpha, adjust bound */
+        if(eval > alpha){
+            alpha = eval;
+        }
+
+        undo_move(board);
+
+        /* beta cutoff */
+        if(eval >= beta){
+            pv_node_hit++;
+            free_move(pv_move);
+            free_move(best_move);
+            return eval;
+        }
+        free_move(pv_move);
+    }
+
     /* generate only pseudo legal moves */
-    list_t* movelst = generate_pseudo_moves(board);
+    maxpq_t movelst;
+    initialize_maxpq(&movelst);
+    
+    generate_pseudo_moves(board, &movelst);
     int nr_legal_moves = 0;
+    move_t* move;
 
-    while(movelst->len != 0){
-        move_t *move = pop(movelst);
-
+    while((move = pop_max(&movelst))){
         do_move(board, move);
 
         /* filter out illegal moves */
@@ -85,7 +114,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
 
         free_move(move);
     }
-    free_move_list(movelst);
 
     /* if player had no legal moves */
     if(!nr_legal_moves){
@@ -112,9 +140,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
 }
 
 int iterative_search(searchdata_t* search_data) {
-    /* reset the performance counters */
-    nodes_searched = 0;
-
     /* if max depth given use it, else search up to 100 plies */
     int maxdepth = (search_data->max_depth == -1)?100:search_data->max_depth;
 
@@ -124,6 +149,11 @@ int iterative_search(searchdata_t* search_data) {
 
     /* iterative search */
     for (int i = 1; i <= maxdepth; i++) {
+        int start_search = clock();
+        /* reset the performance counters */
+        nodes_searched = 0;
+        pv_node_hit = 0;
+
         search_data->current_max_depth = i;
         int current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);
 
@@ -131,17 +161,17 @@ int iterative_search(searchdata_t* search_data) {
         evaluation = current_evaluation;
 
         if(current_evaluation > 16000){
-            printf("info score mate %d depth %d nodes %d time %d nps %d pv ", (int) i/2, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))));
+            printf("info score mate %d depth %d nodes %d time %d nps %d pv ", (int) i/2, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC), (int) (((double) nodes_searched)/(((double)(clock() - (start_search)) / CLOCKS_PER_SEC))));
             print_LAN_move(best_move, search_data->board->player);
             printf("\n");
             goto search_finished;
         } else if (current_evaluation < -16000){
-            printf("info score mate %d depth %d nodes %d time %d nps %d pv ", -1*((int) i/2), i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))));
+            printf("info score mate %d depth %d nodes %d time %d nps %d pv ", -1*((int) i/2), i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (start_search)) / CLOCKS_PER_SEC))));
             print_LAN_move(best_move, search_data->board->player);
             printf("\n");
             goto search_finished;
         } else{
-            printf("info score cp %d depth %d nodes %d time %d nps %d pv ", current_evaluation, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))));
+            printf("info score cp %d depth %d nodes %d time %d nps %d hashfull %d pv ", current_evaluation, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (start_search)) / CLOCKS_PER_SEC))), hashtable_full_permill());
             print_line(search_data->board, i);
             printf("\n");
         }

@@ -1,6 +1,6 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/list.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c
+EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/list.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 TEST_DIR = tests

@@ -121,6 +121,12 @@ typedef struct _list_t{
     node_t *first;
     node_t *last;
 } list_t;
+
+typedef struct _maxpq_t{
+    int size;
+    int nr_elem;
+    move_t* array[512];
+} maxpq_t;
 typedef struct _searchdata_t {
     board_t *board;         /* pointer to the actual board */
     int max_depth;          /* maximum search depth in plies */
@@ -143,6 +149,7 @@ typedef struct _searchdata_t {
 extern int nodes_searched;
 extern int hash_used;
 extern int hash_bounds_adjusted;
+extern int pv_node_hit;
 
 extern bitboard_t MASK_FILE[8];
 extern bitboard_t MASK_RANK[8];
@@ -177,6 +184,17 @@ extern move_t* pop(list_t* head);
 extern void push(list_t* head, move_t* move);
 
 //////////////////////////////////////////////////////////////
+// PRIORITY QUEUE FUNCTIONS
+extern void initialize_maxpq(maxpq_t* pq);
+extern void print_pq(maxpq_t* pq);
+
+extern void sink(maxpq_t* pq, int k);
+extern void swim(maxpq_t* pq, int k);
+
+extern void insert(maxpq_t* pq, move_t* elem);
+extern move_t* pop_max(maxpq_t* pq);
+
+//////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
 
 extern board_t* init_board();
@@ -193,8 +211,8 @@ extern int is_same_board(board_t *board1, board_t* board2);
 
 extern int is_in_check(board_t *board);
 extern int is_in_check_after_move(board_t *board);
-extern list_t* generate_pseudo_moves(board_t *board);
-extern list_t* generate_moves(board_t *board);
+extern void generate_pseudo_moves(board_t *board, maxpq_t* movelst);
+extern void generate_moves(board_t* board, maxpq_t* movelst);
 extern int iterative_search(searchdata_t* search_data);
 
 /////////////////////////////////////////////////////////////
