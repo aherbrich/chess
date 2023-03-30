@@ -140,6 +140,15 @@ void clear_hashtable() {
             ht_table[i] = tmp;            
         }
     }
+
+}
+
+int hashtable_full_permill(){
+    uint64_t count = 0;
+    for (int i = 0; i < HTSIZE; i++) {
+        if(ht_table[i]) count++; 
+    }
+    return ((int) ((count * 1000)/HTSIZE));
 }
 
 /* Stores key value pair in the global hashtable */
