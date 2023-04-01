@@ -31,6 +31,12 @@ int quiet_search(board_t *board, int alpha, int beta, searchdata_t* search_data)
             continue;
         }
 
+        /* delta pruning */
+        if(best_eval - 200 - is_capture(move->to, board) > eval){
+            free_move(move);
+            continue;
+        }
+
         nodes_searched++;
 
         do_move(board, move);
@@ -100,12 +106,13 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
 
     /* search pv move first */
     if(entry_found){
-        do_move(board, pv_move);
-
         nodes_searched++;
 
+        do_move(board, pv_move);
         int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
+        undo_move(board);
 
+        /* adjust best eval and best move */
         best_eval = eval;
         free_move(best_move);
         best_move = copy_move(pv_move);
@@ -114,8 +121,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         if(eval > alpha){
             alpha = eval;
         }
-
-        undo_move(board);
 
         /* beta cutoff */
         if(eval >= beta){
@@ -128,18 +133,18 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
 
     /* generate only pseudo legal moves */
     maxpq_t movelst;
-    initialize_maxpq(&movelst);
-    
-    generate_pseudo_moves(board, &movelst);
-    int nr_legal_moves = 0;
     move_t* move;
+    initialize_maxpq(&movelst);
+    generate_pseudo_moves(board, &movelst);
+
+    int nr_legal_moves = 0;
 
     while((move = pop_max(&movelst))){
         /* filter out pv move (since we checked it already) */
-        if(entry_found && is_same_move(move, pv_move)){
-            free_move(move);
-            continue;
-        }
+        // if(entry_found && is_same_move(move, pv_move)){
+        //     free_move(move);
+        //     continue;
+        // }
 
         do_move(board, move);
 
@@ -149,11 +154,12 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
             free_move(move);
             continue;
         }
+
         nr_legal_moves++;
         nodes_searched++;
-
         /* if legal move -> continue search */
         int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
+        undo_move(board);
 
         /* if eval is better than the best so far */
         if(eval > best_eval){
@@ -165,8 +171,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         if(eval > alpha){
             alpha = eval;
         }
-
-        undo_move(board);
 
         /* if beta cutoff */
         if(eval >= beta){
@@ -223,7 +227,16 @@ int iterative_search(searchdata_t* search_data) {
         search_data->current_max_depth = i;
         int current_evaluation;
 
-        current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);        
+        if(i == 1){
+            current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);        
+        } else{
+            int window_low = evaluation - 50;
+            int window_high = evaluation + 50;
+            current_evaluation = alpha_beta_search(search_data->board, i, window_low, window_high, search_data); 
+            if(current_evaluation > window_high) current_evaluation = alpha_beta_search(search_data->board, i, window_low, INFINITY, search_data); 
+            else if(current_evaluation < window_low) current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, window_high, search_data); 
+        }
+        
 
         if(best_move) free_move(best_move);
         best_move = get_best_move_from_hashtable(search_data->board);

@@ -210,6 +210,7 @@ extern int is_same_board(board_t *board1, board_t* board2);
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION
 
+extern int is_capture(bitboard_t to, board_t *board);
 extern int is_in_check(board_t *board);
 extern int is_in_check_after_move(board_t *board);
 extern void generate_pseudo_moves(board_t *board, maxpq_t* movelst);
