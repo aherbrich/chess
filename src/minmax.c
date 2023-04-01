@@ -3,10 +3,62 @@
 #include "../include/prettyprint.h"
 #include "../include/zobrist.h" 
 
-int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* search_data){
-    if(depth == 0){
-        return eval_board(board);
+int start_search;
+
+int quiet_search(board_t *board, int alpha, int beta, searchdata_t* search_data){
+    int eval = eval_board(board);
+
+    if(eval >= beta){
+        return eval;
     }
+    if(eval > alpha){
+        alpha = eval;
+    }
+
+    int best_eval = eval;
+
+    /* generate only pseudo legal moves */
+    maxpq_t movelst;
+    initialize_maxpq(&movelst);
+    
+    generate_pseudo_moves(board, &movelst);
+    move_t* move;
+
+    while((move = pop_max(&movelst))){
+         /* filter out non-captures */
+        if(!(move->flags &0b0100)){
+            free_move(move);
+            continue;
+        }
+
+        nodes_searched++;
+
+        do_move(board, move);
+        eval = -quiet_search(board, -beta, -alpha, search_data);
+        undo_move(board);
+
+        /* if eval is better than the best so far */
+        if(eval > best_eval){
+            best_eval = eval;
+        }
+        /* if eval is better than alpha, adjust bound */
+        if(eval > alpha){
+            alpha = eval;
+        }
+        /* beta-cutoff */
+        if(eval >= beta){
+            free_move(move);
+            break;
+        }
+        free_move(move);
+    }
+
+    free_pq(&movelst);
+        
+    return best_eval;
+}
+
+int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* search_data){
 
     int old_alpha = alpha;
     int old_beta = beta;
@@ -42,6 +94,10 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         }
     }
 
+    if(depth == 0){
+        return quiet_search(board, alpha, beta, search_data);
+    }
+
     /* search pv move first */
     if(entry_found){
         do_move(board, pv_move);
@@ -68,7 +124,6 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
             free_move(best_move);
             return eval;
         }
-        free_move(pv_move);
     }
 
     /* generate only pseudo legal moves */
@@ -80,6 +135,12 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
     move_t* move;
 
     while((move = pop_max(&movelst))){
+        /* filter out pv move (since we checked it already) */
+        if(entry_found && is_same_move(move, pv_move)){
+            free_move(move);
+            continue;
+        }
+
         do_move(board, move);
 
         /* filter out illegal moves */
@@ -118,7 +179,8 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
 
     /* if player had no legal moves */
     if(!nr_legal_moves){
-        /* game over (in this branch) */
+        /* game over (in this branch atleast) */
+        free_move(pv_move);
         free(best_move);
         return eval_end_of_game(board, depth);
     }
@@ -136,6 +198,7 @@ int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata
         store_hashtable_entry(board, EXACT, best_eval, best_move, depth);
     }
     
+    free_move(pv_move);
     free(best_move);
     free_pq(&movelst);
 
@@ -151,13 +214,16 @@ int iterative_search(searchdata_t* search_data) {
 
     /* iterative search */
     for (int i = 1; i <= maxdepth; i++) {
-        int start_search = clock();
+        start_search = clock();
         /* reset the performance counters */
         nodes_searched = 0;
+        hash_used = 0;
+        hash_bounds_adjusted = 0;
         pv_node_hit = 0;
-
         search_data->current_max_depth = i;
-        int current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);
+        int current_evaluation;
+
+        current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);        
 
         if(best_move) free_move(best_move);
         best_move = get_best_move_from_hashtable(search_data->board);
@@ -177,7 +243,9 @@ int iterative_search(searchdata_t* search_data) {
             printf("info score cp %d depth %d nodes %d time %d nps %d hashfull %d pv ", current_evaluation, i, nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) nodes_searched)/(((double)(clock() - (start_search)) / CLOCKS_PER_SEC))), hashtable_full_permill());
             print_line(search_data->board, i);
             printf("\n");
-            fprintf(stderr, "Hashtable size: %.2f MBytes\t (%.1f%%)\n", (float) ((float) get_memory_usage_hashtable_in_bytes())/(1024.0*1024.0), ((float) hashtable_full_permill())/10.0);
+            // fprintf(stderr, "Hashtable size: %.2f MBytes\t (%.1f%%)", (float) ((float) get_memory_usage_hashtable_in_bytes())/(1024.0*1024.0), ((float) hashtable_full_permill())/10.0);
+            // fprintf(stderr, "\tNodes: %d NPS %d", nodes_searched, (int) (((double) nodes_searched)/(((double)(clock() - (start_search)) / CLOCKS_PER_SEC))));
+            // fprintf(stderr, "\tHash Exact: %d \tHash Bound: %d\n", hash_used, hash_bounds_adjusted);
         }
     }
 
