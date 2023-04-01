@@ -89,29 +89,49 @@ int simple_eval(board_t *board, player_t color) {
 
     while(pawns){
         material += PAWNVALUE;
-        material += PAWN_POSITION_VALUE[pop_1st_bit(&pawns)];
+        if(color == WHITE) {
+            material += PAWN_POSITION_VALUE[63-pop_1st_bit(&pawns)];
+        } else{
+            material += PAWN_POSITION_VALUE[pop_1st_bit(&pawns)];
+        }
     }
     while(knights){
         material += KNIGHTVALUE;
-        material += KNIGHT_POSITION_VALUE[pop_1st_bit(&knights)];
+        if(color == WHITE) {
+            material += KNIGHT_POSITION_VALUE[63-pop_1st_bit(&knights)];
+        } else{
+            material += KNIGHT_POSITION_VALUE[pop_1st_bit(&knights)];
+        }
     }
     while(bishops){
         material += BISHOPVALUE;
-        material += BISHOP_POSITION_VALUE[pop_1st_bit(&bishops)];
+        if(color == WHITE) {
+            material += BISHOP_POSITION_VALUE[63-pop_1st_bit(&bishops)];
+        } else{
+            material += BISHOP_POSITION_VALUE[pop_1st_bit(&bishops)];
+        }
     }
     while(rooks){
         material += ROOKVALUE;
-        material += ROOK_POSITION_VALUE[pop_1st_bit(&rooks)];
+        if(color == WHITE) {
+            material += ROOK_POSITION_VALUE[63-pop_1st_bit(&rooks)];
+        } else{
+            material += ROOK_POSITION_VALUE[pop_1st_bit(&rooks)];
+        }
     }
     while(queens){
         material += QUEENVALUE;
-        material += KNIGHT_POSITION_VALUE[pop_1st_bit(&queens)];
+        if(color == WHITE) {
+            material += QUEEN_POSITION_VALUE[63-pop_1st_bit(&queens)];
+        } else{
+            material += QUEEN_POSITION_VALUE[pop_1st_bit(&queens)];
+        }
     }
     while(king){
         if(color == WHITE) {
-            material += KING_POSITION_VALUE[pop_1st_bit(&king)];
+            material += KING_POSITION_VALUE[63-pop_1st_bit(&king)];
         } else{
-            material += KING_POSITION_VALUE[63 - pop_1st_bit(&king)];
+            material += KING_POSITION_VALUE[pop_1st_bit(&king)];
         }
     }
 
