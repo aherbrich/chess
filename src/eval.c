@@ -140,14 +140,14 @@ int simple_eval(board_t *board, player_t color) {
 
 /* Evaluates game over situations */
 int eval_end_of_game(board_t *board, int depth) {
-    /* check for stalemate */
+    // check for stalemate
     int in_check = is_in_check(board);
 
-    /* if in check */
+    // if check (mate) delivered 
     if (in_check) {
         return -16000 - depth;
     }
-    /* stalemate has been reached */
+    // if stalemate 
     else {
         return 0;
     }
@@ -160,6 +160,7 @@ int eval_board(board_t *board) {
 
     int eval = white_eval - black_eval;
 
+    // due to negamax we want both players to maximize
     if (board->player == BLACK) {
         eval *= -1;
     }

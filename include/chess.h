@@ -60,6 +60,7 @@
 #define RCPROM 14
 #define QCPROM 15
 
+#define EMPTY 0
 #define PAWN 1
 #define KNIGHT 2
 #define BISHOP 3
@@ -73,6 +74,8 @@
 #define EXACT 0
 #define UPPERBOUND 1
 #define LOWERBOUND 2
+
+#define PRIORITY_QUEUE_SIZE 512
 
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
@@ -125,7 +128,7 @@ typedef struct _list_t{
 typedef struct _maxpq_t{
     int size;
     int nr_elem;
-    move_t* array[512];
+    move_t* array[PRIORITY_QUEUE_SIZE];
 } maxpq_t;
 typedef struct _searchdata_t {
     board_t *board;         /* pointer to the actual board */
@@ -146,11 +149,20 @@ typedef struct _searchdata_t {
     int time_available;     /* time for search precalculated */
 }  searchdata_t;
 
-extern int nodes_searched;
-extern int hash_used;
-extern int hash_bounds_adjusted;
-extern int pv_node_hit;
 
+/////////////////////////////////////////////////////////////
+//  GLOBALS 
+
+//  SEARCH
+int nodes_searched;
+int hash_used;
+int hash_bounds_adjusted;
+int pv_node_hit;
+
+//  MOVE EXECUTION
+extern board_t* OLDSTATE[512];
+
+//  MOVE GENERATION
 extern bitboard_t MASK_FILE[8];
 extern bitboard_t MASK_RANK[8];
 extern bitboard_t CLEAR_FILE[8];
@@ -162,7 +174,6 @@ extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64]; 
 extern bitboard_t KING_ATTACK[64];
 
-extern board_t* OLDSTATE[512];
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
@@ -175,13 +186,8 @@ extern int pop_1st_bit(bitboard_t *bitboard);
 extern void initialize_attack_boards();
 extern void initialize_helper_boards();
 extern void initialize_oldstate_array();
+extern void initialize_chess_engine_only_necessary();
 
-/////////////////////////////////////////////////////////////
-//  LIST FUNCTIONS
-
-extern list_t* new_list();
-extern move_t* pop(list_t* head);
-extern void push(list_t* head, move_t* move);
 
 //////////////////////////////////////////////////////////////
 // PRIORITY QUEUE FUNCTIONS
@@ -195,9 +201,9 @@ extern void insert(maxpq_t* pq, move_t* elem);
 extern move_t* pop_max(maxpq_t* pq);
 
 void free_pq(maxpq_t* pq);
+
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
-
 extern board_t* init_board();
 extern board_t* copy_board(board_t* board);
 extern void recover_board(board_t* board, board_t* old_board);
@@ -209,7 +215,6 @@ extern int is_same_board(board_t *board1, board_t* board2);
 
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION
-
 extern int is_capture(bitboard_t to, board_t *board);
 extern int is_in_check(board_t *board);
 extern int is_in_check_after_move(board_t *board);
@@ -218,30 +223,27 @@ extern void generate_moves(board_t* board, maxpq_t* movelst);
 extern int iterative_search(searchdata_t* search_data);
 
 /////////////////////////////////////////////////////////////
-//  MOVE
-
+//  MOVE & EXECUTION
 extern move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
 extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
-extern void free_move_list(list_t *movelst);
 extern void do_move(board_t* board, move_t* move);
 extern void undo_move(board_t* board);
 extern int is_same_move(move_t* move1, move_t* move2);
 
 ///////////////////////////////////////////////////////////////
-//  PERFT
-
-extern uint64_t move_gen(board_t* board, int depth);
+//  SEARCH DATA
+extern searchdata_t* init_search_data(board_t *board);
+extern void free_search_data(searchdata_t *data);
 
 ///////////////////////////////////////////////////////////////
 //  ALPHA BETA SEARCH
-
 extern int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
 
 ///////////////////////////////////////////////////////////////
-//  SEARCH DATA
+//  PERFT 
+extern uint64_t perft(board_t* board, int depth);
+extern int perft_divide(board_t* board, int depth);
 
-extern searchdata_t* init_search_data(board_t *board);
-extern void free_search_data(searchdata_t *data);
 
 #endif

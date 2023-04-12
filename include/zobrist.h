@@ -3,7 +3,11 @@
 
 #include "../include/chess.h"
 
-#define HTSIZE  18815231 // prime number should help avoid hash collisions
+// prime number should help avoid hash collisions
+//#define HTSIZE  83471       // ~16MB
+//#define HTSIZE  166703      // ~32MB   
+#define HTSIZE  334021      // ~64MB
+//#define HTSIZE  18815231    // ~3.5GB  
 
 typedef struct _zobrist_t {
     uint64_t piece_random64[12][64];
@@ -19,20 +23,25 @@ typedef struct _htentry_t {
     int8_t depth;
 } htentry_t;
 
+//////////////////////////////////////////////////////////
+//  GLOBALS
 extern zobrist_t zobrist_table;
 extern htentry_t** ht_table;
 
-///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 //  ZOBRIST HASHING
-
 extern void initialize_zobrist_table();
 extern uint64_t calculate_zobrist_hash(board_t *board);
+
+//////////////////////////////////////////////////////////
+//  TRANSPOSITION TABLE
 extern void initialize_hashtable();
 extern void clear_hashtable();
-extern uint64_t get_memory_usage_hashtable_in_bytes();
-extern int hashtable_full_permill();
 extern void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth);
 extern int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth);
 extern move_t *get_best_move_from_hashtable(board_t* board);
+
+extern uint64_t get_memory_usage_hashtable_in_bytes();
+extern int hashtable_full_permill();
 
 #endif

@@ -10,8 +10,8 @@ char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
                      "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
                      "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
 
-/* Formats the string representing the board */
-char* format_print_string(board_t *board){
+/* Creates a string representing the board */
+char* create_board_string(board_t *board){
     char *string = (char *) malloc(64);
     for(int i = 0; i < 64; i++){string[i]='-';}
 
@@ -68,21 +68,25 @@ char* format_print_string(board_t *board){
     return string;
 }
 
-/* Print the board */
+/* Prints the board */
 void print_board(board_t* board) {
     // create string representing the playing field
-    char *board_string = format_print_string(board);
+    char *board_string = create_board_string(board);
 
     // print the chessboard-string row for row
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
+            // print row number 
             if (y == 0) {
                 fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
             }
+            // print piece
             char piece = board_string[pos_to_idx(x, y)];
+            // in PURPLE if blacks piece
             if(piece >= 97 && piece <= 122){
                 fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
             }
+            // in WHITE if whites piece
             else{
                 fprintf(stderr, "%c  ", piece);
             }
@@ -111,13 +115,8 @@ void print_bitboard(bitboard_t board){
             if (y == 0) {
                 fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
             }
-            char piece = string[pos_to_idx(x, y)];
-            if(piece >= 97 && piece <= 122){
-                fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
-            }
-            else{
-                fprintf(stderr, "%c  ", piece);
-            }
+            char field = string[pos_to_idx(x, y)];
+            fprintf(stderr, "%c  ", field);
             
         }
         fprintf(stderr, "\n");
@@ -127,50 +126,8 @@ void print_bitboard(bitboard_t board){
     free(string);
 }
 
-/* Prints move on board */
-void print_move_on_board(move_t *move){
-    char *string = (char *) malloc(64);
-    for(int i = 0; i < 64; i++){string[i]='-';}
 
-    string[move->from] = 'o';
-    if(move->flags == QUIET){
-        string[move->to] = 'X';
-    } else if (move->flags == CAPTURE){
-        string[move->to] = 'T';
-    } else if (move->flags == DOUBLEP){
-        string[move->to] = 'D';
-    } else if (move->flags >= 8){
-        string[move->to] = 'P';
-    } else if (move->flags == EPCAPTURE){
-        string[move->to] = 'E';
-    } else{
-        string[move->to] = 'C';
-    }
-    
-
-    /* print the chessboard-string row for row */
-    for (int x = 7; x >= 0; x--) {
-        for (int y = 0; y < 8; y++) {
-            if (y == 0) {
-                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
-            }
-            char piece = string[pos_to_idx(x, y)];
-            if(piece >= 97 && piece <= 122){
-                fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
-            }
-            else{
-                fprintf(stderr, "%c  ", piece);
-            }
-            
-        }
-        fprintf(stderr, "\n");
-    }
-    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
-    fprintf(stderr, "\n");
-    free(string);
-}
-
-/* Print move */
+/* Prints move */
 void print_move(move_t* move) {
     char* start_field = FIELD[move->from];
     char* end_field = FIELD[move->to];
@@ -184,12 +141,12 @@ void print_move(move_t* move) {
     }
 }
 
-/* Print move */
+/* Prints move in LAN notation */
 void print_LAN_move(move_t* move, player_t color_playing) {
     char* start_field = FIELD[move->from];
     char* end_field = FIELD[move->to];
 
-    /* if promotion move */
+    // if promotion move
     if (move->flags >= 8) {
         flag_t prom_flag = move->flags & (0b11);
         if(prom_flag == 0){
@@ -221,33 +178,22 @@ void print_LAN_move(move_t* move, player_t color_playing) {
             }
         }
     } 
-    /* no promotion move */
+    // if not a promotion move
     else{
         printf("%.2s%.2s", start_field, end_field);
     }
 }
 
-/* Prints all moves in a movelist */
-void print_movelist(list_t* movelst){
-    move_t *move;
-    while((move = pop(movelst))){
-        print_move(move);
-        fprintf(stderr, " ");
-        free_move(move);
-    }
-    free_move_list(movelst);
-    fprintf(stderr, "\n");
-}
-
-/* Print the list of best possible moves until a depth (PV line) */
+/* Prints the (PV line) upto given depth */
 void print_line(board_t* board, int depth) {
-    /* make a copy of the board */
+    // make a copy of the board
     board_t *board_copy = copy_board(board);
 
-    /* for all depth, figure out the best move from the hash-table and print it */
+    // for all depth, probe best move from the transpostiotn table and print it
     for (int d = depth; d > 0; d--) {
         move_t* best_move = get_best_move_from_hashtable(board_copy);
         if (best_move == NULL) {
+            // this can happen but shouldn't (if hash entry overwritten) 
             printf("NULL ");
             free_board(board_copy);
             return;
@@ -258,7 +204,7 @@ void print_line(board_t* board, int depth) {
         free_move(best_move);
     }
 
-    /* free the board */
+    // free the board
     free_board(board_copy);
 
     return;

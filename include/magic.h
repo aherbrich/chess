@@ -3,6 +3,8 @@
 
 #include "../include/chess.h"
 
+/////////////////////////////////////////////////////////////
+//  GLOBALS
 extern const int ROOK_BITS[64];
 extern const int BISHOP_BITS[64];
 extern const uint64_t ROOK_MAGIC[64];
@@ -10,7 +12,6 @@ extern const uint64_t BISHOP_MAGIC[64];
 
 /////////////////////////////////////////////////////////////
 //  MAGIC BITBOARDS
-
 extern int transform(bitboard_t mask, uint64_t magic, int bits);
 extern bitboard_t index_to_bitboard(int index, int bits, bitboard_t mask);
 extern bitboard_t rook_mask(int sq);
