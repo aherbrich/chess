@@ -131,22 +131,27 @@ typedef struct _maxpq_t{
     move_t* array[PRIORITY_QUEUE_SIZE];
 } maxpq_t;
 typedef struct _searchdata_t {
-    board_t *board;         /* pointer to the actual board */
-    int max_depth;          /* maximum search depth in plies */
-    int current_max_depth;
-    int max_seldepth;       /* maximum search depth with quiescence search */
-    int max_nodes;          /* maximum nodes allowed to search */
-    int max_time;           /* maximum time allowed */
-    int wtime;              /* time white has left on clock in ms*/
-    int btime;              /* time black has left on clock in ms*/
-    int winc;               /* white time increment in ms */      
-    int binc;               /* black time increment in ms */ 
-    int ponder;             /* tells engine to start search at ponder move */
-    int run_infinite;       /* tells the engine to run aslong as stop != 1 */
-    int stop;               /* tells the engine to stop search when stop == 1*/
-    move_t *best_move;      /* computed best move (so far) */
-    clock_t start_time;     /* time the search was initiated by gui */
-    int time_available;     /* time for search precalculated */
+    board_t *board;                 // pointer to the actual board 
+    int max_depth;                  // maximum search depth in plies
+    int current_max_depth;          // current maximum search depth in plies in iterative search
+    int max_seldepth;               // maximum search depth with quiescence search 
+    int max_nodes;                  // maximum nodes allowed to search 
+    int max_time;                   // maximum time allowed 
+    int wtime;                      // time white has left on clock in ms
+    int btime;                      // time black has left on clock in ms
+    int winc;                       // white time increment in ms   
+    int binc;                       // black time increment in ms 
+    int ponder;                     // tells engine to start search at ponder move 
+    int run_infinite;               // tells the engine to run aslong as stop != 1
+    int stop;                       // tells the engine to stop search when stop == 1
+    int time_available;             // tells the engine how much time it has to search in ms
+
+    clock_t start_time;             // time the search was initiated (by the gui) 
+    move_t *best_move;                  // computed best move (so far) 
+    int nodes_searched;             // amount of nodes searched in iterative search
+    int hash_used;                  // amount of hash entries that lead to not needing to search the node again 
+    int hash_bounds_adjusted;       // amount of hash entries that lead to a adjustment of alpha/beta bounds
+    int pv_node_hit;                // amount of pv moves that turned out to be the best move
 }  searchdata_t;
 
 

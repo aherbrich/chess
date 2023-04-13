@@ -270,3 +270,22 @@ int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value, move_t **
     return 0;
 }
 
+
+/* Gets the eval from the hashtable for the board position */
+int get_eval_from_hashtable(board_t* board) {
+    uint64_t hash = calculate_zobrist_hash(board);
+    uint64_t key = hash % HTSIZE;
+
+    htentry_t *cur = ht_table[key];
+    // search the list for the entry with the same hash 
+    while(cur) {
+        // if there is one, return the value 
+        if(cur->hash == hash) {
+            return (cur->eval);
+        }
+        cur = cur->next;
+    }
+
+    // otherwise, return worst eval
+    return -16000;
+}

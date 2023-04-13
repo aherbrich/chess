@@ -40,6 +40,7 @@ extern void clear_hashtable();
 extern void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth);
 extern int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value, move_t **move, int8_t *depth);
 extern move_t *get_best_move_from_hashtable(board_t* board);
+extern int get_eval_from_hashtable(board_t* board);
 
 extern uint64_t get_memory_usage_hashtable_in_bytes();
 extern int hashtable_full_permill();
