@@ -105,6 +105,7 @@ typedef struct _board_t {
     flag_t ep_possible;
     idx_t ep_field;
     uint16_t ply_no;
+    uint8_t fifty_move_counter;
 } board_t;
 
 typedef struct _move_t {

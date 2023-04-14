@@ -1,4 +1,5 @@
 #include "../include/chess.h"
+#include <string.h>
 
 /* Checks if two boards are the same */
 int is_same_board(board_t *board1, board_t* board2){
@@ -54,6 +55,7 @@ void clear_board(board_t *board) {
     board->ep_possible = FALSE;
     board->castle_rights = 0b1111;
     board->ply_no = 0;
+    board->fifty_move_counter = 0;
 }
 
 /* Copies given board */
@@ -85,6 +87,7 @@ board_t* copy_board(board_t* board) {
     copy->ep_possible = board->ep_possible;
     copy->castle_rights = board->castle_rights;
     copy->ply_no = board->ply_no;
+    copy->fifty_move_counter = board->fifty_move_counter;
 
     return copy;
 }
@@ -116,6 +119,7 @@ void recover_board(board_t* board, board_t* old_board){
     board->ep_possible = old_board->ep_possible;
     board->castle_rights = old_board->castle_rights;
     board->ply_no = old_board->ply_no;
+    board->fifty_move_counter = old_board->fifty_move_counter;
 
     free(old_board);
 }
@@ -143,7 +147,9 @@ void update_white_black_all_boards(board_t *board){
 void load_by_FEN(board_t* board, char* FEN) {
     int row = 7;
     int col = 0;
-    char* ptr = FEN;
+    char buffer[1024];
+    strcpy(buffer, FEN);
+    char* ptr = buffer;
     uint64_t shift = 0;
 
     // clear board before setting it from a FEN 
@@ -311,7 +317,13 @@ void load_by_FEN(board_t* board, char* FEN) {
         ptr++;
     }
     
-    // TODO: ply count and number of quiet moves  
+    // set ply number
+    char *ply_count = strtok(ptr, " ");
+    board->ply_no = (uint16_t) atoi(ply_count);
+
+    // set number of consecutive non-captures and non-pawn moves 
+    char *q_moves = strtok(NULL, " ");
+    board->fifty_move_counter = (uint8_t) atoi(q_moves);
 
     return;
 }

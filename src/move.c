@@ -169,6 +169,15 @@ void do_move(board_t* board, move_t* move){
     //  EXIT EARLY STATEMENTS BEGIN
     //
 
+    // if move is a capture or a pawn move, reset counter
+    if((move->flags & 0b0100) || (from_mask & board->whitepawns) || (from_mask & board->blackpawns)){
+        board->fifty_move_counter = 0;
+        
+    } else{
+        // else increase it
+        board->fifty_move_counter++;
+    }
+
     // if move is quiet or simple capture
     if(move->flags == QUIET || move->flags == CAPTURE){
         board->ep_possible = FALSE;
