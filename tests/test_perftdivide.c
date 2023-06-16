@@ -2,6 +2,7 @@
 #include "../include/prettyprint.h"
 
 board_t* OLDSTATE[512];
+uint64_t HISTORY_HASHES[512];
 
 /*
  * MAIN ENTRY POINT

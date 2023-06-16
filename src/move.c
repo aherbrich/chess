@@ -1,4 +1,5 @@
 #include "../include/chess.h"
+#include "../include/zobrist.h"
 
 ////////////////////////////////////////////////////////////////
 // MOVE FUNCTIONS
@@ -58,9 +59,10 @@ void free_move(move_t *move) {
 }
 
 /* Execute move */
-void do_move(board_t* board, move_t* move){
+int do_move(board_t* board, move_t* move){
     // FIRST: save old board state 
     OLDSTATE[board->ply_no] = copy_board(board);
+    HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
 
     // move execution
     bitboard_t from_mask = 1ULL << move->from;
@@ -178,6 +180,11 @@ void do_move(board_t* board, move_t* move){
         board->fifty_move_counter++;
     }
 
+    // if black is making the move/ made his move, then increase the full move counter
+    if(board->player == BLACK){
+        board->full_move_counter++;
+    }
+
     // if move is quiet or simple capture
     if(move->flags == QUIET || move->flags == CAPTURE){
         board->ep_possible = FALSE;
@@ -187,7 +194,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is double pawn push
@@ -204,7 +211,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is kingside castle 
@@ -226,7 +233,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is queenside castle 
@@ -248,7 +255,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
 
@@ -269,7 +276,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is a rook promotion move 
@@ -289,7 +296,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is a knight promotion move 
@@ -309,7 +316,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is a bishop promotion move 
@@ -329,7 +336,7 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
 
     // if move is an ep capture
@@ -348,9 +355,12 @@ void do_move(board_t* board, move_t* move){
         board->player = (board->player == WHITE)?(BLACK):(WHITE); 
         // dont forget to update the white, black and all bitboard
         update_white_black_all_boards(board);
-        return;
+        return !is_in_check_after_move(board);
     }
     
+    fprintf(stderr, "This should not happen, since all types of moves should have been checked exhaustively\n");
+    exit(1);
+    return 0;
 }
 
 /* Undos a move*/

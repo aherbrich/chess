@@ -6,7 +6,6 @@ searchdata_t* init_search_data(board_t *board){
 
     data->board = copy_board(board);  // current board 
     data->max_depth = -1;             // maximum search depth in plies 
-    data->current_max_depth = -1;     // current maximum search depth in plies in iterative search
     data->max_seldepth = -1;          // maximum search depth with quiescence search
     data->max_nodes = -1;             // maximum nodes allowed to search
     data->max_time = -1;              // maximum time allowed in ms 
@@ -20,7 +19,8 @@ searchdata_t* init_search_data(board_t *board){
     data->time_available = 0;         // tells the engine how much time it has to search in ms
 
     data->start_time = clock();       // time the search was initiated (by the gui) 
-    data->best_move = NULL;           // computed best move (so far) 
+    data->best_move = NULL;           // best move (so far)
+    data->best_eval = NEGINFINITY;    // evaluation of board after best move made
     data->nodes_searched = 0;         // amount of nodes searched in iterative search
     data->hash_used = 0;              // amount of hash entries that lead to not needing to search the node again 
     data->hash_bounds_adjusted = 0;   // amount of hash entries that lead to a adjustment of alpha/beta bounds

@@ -56,6 +56,7 @@ void clear_board(board_t *board) {
     board->castle_rights = 0b1111;
     board->ply_no = 0;
     board->fifty_move_counter = 0;
+    board->full_move_counter = 0;
 }
 
 /* Copies given board */
@@ -88,6 +89,7 @@ board_t* copy_board(board_t* board) {
     copy->castle_rights = board->castle_rights;
     copy->ply_no = board->ply_no;
     copy->fifty_move_counter = board->fifty_move_counter;
+    copy->full_move_counter = board->full_move_counter;
 
     return copy;
 }
@@ -120,6 +122,7 @@ void recover_board(board_t* board, board_t* old_board){
     board->castle_rights = old_board->castle_rights;
     board->ply_no = old_board->ply_no;
     board->fifty_move_counter = old_board->fifty_move_counter;
+    board->full_move_counter = old_board->full_move_counter;
 
     free(old_board);
 }
@@ -317,13 +320,14 @@ void load_by_FEN(board_t* board, char* FEN) {
         ptr++;
     }
     
-    // set ply number
-    char *ply_count = strtok(ptr, " ");
-    board->ply_no = (uint16_t) atoi(ply_count);
-
     // set number of consecutive non-captures and non-pawn moves 
-    char *q_moves = strtok(NULL, " ");
-    board->fifty_move_counter = (uint8_t) atoi(q_moves);
+    char *tmp;
+    char *fifty_count = strtok_r(ptr, " ", &tmp);
+    board->fifty_move_counter = (uint16_t) atoi(fifty_count);
+
+    // set full move counter
+    char *full_move = strtok_r(NULL, " ", &tmp);
+    board->full_move_counter = (uint8_t) atoi(full_move);
 
     return;
 }

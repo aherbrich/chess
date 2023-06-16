@@ -26,6 +26,7 @@ void initialize_maxpq(maxpq_t* pq){
 void print_pq(maxpq_t* pq){
     for(int i = 1; i < pq->nr_elem+1; i++){
         print_move(pq->array[i]);
+        fprintf(stderr, " (%d)", pq->array[i]->value);
         fprintf(stderr, "   ");
     }
     printf("\n");
@@ -46,6 +47,20 @@ void sink(maxpq_t* pq, int k){
         int j = 2*k;
         // set j to index of child with higher value
         if(j < pq->nr_elem && less(pq, j, j+1)) j++;
+        // if k'th element has higher value than both children we can exit early
+        if(!less(pq, k, j)) break; 
+        //else swap
+        swap(pq, k, j);
+        k = j;
+    }
+}
+
+void sink_N(maxpq_t* pq, int k, int N){
+    while(2*k <= N){
+        // index of first child
+        int j = 2*k;
+        // set j to index of child with higher value
+        if(j < N && less(pq, j, j+1)) j++;
         // if k'th element has higher value than both children we can exit early
         if(!less(pq, k, j)) break; 
         //else swap
@@ -89,5 +104,16 @@ void free_pq(maxpq_t* pq){
     // free moves 
     for(int i = 1; i < pq->nr_elem+1; i++){
         free_move(pq->array[i]);
+    }
+}
+
+void heap_sort(maxpq_t* pq){
+    int N = pq->nr_elem;
+    for(int k = N/2; k >= 1; k--){
+        sink_N(pq, k, N);
+    }
+    while(N > 1){
+        swap(pq, 1, N--);
+        sink_N(pq, 1, N);
     }
 }

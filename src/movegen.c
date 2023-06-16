@@ -612,13 +612,14 @@ void filter_illegal_moves(board_t* board, maxpq_t *movelst){
     
 
     while((move = pop_max(movelst))){
-        // try move 
-        do_move(board, move);
-        int in_check = is_in_check_after_move(board);
-        // only keep move if not in check (after making move)
-        if(!in_check) insert(&legalmoves, move);
+        // We play a move and filter out those that turn out to be illegal
+        if (!do_move(board, move)){
+            undo_move(board);
+            free_move(move);
+            continue;
+        }
+        insert(&legalmoves, move);
         undo_move(board);
-        if(in_check) free(move);
     }
     
     memcpy((*movelst).array, legalmoves.array, sizeof((*movelst).array));

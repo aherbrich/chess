@@ -105,6 +105,7 @@ typedef struct _board_t {
     flag_t ep_possible;
     idx_t ep_field;
     uint16_t ply_no;
+    uint16_t full_move_counter;
     uint8_t fifty_move_counter;
 } board_t;
 
@@ -134,7 +135,6 @@ typedef struct _maxpq_t{
 typedef struct _searchdata_t {
     board_t *board;                 // pointer to the actual board 
     int max_depth;                  // maximum search depth in plies
-    int current_max_depth;          // current maximum search depth in plies in iterative search
     int max_seldepth;               // maximum search depth with quiescence search 
     int max_nodes;                  // maximum nodes allowed to search 
     int max_time;                   // maximum time allowed 
@@ -148,7 +148,8 @@ typedef struct _searchdata_t {
     int time_available;             // tells the engine how much time it has to search in ms
 
     clock_t start_time;             // time the search was initiated (by the gui) 
-    move_t *best_move;                  // computed best move (so far) 
+    move_t *best_move;              // best move (so far) 
+    int best_eval;                  // evaluation of board after best move made
     int nodes_searched;             // amount of nodes searched in iterative search
     int hash_used;                  // amount of hash entries that lead to not needing to search the node again 
     int hash_bounds_adjusted;       // amount of hash entries that lead to a adjustment of alpha/beta bounds
@@ -167,6 +168,7 @@ int pv_node_hit;
 
 //  MOVE EXECUTION
 extern board_t* OLDSTATE[512];
+extern uint64_t HISTORY_HASHES[512];
 
 //  MOVE GENERATION
 extern bitboard_t MASK_FILE[8];
@@ -202,11 +204,14 @@ extern void print_pq(maxpq_t* pq);
 
 extern void sink(maxpq_t* pq, int k);
 extern void swim(maxpq_t* pq, int k);
+void swap(maxpq_t* pq, int i, int k);
 
 extern void insert(maxpq_t* pq, move_t* elem);
 extern move_t* pop_max(maxpq_t* pq);
 
 void free_pq(maxpq_t* pq);
+
+void heap_sort(maxpq_t* pq);
 
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
@@ -226,14 +231,13 @@ extern int is_in_check(board_t *board);
 extern int is_in_check_after_move(board_t *board);
 extern void generate_pseudo_moves(board_t *board, maxpq_t* movelst);
 extern void generate_moves(board_t* board, maxpq_t* movelst);
-extern int iterative_search(searchdata_t* search_data);
 
 /////////////////////////////////////////////////////////////
 //  MOVE & EXECUTION
 extern move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
 extern move_t *copy_move(move_t *move);
 extern void free_move(move_t *move);
-extern void do_move(board_t* board, move_t* move);
+extern int do_move(board_t* board, move_t* move);
 extern void undo_move(board_t* board);
 extern int is_same_move(move_t* move1, move_t* move2);
 
@@ -243,8 +247,9 @@ extern searchdata_t* init_search_data(board_t *board);
 extern void free_search_data(searchdata_t *data);
 
 ///////////////////////////////////////////////////////////////
-//  ALPHA BETA SEARCH
+//  SEARCH
 extern int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
+extern void search(searchdata_t* search_data);
 
 ///////////////////////////////////////////////////////////////
 //  PERFT 

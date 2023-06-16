@@ -1,73 +1,121 @@
+#include <string.h>
+
 #include "../include/chess.h"
 #include "../include/eval.h"
 #include "../include/prettyprint.h"
-#include "../include/zobrist.h" 
+#include "../include/zobrist.h"
 
-#define TOLERANCE 10 //ms
-#define ACCURACY 10000
+#define TOLERANCE 10  // ms
+#define STOP_ACCURACY 10000
+#define MAXDEPTH 100
+#define WINDOWSIZE 50
 
 int last_check = 0;
-int stop_immediate = FALSE;
+int stop_immediately = FALSE;
 
-/* Determines how much time is available for search (search parameters specified by the caller (the gui)) */
-int calculate_time(searchdata_t *data){
+/* Creates score string for info output (for GUI) */
+char *get_mate_or_cp_value(int score, int depth) {
+    char *buffer = (char *)malloc(1024);
+    for (int i = 0; i < 1024; i++) buffer[i] = '\0';
+
+    if (score >= 16000) {
+        sprintf(buffer, "mate %d", (depth / 2));
+    } else if (score <= -16000) {
+        sprintf(buffer, "mate %d", -(depth / 2));
+    } else {
+        sprintf(buffer, "cp %d", score);
+    }
+    return buffer;
+}
+
+/* Determines a draw by threefold repitiion */
+int draw_by_repition(board_t *board) {
+    uint64_t current_board_hash = calculate_zobrist_hash(board);
+
+    int counter = 0;
+    for (int i = 0; i < board->ply_no; i++) {
+        if (HISTORY_HASHES[i] == current_board_hash) counter++;
+        if (counter == 2) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Determines how much time is available for search (search parameters specified
+ * by the caller (the gui)) */
+int calculate_time(searchdata_t *data) {
     int time_available = 0;
     int atleast_one_time_found = FALSE;
     int time_available_movetime = 0;
     int time_available_remainingtime = 0;
 
-    // if max time for move is given 
-    if(data->max_time != -1){
+    // if max time for move is given
+    if (data->max_time != -1) {
         // calculate time avaiable for search
         time_available_movetime += data->max_time;
-        time_available_movetime = (data->board->player == WHITE)?(time_available_movetime+data->winc):(time_available_movetime+data->binc);
+        time_available_movetime = (data->board->player == WHITE)
+                                      ? (time_available_movetime + data->winc)
+                                      : (time_available_movetime + data->binc);
         time_available_movetime -= TOLERANCE;
 
         time_available = time_available_movetime;
         // make sure chess engine has atleast 5ms for search
-        if(time_available < 5){
+        if (time_available < 5) {
             time_available = 5;
         }
         atleast_one_time_found = TRUE;
-    } 
+    }
     // if whites/blacks remaining time is given
-    if ((data->board->player == WHITE && data->wtime != -1) || (data->board->player == BLACK && data->btime != -1)){
+    if ((data->board->player == WHITE && data->wtime != -1) ||
+        (data->board->player == BLACK && data->btime != -1)) {
         // calculate time avaiable for search
-        time_available_remainingtime = (data->board->player == WHITE)?((int)((double) data->wtime/30.0)):((int)((double) data->btime/30.0));
-        time_available_remainingtime = (data->board->player == WHITE)?(time_available_remainingtime+data->winc):(time_available_remainingtime+data->binc);
+        time_available_remainingtime =
+            (data->board->player == WHITE)
+                ? ((int)((double)data->wtime / 30.0))
+                : ((int)((double)data->btime / 30.0));
+        time_available_remainingtime =
+            (data->board->player == WHITE)
+                ? (time_available_remainingtime + data->winc)
+                : (time_available_remainingtime + data->binc);
         time_available_remainingtime -= TOLERANCE;
 
-        // if no max time was given or the now calculated time is lower than the max time given update it
-        if(!atleast_one_time_found || time_available_remainingtime < time_available_movetime){
+        // if no max time was given or the now calculated time is lower than the
+        // max time given update it
+        if (!atleast_one_time_found ||
+            time_available_remainingtime < time_available_movetime) {
             time_available = time_available_remainingtime;
             // again, make sure chess engine has atleast 5ms for search
-            if(time_available < 5){
+            if (time_available < 5) {
                 time_available = 5;
             }
         }
         atleast_one_time_found = TRUE;
     }
-    
-    if(atleast_one_time_found){
-        // return the minimum of both times calculated (or one if only one was given)
+
+    if (atleast_one_time_found) {
+        // return the minimum of both times calculated (or one if only one was
+        // given)
         return time_available;
-    } else{
+    } else {
         // -1, indicates that no time limit was specified in the call
         return -1;
     }
-    
 }
 
 /* Determines if the search has to be stopped */
-/* Because of either (1) a STOP request or (2) we have used up our time to search */
-int search_has_to_be_stopped(searchdata_t *search_data){
+/* Because of either (1) a STOP request or (2) we have used up our time to
+ * search */
+int search_has_to_be_stopped(searchdata_t *search_data) {
     // if a stop was initiaited, stop the search immediately
-    if(search_data->stop){
+    if (search_data->stop) {
         return 1;
     }
-    // or, if search is not in infinite mode and the time has run out, stop search immediately
-    if(!search_data->run_infinite){
-        if((int) (((double) clock() - search_data->start_time) / 1000) >= search_data->time_available){
+    // or, if search is not in infinite mode and the time has run out, stop
+    // search immediately
+    if (!search_data->run_infinite) {
+        if ((int)(((double)clock() - search_data->start_time) / 1000) >=
+            search_data->time_available) {
             return 1;
         }
     }
@@ -75,13 +123,14 @@ int search_has_to_be_stopped(searchdata_t *search_data){
 }
 
 /* Quescience search */
-int quiet_search(board_t *board, int alpha, int beta, searchdata_t* search_data){
+int quiet_search(board_t *board, int alpha, int beta,
+                 searchdata_t *search_data) {
     int eval = eval_board(board);
 
-    if(eval >= beta){
+    if (eval >= beta) {
         return eval;
     }
-    if(eval > alpha){
+    if (eval > alpha) {
         alpha = eval;
     }
 
@@ -91,53 +140,51 @@ int quiet_search(board_t *board, int alpha, int beta, searchdata_t* search_data)
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_pseudo_moves(board, &movelst);
-    move_t* move;
+    move_t *move;
 
-    while((move = pop_max(&movelst))){
+    while ((move = pop_max(&movelst))) {
         // every so often check if we have to stop the search
-        if(last_check > ACCURACY && !stop_immediate){
+        if (last_check > STOP_ACCURACY && !stop_immediately) {
             last_check = 0;
-            stop_immediate = search_has_to_be_stopped(search_data);
+            stop_immediately = search_has_to_be_stopped(search_data);
         }
 
-        // exit search cleanly if we have to stop 
-        if(stop_immediate){
+        // exit search cleanly if we have to stop
+        if (stop_immediately) {
             free_move(move);
             free_pq(&movelst);
             return get_eval_from_hashtable(board);
         }
 
         // filter out non-captures
-        if(!(move->flags &0b0100)){
+        if (!(move->flags & 0b0100)) {
             free_move(move);
             continue;
         }
 
-        
         search_data->nodes_searched++;
         last_check++;
 
         // delta pruning
-        if(best_eval - 200 - is_capture(move->to, board) > eval){
+        if (best_eval - 200 - is_capture(move->to, board) > eval) {
             free_move(move);
             continue;
         }
-
 
         do_move(board, move);
         eval = -quiet_search(board, -beta, -alpha, search_data);
         undo_move(board);
 
-        // if eval is better than the best so far, update it 
-        if(eval > best_eval){
+        // if eval is better than the best so far, update it
+        if (eval > best_eval) {
             best_eval = eval;
         }
-        // if eval is better than alpha, adjust bound 
-        if(eval > alpha){
+        // if eval is better than alpha, adjust bound
+        if (eval > alpha) {
             alpha = eval;
         }
-        // beta-cutoff 
-        if(eval >= beta){
+        // beta-cutoff
+        if (eval >= beta) {
             free_move(move);
             break;
         }
@@ -145,270 +192,253 @@ int quiet_search(board_t *board, int alpha, int beta, searchdata_t* search_data)
     }
 
     free_pq(&movelst);
-        
+
     return best_eval;
 }
 
-/* Main entry point of search */
-int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* search_data){
-    int old_alpha = alpha;
-    int old_beta = beta;
-    int best_eval = NEGINFINITY;
-    move_t* best_move = NULL;
+int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
+    searchdata->nodes_searched++;
 
+    // Every so often, check if our time has expired
+    if ((searchdata->nodes_searched & STOP_ACCURACY) == 0) {
+        stop_immediately = search_has_to_be_stopped(searchdata);
+    }
+
+    // If we have to stop, exit search by returning 0 in all branches.
+    // We will simply use the information of last search as our result
+    // and discard any information gained in this search.
+    if (stop_immediately) {
+        return 0;
+    }
+
+    // Check for draw by repitition or fifty move rule
+    if ((searchdata->board->fifty_move_counter >= 100 &&
+         !(is_in_check(searchdata->board))) ||
+        draw_by_repition(searchdata->board)) {
+        return 0;
+    }
+
+    // If we've reached a depth of zero, evaluate the board
+    if (depth == 0) {
+        // quiet_search(searchdata->board, alpha, beta, searchdata)
+        // return 
+        return eval_board(searchdata->board);
+    }
+
+    // ================================================================ //
+    // TRANSPOSITION TABLE PROBING: Probe the transpotition table to    //
+    // check if we've encountered this position before. If the probe is //
+    // useable, meaning we've encountered this position at same depth   //
+    // before and found an exact evaluation, return the score and stop  //
+    // searching.                                                       //
+    // ================================================================ //
     move_t *pv_move = NULL;
     int16_t pv_value;
-    int8_t pv_flags;
-    int8_t pv_depth;
+    int8_t pv_flags, pv_depth;
 
-    int entry_found = get_hashtable_entry(board, &pv_flags, &pv_value, &pv_move, &pv_depth);
-    
-    // (1) FIRSTLY, if there exists a TT entry for the board, use the information we stored 
-    // HINT: There will never exist an entry for depth 0 -> if depth 0 this part will simply be skipped
-    if (entry_found && pv_depth == depth) {
-        // if eval of pvmove is exact we can use it as the best move so far
-        if (pv_flags == EXACT) {
-            search_data->nodes_searched++;
-            search_data->hash_used++;
-            free_move(pv_move);
-            return pv_value;
-        }
-        // if the pvmove caused a beta cutoff last time
-        // we can use its eval as a lower(=alpha) bound 
-        else if (pv_flags == LOWERBOUND) {
-            search_data->hash_bounds_adjusted++;
-            if(pv_value > alpha) alpha = pv_value;
-        } 
-        // if no move was better than the pvmove last time
-        // we can use its eval as an upper(=beta) bound
-        else if (pv_flags == UPPERBOUND) {
-            search_data->hash_bounds_adjusted++;
-            if(pv_value < beta) beta = pv_value;
-        }
-        // beta cutoff
-        if (alpha >= beta) {
-            search_data->nodes_searched++;
-            search_data->hash_used++;
-            free_move(pv_move);
-            return pv_value;
-        }
+    int entry_found = get_hashtable_entry(searchdata->board, &pv_flags,
+                                          &pv_value, &pv_move, &pv_depth);
+
+    if (entry_found && pv_depth == depth && pv_flags == EXACT) {
+        return pv_value;
+    } else if (entry_found && pv_depth == depth && pv_flags == LOWERBOUND) {
+        searchdata->hash_bounds_adjusted++;
+        if (pv_value > alpha) alpha = pv_value;
+    } else if (entry_found && pv_depth == depth && pv_flags == UPPERBOUND) {
+        searchdata->hash_bounds_adjusted++;
+        if (pv_value < beta) beta = pv_value;
     }
-
-    // (2) SECONDLY, if we have reached depth 0
-    if(depth == 0){
-        // start quescience search 
-        return quiet_search(board, alpha, beta, search_data);
-    }
-
-    //
-    // NOW THE "ACTUAL" SEARCH BEGINS 
-    //
-
-    // (3) NOW, search the pvmove first (since its likely the best) and will cause the most cutoffs
-    if(entry_found){
-        // every so often check if we have to stop the search
-        if(last_check > ACCURACY && !stop_immediate){
-            last_check = 0;
-            stop_immediate = search_has_to_be_stopped(search_data);
-        }
-
-        // exit search cleanly if we have to stop 
-        if(stop_immediate){
-            free_move(pv_move);
-            free_move(best_move);
-            return (entry_found) ? pv_value : -16000;
-        }
-        
-        search_data->nodes_searched++;
-        last_check++;
-
-        do_move(board, pv_move);
-        int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
-        undo_move(board);
-
-        // adjust best eval and best move 
-        best_eval = eval;
-        free_move(best_move);
-        best_move = copy_move(pv_move);
-
-        // if eval is better than alpha, adjust bound
-        if(eval > alpha){
-            alpha = eval;
-        }
-
-        // beta cutoff
-        if(eval >= beta){
-            search_data->pv_node_hit++;
-            free_move(pv_move);
-            free_move(best_move);
-            return eval;
-        }
-    }
-
-    // (4) NOW, continue to search all the other moves 
-
-    // generate all (pseudo)legal moves 
-    maxpq_t movelst;
-    move_t* move;
-    initialize_maxpq(&movelst);
-    generate_pseudo_moves(board, &movelst);
-
-    // keep track of how many legal moves encountered
-    int nr_legal_moves = 0;
-
-    while((move = pop_max(&movelst))){
-        // every so often check if we have to stop the search
-        if(last_check > ACCURACY && !stop_immediate){
-            last_check = 0;
-            stop_immediate = search_has_to_be_stopped(search_data);
-        }
-        
-        // exit search cleanly if we have to stop 
-        if(stop_immediate){
-            free_move(pv_move);
-            free_move(move);
-            free_move(best_move);
-            free_pq(&movelst);
-            return (entry_found) ? pv_value : -16000;
-        }
-        last_check++;
-
-        // filter out pv move (since we checked it already)
-        if(entry_found && is_same_move(move, pv_move)){
-            nr_legal_moves++;
-            free_move(move);
-            continue;
-        }
-
-        do_move(board, move);
-
-        // filter out illegal moves
-        if(is_in_check_after_move(board)){
-            undo_move(board);
-            free_move(move);
-            continue;
-        }
-
-        nr_legal_moves++;
-        search_data->nodes_searched++;
-
-        // if the move was legal move, continue the search 
-        int eval = -alpha_beta_search(board, depth-1, -beta, -best_eval, search_data);
-        undo_move(board);
-
-        // if eval is better than the best so far update it 
-        if(eval > best_eval){
-            best_eval = eval;
-            free(best_move);
-            best_move = copy_move(move);
-        }
-        // if eval is better than alpha, adjust bound 
-        if(eval > alpha){
-            alpha = eval;
-        }
-
-        // beta cutoff 
-        if(eval >= beta){
-            free_move(move);
-            break;
-        }
-
-        free_move(move);
-    }
-
-    // if player had no legal moves 
-    if(nr_legal_moves == 0){
-        // game over (atleast in this branch of the search) 
+    if (alpha >= beta) {
+        // early beta cutoff
+        searchdata->hash_used++;
         free_move(pv_move);
-        free(best_move);
-        // we need to determine if stalemate or check
-        return eval_end_of_game(board, depth);
+        return pv_value;
     }
 
-    // if we exited early due to cutoff we cant store eval as a lower bound
-    if(best_eval >= old_beta){
-        store_hashtable_entry(board, LOWERBOUND, best_eval, best_move, depth);
-    }
-    // if no move was better than alpha than we can store the best evaluation as a upperbound 
-    else if(best_eval <= old_alpha){
-        store_hashtable_entry(board, UPPERBOUND, best_eval, best_move, depth);
-    } 
-    // else we can store the eval as an exact evaluation of the current board 
-    else{
-        store_hashtable_entry(board, EXACT, best_eval, best_move, depth);
+    // ================================================================== //
+    // MOVE ITERATION: A value is associated with each position of the    //
+    // game. This value is computed by means of an evaluation function    //
+    // and it indicates how good it would be for a player to reach that   //
+    // position. The player then iterates though all moves and chooses    //
+    // the move that maximizes the minimum value of the position          //
+    // resulting from the opponent's possible following moves.            //
+    // ================================================================== //
+    maxpq_t movelst;
+    move_t *move;
+    initialize_maxpq(&movelst);
+    generate_pseudo_moves(searchdata->board, &movelst);
+
+    // =================================================================== //
+    // PV/HASH MOVE: While starting a new iteration, the most important    //
+    // move ordering technique is to try PV-Moves first. A PV-Move is part // 
+    // of the principal variation and therefor a best move found in the    //
+    // previous iteration of an iterative deepening framework.             //
+    // =================================================================== //
+    if(entry_found){
+        for (int i = 1; i <= movelst.nr_elem; i++) {
+            if (is_same_move(movelst.array[i], pv_move)) {
+                movelst.array[i]->value = 10000;
+                swap(&movelst, i, 1);
+                break;
+            }
+        }
     }
     
     free_move(pv_move);
-    free(best_move);
+
+    int legal_moves = 0;
+    int tt_flag = UPPERBOUND;
+    int best_eval = NEGINFINITY;
+    move_t *best_move = NULL;
+
+    while ((move = pop_max(&movelst))) {
+        // We play a move and filter out those that turn out to be illegal
+        if (!do_move(searchdata->board, move)) {
+            undo_move(searchdata->board);
+            free_move(move);
+            continue;
+        }
+
+        legal_moves++;
+
+        // If the move was a legal move, we can continue the search
+        int eval = -negamax(searchdata, depth - 1, -beta, -best_eval);
+        undo_move(searchdata->board);
+
+        if (eval > best_eval) {
+            best_eval = eval;
+            free_move(best_move);
+            best_move = copy_move(move);
+        }
+        free_move(move);
+
+        // Alpha bound adjustment
+        if (eval > alpha) {
+            alpha = eval;
+            tt_flag = EXACT;
+        }
+
+        // Beta cutoff
+        if (alpha >= beta) {
+            tt_flag = LOWERBOUND;
+            break;
+        }
+    }
     free_pq(&movelst);
+
+    // If the player had no legal moves, the game is over (atleast in this
+    // branch of the search)
+    if (legal_moves == 0) {
+        free_move(best_move);
+
+        // We wan't to determine if the player was check mated
+        if (is_in_check(searchdata->board)) {
+            return -16000 - depth;
+        }
+        // Or if we reached a stalemate
+        else {
+            return 0;
+        }
+    }
+
+    // ================================================================ //
+    // TRANSPOSITION TABLE STORING: We store the best move (the search  //
+    // depth, it's evaluation and search flag) in the table. This       //
+    // information can then be used if we encounter the same postion    //
+    // again, and we don't need to search that branch any further. We   //
+    // should be careful, to only store this information if the search  //
+    // was not aborted by callee or due to time expiration (since we    //
+    // cant be sure that the information is truely correct).            //
+    // ================================================================ //
+    if (!stop_immediately) {
+        store_hashtable_entry(searchdata->board, tt_flag, best_eval, best_move,
+                              depth);
+    }
+    free(best_move);
 
     return best_eval;
 }
 
-int iterative_search(searchdata_t* search_data) {
-    // if there is a max depth given, use it, else search up to 100 plies (some arbitrary search depth we will never reach)
-    int maxdepth = (search_data->max_depth == -1)?100:search_data->max_depth;
-
-    // reset the performance counters 
-    search_data->nodes_searched = 0;
-    search_data->hash_used = 0;
-    search_data->hash_bounds_adjusted = 0;
-    search_data->pv_node_hit = 0;
-
-    // reset search variables 
-    int evaluation = 0;
-    move_t *best_move = NULL;
-    search_data->time_available = calculate_time(search_data);
-
-    // iterative search 
-    for (int i = 1; i <= maxdepth; i++) {
-        search_data->current_max_depth = i;
-        int current_evaluation;
-
-        // aspiration windows
-        if(i == 1){
-            current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, INFINITY, search_data);        
-        } else{
-            int window_low = evaluation - 50;
-            int window_high = evaluation + 50;
-            // use last searchs evaluation as a good estimate of the next and use smaller windows 
-            current_evaluation = alpha_beta_search(search_data->board, i, window_low, window_high, search_data); 
-            // if our result lies outside our window, we (unfortunately) have to do a costly research with a bigger window
-            if(current_evaluation > window_high) current_evaluation = alpha_beta_search(search_data->board, i, window_low, INFINITY, search_data); 
-            else if(current_evaluation < window_low) current_evaluation = alpha_beta_search(search_data->board, i, NEGINFINITY, window_high, search_data); 
-        }
-        
-        // update best move and its evaluation
-        if(best_move) free_move(best_move);
-        best_move = get_best_move_from_hashtable(search_data->board);
-        evaluation = current_evaluation;
-
-        // output search info (for the gui)
-        if(current_evaluation > 16000){
-            printf("info score mate %d depth %d nodes %d time %d nps %d pv ", (int) i/2, i, search_data->nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) search_data->nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))));
-            print_line(search_data->board, i);
-            printf("\n");
-            break;
-        } else if (current_evaluation < -16000){
-            printf("info score mate %d depth %d nodes %d time %d nps %d pv ", -1*((int) i/2), i, search_data->nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) search_data->nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))));
-            print_line(search_data->board, i);
-            printf("\n");
-            break;
-        } else{
-            printf("info score cp %d depth %d nodes %d time %d nps %d hashfull %d pv ", current_evaluation, i, search_data->nodes_searched, (int) ((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC*1000), (int) (((double) search_data->nodes_searched)/(((double)(clock() - (search_data->start_time)) / CLOCKS_PER_SEC))), hashtable_full_permill());
-            print_line(search_data->board, i);
-            printf("\n");
-        }
-
-        // exit search if we have to
-        if(stop_immediate){
-            stop_immediate = FALSE;
-            break;
-        }
-        
+void search(searchdata_t *searchdata) {
+    // Reset the history hash table from previous searches
+    // Of course we keep the hashes of already played 
+    // positions untouched
+    for (int i = searchdata->board->ply_no; i < 512; i++) {
+        HISTORY_HASHES[i] = 0;
     }
 
-    search_data->best_move = best_move;
+    // Reset the performance counters and calculate the time available for
+    // search
+    searchdata->best_eval = NEGINFINITY;
+    searchdata->best_move = NULL;
+    searchdata->nodes_searched = 0;
+    searchdata->hash_used = 0;
+    searchdata->hash_bounds_adjusted = 0;
+    searchdata->pv_node_hit = 0;
+    searchdata->time_available = calculate_time(searchdata);
 
-    return evaluation;
+    int alpha = NEGINFINITY, beta = INFINITY;
+
+    // =================================================================== //
+    // ITERATIVE DEEPINING: It has been noticed, that even if one is about //
+    // to search to a given depth, that iterative deepening is faster than //
+    // searching for the given depth immediately. This is due to dynamic   //
+    // move ordering techniques such as; PV- and hash- moves determined in //
+    // previous iteration(s), as well the history heuristic (TODO).        //
+    // =================================================================== //
+    for (int depth = 1; depth <= searchdata->max_depth && depth < MAXDEPTH;
+         depth++) {
+        int eval = negamax(searchdata, depth, alpha, beta);
+
+        if (stop_immediately) {
+            stop_immediately = FALSE;
+            if (searchdata->best_move == NULL && depth == 1) {
+                searchdata->best_move =
+                    get_best_move_from_hashtable(searchdata->board);
+            }
+            break;
+        }
+
+        // ================================================================ //
+        // ASPIRATION WINDOWS: The technique is to use a guess of the       //
+        // expected value (from the last iteration in iterative deepening)  //
+        // and use a window around this as the alpha-beta bounds. Because   //
+        // the window is narrower, more beta cutoffs are achieved, and the  //
+        // search takes a shorter time. The drawback is that if the true    //
+        // score is outside this window, then a costly re-search must be    //
+        // made. Typical window sizes are 1/2 to 1/4 of a pawn on either    //
+        // side of the guess.                                               //
+        // ================================================================ //
+        if (eval <= alpha || eval >= beta) {
+            alpha = NEGINFINITY;
+            beta = INFINITY;
+            depth--;
+            continue;
+        }
+
+        alpha = eval - WINDOWSIZE;
+        beta = eval + WINDOWSIZE;
+
+        // Update search data and output info (for GUI)
+        free_move(searchdata->best_move);
+        searchdata->best_move = get_best_move_from_hashtable(searchdata->board);
+        searchdata->best_eval = eval;
+
+        int nodes = searchdata->nodes_searched;
+        int nps = (int)(((double)searchdata->nodes_searched) /
+                        (((double)(clock() - (searchdata->start_time)) /
+                          CLOCKS_PER_SEC)));
+        int time = (int)((double)(clock() - (searchdata->start_time)) /
+                         CLOCKS_PER_SEC * 1000);
+        int hashfull = hashtable_full_permill();
+        char *score = get_mate_or_cp_value(eval, depth);
+
+        printf("info score %s depth %d nodes %d time %d nps %d hasfull %d pv ",
+               score, depth, nodes, time, nps, hashfull);
+        print_line(searchdata->board, depth);
+        printf("\n");
+        if (eval >= 16000 || eval <= -16000) break;
+
+        free(score);
+    }
 }

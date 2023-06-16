@@ -8,6 +8,8 @@
 int MAX_LEN = 1024;
 
 board_t* OLDSTATE[512];
+uint64_t HISTORY_HASHES[512];
+
 int nodes_searched = 0;
 int hash_used = 0;
 int hash_bounds_adjusted = 0;
@@ -115,7 +117,8 @@ searchdata_t *parse_go_command(char *token, board_t *board){
 
     // if not specified run infinite
     data->run_infinite = 1;
-
+    data->max_depth = 100;
+    
     while ((token = strtok(NULL, delim))) {
         if(!strcmp(token, "wtime")) {
             token = strtok(NULL, delim);
@@ -240,7 +243,7 @@ void parse_position_command(char *token, board_t *board){
 void *start_search(void *args) {
     searchdata_t *data = (searchdata_t *) args;
     // start iterative search
-    iterative_search(data);
+    search(data);
 
     // output the best move found in search to stdout
     printf("bestmove ");
@@ -308,6 +311,10 @@ void *main_interface_loop(void *args) {
         else if (!strcmp(token, "position")) {
             parse_position_command(token, board);
         }   
+        // PRINT
+        else if(!strcmp(token, "bugprint")){
+            print_board(board);
+        }
         // STOP command
         else if(!strcmp(token, "stop")){
             if(searchdata){

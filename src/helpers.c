@@ -145,9 +145,17 @@ void initialize_oldstate_array(){
     }
 }
 
+/* Initializes old state array */
+void initialize_history_hash_array(){
+    for(int i = 0; i < 512; i++){
+        HISTORY_HASHES[i] = 0;
+    }
+}
+
 /* Initializes all structures necessary for legal move generation */
 void initialize_chess_engine_only_necessary(){
     initialize_oldstate_array();
+    initialize_history_hash_array();
     initialize_helper_boards();
     initialize_attack_boards();
 }

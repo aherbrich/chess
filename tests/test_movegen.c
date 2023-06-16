@@ -9,6 +9,7 @@ typedef struct _perfttest_t{
 } perfttest_t;
 
 board_t* OLDSTATE[512];
+uint64_t HISTORY_HASHES[512];
 
 /* pads whitespaces left and right of given string until given width reached */
 char *pad_to_center(char *str, int width) {
