@@ -7,8 +7,8 @@
 
 int MAX_LEN = 1024;
 
-board_t* OLDSTATE[512];
-uint64_t HISTORY_HASHES[512];
+board_t* OLDSTATE[2048];
+uint64_t HISTORY_HASHES[2048];
 
 int nodes_searched = 0;
 int hash_used = 0;

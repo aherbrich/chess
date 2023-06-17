@@ -140,14 +140,14 @@ void initialize_helper_boards(){
 
 /* Initializes old state array */
 void initialize_oldstate_array(){
-    for(int i = 0; i < 512; i++){
+    for(int i = 0; i < 2048; i++){
         OLDSTATE[i] = 0;
     }
 }
 
 /* Initializes old state array */
 void initialize_history_hash_array(){
-    for(int i = 0; i < 512; i++){
+    for(int i = 0; i < 2048; i++){
         HISTORY_HASHES[i] = 0;
     }
 }

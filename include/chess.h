@@ -167,8 +167,8 @@ int hash_bounds_adjusted;
 int pv_node_hit;
 
 //  MOVE EXECUTION
-extern board_t* OLDSTATE[512];
-extern uint64_t HISTORY_HASHES[512];
+extern board_t* OLDSTATE[2048];
+extern uint64_t HISTORY_HASHES[2048];
 
 //  MOVE GENERATION
 extern bitboard_t MASK_FILE[8];

@@ -8,8 +8,8 @@ typedef struct _perfttest_t{
     int results[16];
 } perfttest_t;
 
-board_t* OLDSTATE[512];
-uint64_t HISTORY_HASHES[512];
+board_t* OLDSTATE[2048];
+uint64_t HISTORY_HASHES[2048];
 
 /* pads whitespaces left and right of given string until given width reached */
 char *pad_to_center(char *str, int width) {
