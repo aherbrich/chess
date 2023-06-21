@@ -16,7 +16,8 @@ void simple_gram_matrix_test(){
     matrix_set(X, 12.0, 3, 2);
     matrix_print(X);
 
-    matrix_t* res = matrix_mult_gram_N_threaded(X, 7);
+    //matrix_t* res = matrix_mult_gram_N_threaded(X, 7);
+    matrix_t* res = matrix_mult_gram(X);
     matrix_print(res);
 
     matrix_free(X);
@@ -28,8 +29,8 @@ void extensive_gram_matrix_test(){
     struct timeval end;
     double delta_in_ms;
 
-    int n = 50000;
-    int m = 2000;
+    int n = 25000;
+    int m = 1000;
 
     matrix_t* X = matrix_init(n,m);   
     for(int i = 0; i < n; i++){
@@ -40,12 +41,13 @@ void extensive_gram_matrix_test(){
 
     gettimeofday(&start, 0);
 
-    matrix_t* res = matrix_mult_gram_N_threaded(X, 10);
-    printf("%f", matrix_read(res, 123,7));
+    //matrix_t* res = matrix_mult_gram_N_threaded(X, 1);
+    matrix_t* res = matrix_mult_gram(X);
+    fprintf(stderr, "%f", matrix_read(res, 123,7));
 
     gettimeofday(&end, 0); 
     delta_in_ms = ((end.tv_sec - start.tv_sec) * 1000.0f + (end.tv_usec - start.tv_usec) / 1000.0f);
-    printf("\nTime: \t\t%fms\n", delta_in_ms);
+    fprintf(stderr, "\nTime: \t\t%fms\n", delta_in_ms);
 
     matrix_free(res);
     matrix_free(X);
@@ -77,7 +79,8 @@ void simple_cholesky_test(){
     matrix_print(y);
 
 
-    matrix_t* XTX = matrix_mult_gram_N_threaded(X, 11);
+    //matrix_t* XTX = matrix_mult_gram_N_threaded(X, 11);
+    matrix_t* XTX = matrix_mult_gram(X);
     matrix_regularize(XTX, 0.001);
     matrix_t* b = matrix_mult(XT, y);
 
@@ -87,6 +90,7 @@ void simple_cholesky_test(){
     matrix_free(X);
     matrix_free(XT);
     matrix_free(y);
+    matrix_free(XTX);
     matrix_free(b);
     matrix_free(res);
 }
@@ -96,4 +100,5 @@ int main(){
     extensive_gram_matrix_test();
     simple_gram_matrix_test();
     simple_cholesky_test();
+    printf("Ran all tests!\n");
 }
