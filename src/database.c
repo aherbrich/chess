@@ -47,6 +47,7 @@ void update_database_entry(board_t *board, int winner) {
     
     // finally, fill the new entry with the data 
     new->hash=hash;
+    new->board=copy_board(board);
     new->next=NULL;
 
     new->seen=1;

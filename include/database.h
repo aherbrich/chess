@@ -5,6 +5,7 @@
 
 typedef struct _databaseentry_t {
     uint64_t hash;
+    board_t* board;
     struct _databaseentry_t *next;
 
     int seen;
