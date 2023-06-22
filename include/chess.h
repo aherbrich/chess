@@ -169,10 +169,10 @@ typedef struct _chessgame_t{
 //  GLOBALS 
 
 //  SEARCH
-int nodes_searched;
-int hash_used;
-int hash_bounds_adjusted;
-int pv_node_hit;
+extern int nodes_searched;
+extern int hash_used;
+extern int hash_bounds_adjusted;
+extern int pv_node_hit;
 
 //  MOVE EXECUTION
 extern board_t* OLDSTATE[2048];

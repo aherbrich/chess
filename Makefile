@@ -1,9 +1,10 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c
+EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c src/database.c src/matrix.c src/parse.c src/san.c src/features.c
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 GUI_SRC = src/gui.c
+TRAIN_SRC = src/train.c
 
 TEST_DIR = tests
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -12,11 +13,18 @@ TEST_TARGET = $(notdir $(TEST_OBJ))
 DEBUG_TARGET = $(addprefix gdb_, $(TEST_TARGET))
 VALGRIND_TARGET = $(addprefix valgrind_, $(TEST_TARGET))
 
-CC = clang
-CC_FLAGS = -Wall -Wextra -std=c11 -O3 -g
+CC = gcc
+CC_FLAGS = -Wall -Wextra -O3 -g
 
 .PHONY: all
-all: build build_tests $(BUILD_DIR)/gui/gui  # Build everything but runs nothing
+all: build build_tests $(BUILD_DIR)/gui/gui $(BUILD_DIR)/train/train  # Build everything but runs nothing
+
+
+.PHONY: gui
+gui: build $(BUILD_DIR)/gui/gui 
+
+.PHONY: train
+train: build $(BUILD_DIR)/train/train 
 
 .PHONY: run
 run: all_tests             # Run all tests (alias)
@@ -55,12 +63,15 @@ $(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 
 $(BUILD_DIR)/tests/test_%: tests/test_%.c $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^
+	$(CC) $(CC_FLAGS) -o$@ $^ -lm
 
 $(BUILD_DIR)/gui/gui: $(GUI_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^
+	$(CC) $(CC_FLAGS) -o$@ $^ -lm
 
+$(BUILD_DIR)/train/train: $(TRAIN_SRC) $(EXERCISE_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o$@ $^ -lm
 
 .PHONY: clean
 clean:

@@ -39,13 +39,13 @@ int perft_divide(board_t* board, int depth){
         undo_move(board);
 
         print_LAN_move(move, board->player);
-        fprintf(stderr, ": %llu\n", num_positions);
+        fprintf(stderr, ": %lu\n", num_positions);
         free_move(move);
 
         all_nodes_count += num_positions;
     }
 
-    fprintf(stderr, "\nNodes searched: %llu\n", all_nodes_count);
+    fprintf(stderr, "\nNodes searched: %lu\n", all_nodes_count);
 
     return all_nodes_count;
 }

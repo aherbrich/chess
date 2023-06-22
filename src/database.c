@@ -3,6 +3,8 @@
 #include "../include/zobrist.h"
 #include "../include/database.h"
 
+databaseentry_t** database;
+
 /* Allocates memeory for database and initializes it */
 void initialize_database() {
     database = (databaseentry_t **) malloc(sizeof(databaseentry_t *) * DATABASESIZE);

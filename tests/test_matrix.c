@@ -1,4 +1,14 @@
 #include "../include/matrix.h"
+#include "../include/chess.h"
+
+board_t* OLDSTATE[2048];
+uint64_t HISTORY_HASHES[2048];
+
+int nodes_searched = 0;
+int hash_used = 0;
+int hash_bounds_adjusted = 0;
+int pv_node_hit= 0;
+
 
 void simple_gram_matrix_test(){
     matrix_t* X = matrix_init(4,3);

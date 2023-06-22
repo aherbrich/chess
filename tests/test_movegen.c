@@ -75,7 +75,8 @@ void print_perft_test_row_separator() {
 
 /* determines number of lines in a file */
 int count_lines_in_file(){
-    FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
+    //FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
+    FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
     int line_count = 0;
     int character;
     do{
@@ -96,7 +97,8 @@ perfttest_t** load_perft_test_suite(int nr_of_tests){
     }
 
     // open file
-    FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
+    //FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
+    FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
 
     char *line = NULL;
     size_t len = 0;

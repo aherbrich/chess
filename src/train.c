@@ -11,7 +11,11 @@
 board_t* OLDSTATE[2048];
 uint64_t HISTORY_HASHES[2048];
 
-databaseentry_t** database;
+
+int nodes_searched = 0;
+int hash_used = 0;
+int hash_bounds_adjusted = 0;
+int pv_node_hit= 0;
 
 /*  Playes all games in given chess game list and    
     stores all chess positions and corresponding winrates */

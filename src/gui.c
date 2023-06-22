@@ -19,7 +19,7 @@ int pv_node_hit= 0;
 pthread_t game_thread = 0;
 
 /* Converts a string to a move index */
-idx_t str_to_idx(char *ptr, int len) {
+idx_t gui_str_to_idx(char *ptr, int len) {
     idx_t idx = 0;
     for(int i = 0; i < len; i++) {
         switch (*ptr) {
@@ -59,10 +59,10 @@ idx_t str_to_idx(char *ptr, int len) {
     return (idx);
 }
 
-move_t *str_to_move(board_t* board, char* move_str){
+move_t *gui_str_to_move(board_t* board, char* move_str){
     // extracts the from and to position of the move
-    idx_t from = str_to_idx(move_str, 2);
-    idx_t to = str_to_idx(&(move_str[2]), 2);
+    idx_t from = gui_str_to_idx(move_str, 2);
+    idx_t to = gui_str_to_idx(&(move_str[2]), 2);
 
     // generate all possible moves in the current position
     maxpq_t movelst;
@@ -225,7 +225,7 @@ void parse_position_command(char *token, board_t *board){
     // finally, read all the moves, if there are any 
     if (token) {
         while((token = strtok(NULL, delim))) {
-            move_t *move = str_to_move(board, token);
+            move_t *move = gui_str_to_move(board, token);
             if (move){
                 do_move(board, move);
                 free_move(move);
