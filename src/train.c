@@ -4,6 +4,8 @@
 #include "../include/database.h"
 #include "../include/san.h"
 #include "../include/parse.h"
+#include "../include/features.h"
+#include "../include/matrix.h"
 #include <string.h>
 
 board_t* OLDSTATE[2048];
@@ -47,7 +49,12 @@ void load_games_into_database(chessgame_t** chessgames, int nr_of_games){
 
         free_board(board);
     }
-    
+
+    // free chess games
+    for(int i = 0; i < nr_of_games; i++){
+        free(chessgames[i]->movelist);
+    }
+    free(chessgames);
 }
 
 
@@ -65,8 +72,50 @@ int main(){
 
     // number of different boards = 1739062
 
-    board_t *board = init_board();
-    load_by_FEN(board, "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
+    int m = 23040;
+    int n = m*10;
+    
 
-    probe_database_entry(board);
+    matrix_t* X = matrix_init(n, m);
+    matrix_t* y = matrix_init(n, 1);
+
+    int count = 0;
+    for (int i = 0; i < DATABASESIZE && count < n; i++) {
+        databaseentry_t* tmp = database[i];
+        
+        while(tmp && count < n){
+            double expected_result = (double) (tmp->white_won - tmp->black_won)/tmp->seen;
+            matrix_set(y, expected_result, count, 0);
+            calculate_feautures(tmp->board, X, count);   
+            count++;           
+            tmp = tmp->next;
+        } 
+    }
+
+    fprintf(stderr, "\nUnique positions:%d\n", count);
+
+    matrix_t* XTX = matrix_mult_gram_N_threaded(X, 32);
+    matrix_regularize(XTX, 0.001);
+    fprintf(stderr, "Solved XTX!\n");
+
+    matrix_t* b = matrix_mult_first_arg_transposed(X, y);
+
+    matrix_free(X);
+    matrix_free(y);
+
+    fprintf(stderr, "Solving with cholesky!\n");
+    matrix_t* w = solve_cholesky(XTX, b);
+
+    for(int test = 0; test < 12; test++){
+        for(int time = 0; time < 30; time++){
+            for(int row = 7; row >= 0; row--){
+                for(int col = 0; col < 8; col++){
+                    printf("%.2f  ", matrix_read(w, (row*8+col)+(time*64)+(test*1920), 0));
+                }
+                printf("\n");
+            }
+            printf("\n\n");
+        }
+        printf("\n=============================\n");
+    }
 }
