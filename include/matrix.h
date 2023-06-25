@@ -50,6 +50,8 @@ matrix_t* cholesky(matrix_t* X);
 matrix_t* back_substitution(matrix_t* X, matrix_t* b, int for_transpose);
 matrix_t* forward_substitution(matrix_t* X, matrix_t* b, int for_transpose);
 matrix_t* solve_cholesky(matrix_t* X, matrix_t* b);
+void cholesky_N_threaded(matrix_t* X, int max_threads);
+matrix_t* solve_cholesky_threaded(matrix_t* X, matrix_t* b, int max_threads);
 
 void compute_nr_of_threads(int max_threads, int* nr_threads, int* blocks);
 void initialize_thread_data(thread_data_t* thread_data, matrix_t* X, matrix_t* Y, matrix_t* result, int from_row, int until_row, int from_col, int until_col, int thread_id);
