@@ -1,6 +1,6 @@
 #include "../include/chess.h"
 #include "../include/eval.h"
-#include "../include/matrix.h"
+#include "../include/linalg.h"
 
 int nr_of_pieces(board_t* board){
     int counter = 0;

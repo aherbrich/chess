@@ -5,7 +5,7 @@
 #include "../include/san.h"
 #include "../include/parse.h"
 #include "../include/features.h"
-#include "../include/matrix.h"
+#include "../include/linalg.h"
 #include <string.h>
 
 board_t* OLDSTATE[2048];

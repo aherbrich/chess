@@ -1,6 +1,6 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c src/database.c src/matrix.c src/parse.c src/san.c src/features.c
+EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c src/database.c src/parse.c src/san.c src/features.c
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 GUI_SRC = src/gui.c
@@ -63,15 +63,15 @@ $(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 
 $(BUILD_DIR)/tests/test_%: tests/test_%.c $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^ -lm
+	$(CC) $(CC_FLAGS) -o$@ $^ -L. -llinalg
 
 $(BUILD_DIR)/gui/gui: $(GUI_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^ -lm
+	$(CC) $(CC_FLAGS) -o$@ $^ -L. -llinalg
 
 $(BUILD_DIR)/train/train: $(TRAIN_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^ -lm
+	$(CC) $(CC_FLAGS) -o$@ $^ -L. -llinalg
 
 .PHONY: clean
 clean:
