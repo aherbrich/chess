@@ -63,15 +63,15 @@ $(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 
 $(BUILD_DIR)/tests/test_%: tests/test_%.c $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^ -L. -llinalg
+	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
 
 $(BUILD_DIR)/gui/gui: $(GUI_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^ -L. -llinalg
+	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
 
 $(BUILD_DIR)/train/train: $(TRAIN_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^ -L. -llinalg
+	$(CC) $(CC_FLAGS)  -o $@  $^ -L./lib -llinalg
 
 .PHONY: clean
 clean:
