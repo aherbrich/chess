@@ -184,6 +184,53 @@ void print_LAN_move(move_t* move, player_t color_playing) {
     }
 }
 
+/* Creates LAN move string */
+char* get_LAN_move(move_t* move, player_t color_playing) {
+    char* start_field = FIELD[move->from];
+    char* end_field = FIELD[move->to];
+    char* buffer = NULL;
+    // if promotion move
+    if (move->flags >= 8) {
+        buffer = (char*) malloc(6);
+        flag_t prom_flag = move->flags & (0b11);
+        if(prom_flag == 0){
+            if(color_playing == WHITE){
+                snprintf(buffer, 6, "%.2s%.2sN", start_field, end_field);
+            }else{
+                snprintf(buffer, 6, "%.2s%.2sn", start_field, end_field);
+            }
+        }
+        else if(prom_flag == 1){
+            if(color_playing == WHITE){
+                snprintf(buffer, 6, "%.2s%.2sB", start_field, end_field);
+            }else{
+                snprintf(buffer, 6, "%.2s%.2sb", start_field, end_field);
+            }
+        }
+        else if(prom_flag == 2){
+            if(color_playing == WHITE){
+                snprintf(buffer, 6, "%.2s%.2sR", start_field, end_field);
+            }else{
+                snprintf(buffer, 6, "%.2s%.2sr", start_field, end_field);
+            }
+        }
+        else{
+            if(color_playing == WHITE){
+                snprintf(buffer, 6, "%.2s%.2sQ", start_field, end_field);
+            }else{
+                snprintf(buffer, 6, "%.2s%.2sq", start_field, end_field);
+            }
+        }
+    } 
+    // if not a promotion move
+    else{
+        buffer = (char*) malloc(5);
+        snprintf(buffer, 5, "%.2s%.2s", start_field, end_field);
+    }
+
+    return buffer;
+}
+
 /* Prints the (PV line) upto given depth */
 void print_line(board_t* board, int depth) {
     // make a copy of the board
