@@ -1,213 +1,373 @@
 #include "../include/chess.h"
+#include "../include/zobrist.h"
 
 ////////////////////////////////////////////////////////////////
 // MOVE FUNCTIONS
 
-/* Allocate memory for a move */
-move_t* create_normalmove(piece_t piece_was, piece_t piece_cap, idx_t start, idx_t end, flag_t newcr, oldflags_t *oldflags){
-    move_t* move = (move_t *) malloc(sizeof(move_t));
+/* Determines if two mves are the same */
+int is_same_move(move_t* move1, move_t* move2){
+    // moves are considered same if their FROM & TO squares and FLAGS are the same
+    // we do not consider the value of a move 
+    if(move1->from != move2->from){
+        return 0;
+    }
+    if(move1->to != move2->to){
+        return 0;
+    }
+    if(move1->flags != move2->flags){
+        return 0;
+    }
+    
+    return 1;
 
-    move->typeofmove = NORMALMOVE;
-
-    move->piece_was = piece_was;
-    move->piece_cap = piece_cap;
-
-    move->start = start;
-    move->end = end;
-
-    move->newcr = newcr;
-
-    move->oldflags = oldflags;
-    return move;
 }
 
-move_t* create_eppossiblemove(piece_t piece_was, idx_t start, idx_t end, flag_t newepfield, oldflags_t *oldflags){
-    move_t* move = (move_t *) malloc(sizeof(move_t));
+/* Allocates memory for a move and sets fields accordingly  */
+move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value) {
+    move_t *move = (move_t *)malloc(sizeof(move_t));
 
-    move->typeofmove = EPPOSSIBLEMOVE;
-
-    move->piece_was = piece_was;
-
-    move->start = start;
-    move->end = end;
-
-    move->newep = newepfield;
-
-    move->oldflags = oldflags;
-    return move;
-}
-
-move_t* create_promotionmove(piece_t piece_was, piece_t piece_is, piece_t piece_cap, idx_t start, idx_t end, flag_t newcr, oldflags_t *oldflags){
-    move_t* move = (move_t *) malloc(sizeof(move_t));
-
-    move->typeofmove = PROMOTIONMOVE;
-
-    move->piece_was = piece_was;
-    move->piece_is = piece_is;
-    move->piece_cap = piece_cap;
-
-    move->start = start;
-    move->end = end;
-
-    move->newcr = newcr;
-
-    move->oldflags = oldflags;
-    return move;
-}
-
-move_t* create_castlemove(idx_t startking, idx_t endking, idx_t startrook, idx_t endrook, flag_t newcr, oldflags_t *oldflags){
-    move_t* move = (move_t *) malloc(sizeof(move_t));
-    move->typeofmove = CASTLEMOVE;
-
-    move->start = startking;
-    move->end = endking;
-    move->startopt = startrook;
-    move->endopt = endrook;
-
-    move->newcr = newcr;
-
-    move->oldflags = oldflags;
+    move->from = from;
+    move->to = to;
+    move->flags = flags;
+    move->value = value;
 
     return move;
 }
 
-move_t* create_epmove(idx_t startattacker, idx_t endattacker, oldflags_t *oldflags){
-    move_t* move = (move_t *) malloc(sizeof(move_t));
-    move->typeofmove = ENPASSANTMOVE;
+/* Copies a move */
+move_t *copy_move(move_t *move) {
+    if (move == NULL) {
+        // this should not happen but lets just handle it
+        return NULL;
+    }
 
-    move->start = startattacker;
-    move->end = endattacker;
+    move_t *copy = (move_t *) malloc(sizeof(move_t));
+    
+    copy->from = move->from;
+    copy->to = move->to;
+    copy->flags = move->flags;
+    copy->value = move->value;
 
-    move->oldflags = oldflags;
-    return(move);
+    return copy;
 }
 
 /* Frees memory of move */
-void free_move(move_t* move){
-    free(move->oldflags);
-    free(move);
+void free_move(move_t *move) {
+    if (move) {
+        free(move);
+    }
 }
 
 /* Execute move */
-void playMove(board_t* board, move_t* move, player_t playerwhomademove){
-    if(move->typeofmove == NORMALMOVE){
-        // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = move->piece_was;
+int do_move(board_t* board, move_t* move){
+    // FIRST: save old board state 
+    OLDSTATE[board->ply_no] = copy_board(board);
+    HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
 
-        // castle rights
-        board->castlerights = move->newcr;
+    // move execution
+    bitboard_t from_mask = 1ULL << move->from;
+    bitboard_t from_clear_mask = ~from_mask;
+    bitboard_t to_mask = 1ULL << move->to;
+    bitboard_t to_clear_mask = ~to_mask;
 
-        // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+    // change the bitboard of moving piece
+    // if moving piece is a...
+
+    // PAWN 
+    if(from_mask & board->whitepawns){
+        board->whitepawns |= to_mask;
+        board->whitepawns &= from_clear_mask;
+    }
+    else if(from_mask & board->blackpawns){
+        board->blackpawns |= to_mask;
+        board->blackpawns &= from_clear_mask;
     }
 
-    else if(move->typeofmove == PROMOTIONMOVE){
-        // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = move->piece_is;
-
-        // castle rights
-        board->castlerights = move->newcr;
-
-        // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+    // KNIGHT
+    else if(from_mask & board->whiteknights){
+        board->whiteknights |= to_mask;
+        board->whiteknights &= from_clear_mask;
+    }
+    else if(from_mask & board->blackknights){
+        board->blackknights |= to_mask;
+        board->blackknights &= from_clear_mask;
     }
 
-    else if(move->typeofmove == EPPOSSIBLEMOVE){
-        // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = move->piece_was;
-
-        // castle rights
-        board->castlerights = board->castlerights;
-
-        // en passant
-        board->eppossible = TRUE;
-        board->epfield = move->newep;
+    // BISHOP 
+    else if(from_mask & board->whitebishops){
+        board->whitebishops |= to_mask;
+        board->whitebishops &= from_clear_mask;
+    }
+    else if(from_mask & board->blackbishops){
+        board->blackbishops |= to_mask;
+        board->blackbishops &= from_clear_mask;
     }
 
-    else if(move->typeofmove == CASTLEMOVE){
-        // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = (move->end <= 7)?KING:(KING|BLACK);
-        board->playingfield[move->startopt] = EMPTY;
-        board->playingfield[move->endopt] = (move->endopt <= 7)?ROOK:(ROOK|BLACK);
-
-        // castle rights
-        board->castlerights = move->newcr;
-
-        // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+    // QUEEN
+    else if(from_mask & board->whitequeens){
+        board->whitequeens |= to_mask;
+        board->whitequeens &= from_clear_mask;
+    }
+    else if(from_mask & board->blackqueens){
+        board->blackqueens |= to_mask;
+        board->blackqueens &= from_clear_mask;
     }
 
-    else if(move->typeofmove == ENPASSANTMOVE){
-        // start and end field
-        board->playingfield[move->start] = EMPTY;
-        board->playingfield[move->end] = (playerwhomademove== WHITE)?PAWN:(PAWN|BLACK);
-        idx_t captured = (playerwhomademove == WHITE)?(move->end-8):(move->end+8);
-        board->playingfield[captured] = EMPTY;
-
-        // castle rights
-        board->castlerights = board->castlerights;
-
-        // en passant
-        board->eppossible = FALSE;
-        board->epfield = 0;
+    // ROOK 
+    else if(from_mask & board->whiterooks){
+        board->whiterooks |= to_mask;
+        board->whiterooks &= from_clear_mask;
+        if(move->from == 0) board->castle_rights &= ~(LONGSIDEW);
+        if(move->from == 7) board->castle_rights &= ~(SHORTSIDEW);
+    }
+    else if(from_mask & board->blackrooks){
+        board->blackrooks |= to_mask;
+        board->blackrooks &= from_clear_mask;
+        if(move->from == 56) board->castle_rights &= ~(LONGSIDEB);
+        if(move->from == 63) board->castle_rights &= ~(SHORTSIDEB);
     }
 
-    // switch player
-    board->player = OPPONENT(playerwhomademove);
+    // KING 
+    else if(from_mask & board->whiteking){
+        board->whiteking |= to_mask;
+        board->whiteking &= from_clear_mask;
+        board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
+    }
+    else if(from_mask & board->blackking){
+        board->blackking |= to_mask;
+        board->blackking &= from_clear_mask;
+        board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
+    }
+    
+    // now we change the bitboard of captured piece
+    if(move->flags & 0b0100){
+        // first off, adjust castle rights if rooks were captured 
+        if(move->to == 7) board->castle_rights &= ~(SHORTSIDEW); 
+        if(move->to == 0) board->castle_rights &= ~(LONGSIDEW); 
+        if(move->to == 63) board->castle_rights &= ~(SHORTSIDEB); 
+        if(move->to == 56) board->castle_rights &= ~(LONGSIDEB);
+
+        // then, remove captured piece from (bit)board
+        if(board->player == WHITE){
+            board->black &= to_clear_mask;
+            board->blackpawns &= board->black;
+            board->blackknights &= board->black;
+            board->blackbishops &= board->black;
+            board->blackrooks &= board->black;
+            board->blackqueens &= board->black;
+            board->blackking &= board->black;
+        } else {
+            board->white &= to_clear_mask;
+            board->whitepawns &= board->white;
+            board->whiteknights &= board->white;
+            board->whitebishops &= board->white;
+            board->whiterooks &= board->white;
+            board->whitequeens &= board->white;
+            board->whiteking &= board->white;
+        }
+    }
+
+    //
+    //  EXIT EARLY STATEMENTS BEGIN
+    //
+
+    // if move is a capture or a pawn move, reset counter
+    if((move->flags & 0b0100) || (from_mask & board->whitepawns) || (from_mask & board->blackpawns)){
+        board->fifty_move_counter = 0;
+        
+    } else{
+        // else increase it
+        board->fifty_move_counter++;
+    }
+
+    // if black is making the move/ made his move, then increase the full move counter
+    if(board->player == BLACK){
+        board->full_move_counter++;
+    }
+
+    // if move is quiet or simple capture
+    if(move->flags == QUIET || move->flags == CAPTURE){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is double pawn push
+    if(move->flags == DOUBLEP){
+        // enpassant capture is possible next round
+        board->ep_possible = TRUE;
+        if(board->player == WHITE){
+            board->ep_field = move->from+8;
+        } else{
+            board->ep_field = move->from-8;
+        }
+
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is kingside castle 
+    if(move->flags == KCASTLE){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+
+        if(board->player == WHITE){
+            board->whiterooks |= (1ULL << 5);
+            board->whiterooks &= ~(1ULL << 7);
+            board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
+        } else{
+            board->blackrooks |= (1ULL << 61);
+            board->blackrooks &= ~(1ULL << 63);
+            board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
+        }
+
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is queenside castle 
+    if(move->flags == QCASTLE){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+
+        if(board->player == WHITE){
+            board->whiterooks |= (1ULL << 3);
+            board->whiterooks &= ~(1ULL << 0);
+            board->castle_rights &= ~(LONGSIDEW | SHORTSIDEW);
+        } else{
+            board->blackrooks |= (1ULL << 59);
+            board->blackrooks &= ~(1ULL << 56);
+            board->castle_rights &= ~(LONGSIDEB | SHORTSIDEB);
+        }
+
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+
+    // if move is a queen promotion move 
+    if(move->flags == QPROM || move->flags == QCPROM){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+        
+        // remove pawn from to square and replace it by a queen
+        if(board->player == WHITE){
+            board->whitepawns &= to_clear_mask;
+            board->whitequeens |= to_mask;
+        }else {
+            board->blackpawns &= to_clear_mask;
+            board->blackqueens |= to_mask;
+        }
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is a rook promotion move 
+    if(move->flags == RPROM || move->flags == RCPROM){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+
+        // remove pawn from to square and replace it by a rook
+        if(board->player == WHITE){
+            board->whitepawns &= to_clear_mask;
+            board->whiterooks |= to_mask;
+        }else {
+            board->blackpawns &= to_clear_mask;
+            board->blackrooks |= to_mask;
+        }
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is a knight promotion move 
+    if(move->flags == KPROM || move->flags == KCPROM){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+
+        // remove pawn from to square and replace it by a knight
+        if(board->player == WHITE){
+            board->whitepawns &= to_clear_mask;
+            board->whiteknights |= to_mask;
+        }else {
+            board->blackpawns &= to_clear_mask;
+            board->blackknights |= to_mask;
+        }
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is a bishop promotion move 
+    if(move->flags == BPROM || move->flags == BCPROM){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+
+        // remove pawn from to square and replace it by a bishop
+        if(board->player == WHITE){
+            board->whitepawns &= to_clear_mask;
+            board->whitebishops |= to_mask;
+        }else {
+            board->blackpawns &= to_clear_mask;
+            board->blackbishops |= to_mask;
+        }
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+
+    // if move is an ep capture
+    if(move->flags == EPCAPTURE){
+        board->ep_possible = FALSE;
+        board->ep_field = -1;
+        
+        // special handling of removance of captured piece
+        if(board->player == WHITE){
+            board->blackpawns &= ~(1ULL << (move->to-8));
+        } else{
+            board->whitepawns &= ~(1ULL << (move->to+8));
+        }
+
+        board->ply_no++;
+        board->player = (board->player == WHITE)?(BLACK):(WHITE); 
+        // dont forget to update the white, black and all bitboard
+        update_white_black_all_boards(board);
+        return !is_in_check_after_move(board);
+    }
+    
+    fprintf(stderr, "This should not happen, since all types of moves should have been checked exhaustively\n");
+    exit(1);
+    return 0;
 }
 
-/* Reverses a move/ recovers old board state */
-void reverseMove(board_t* board, move_t* move, player_t playerwhomademove){
-    if(move->typeofmove == NORMALMOVE){
-        // start and end field
-        board->playingfield[move->start] = move->piece_was;
-        board->playingfield[move->end] = move->piece_cap;
-    }
-
-    else if(move->typeofmove == PROMOTIONMOVE){
-        // start and end field
-        board->playingfield[move->start] = move->piece_was;
-        board->playingfield[move->end] = move->piece_cap;
-    }
-
-    else if(move->typeofmove == EPPOSSIBLEMOVE){
-        // start and end field
-        board->playingfield[move->start] = move->piece_was;
-        board->playingfield[move->end] = EMPTY;
-    }
-
-    else if(move->typeofmove == CASTLEMOVE){
-        // start and end field
-        board->playingfield[move->start] = (move->end <= 7)?KING:(KING|BLACK);
-        board->playingfield[move->end] = EMPTY;
-        board->playingfield[move->startopt] = (move->endopt <= 7)?ROOK:(ROOK|BLACK);
-        board->playingfield[move->endopt] = EMPTY;
-    }
-
-    else if(move->typeofmove == ENPASSANTMOVE){
-        // start and end field
-        board->playingfield[move->start] = (playerwhomademove == WHITE)?PAWN:(PAWN|BLACK);
-        board->playingfield[move->end] = EMPTY;
-        idx_t captured = (playerwhomademove == WHITE)?(move->end-8):(move->end+8);
-        board->playingfield[captured] = (playerwhomademove == WHITE)?(PAWN|BLACK):PAWN;
-    }
-
-
-    // castle rights
-    board->castlerights = move->oldflags->castlerights;
-
-    // en passant
-    board->eppossible = move->oldflags->eppossible;
-    board->epfield = move->oldflags->epfield;
-
-    // switch player
-    board->player = playerwhomademove;
-
+/* Undos a move*/
+void undo_move(board_t* board){
+    // reduce ply number
+    board->ply_no--;
+    // and recover old board state from board state saved for that exact ply
+    board_t* old_board = OLDSTATE[board->ply_no];
+    recover_board(board, old_board);
 }

@@ -1,7 +1,9 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c
+EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/magic.c src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
+
+GUI_SRC = src/gui.c
 
 TEST_DIR = tests
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -10,11 +12,11 @@ TEST_TARGET = $(notdir $(TEST_OBJ))
 DEBUG_TARGET = $(addprefix gdb_, $(TEST_TARGET))
 VALGRIND_TARGET = $(addprefix valgrind_, $(TEST_TARGET))
 
-CC = gcc
-CC_FLAGS = -Wall -Wextra -g -std=c11 -O3
+CC = clang
+CC_FLAGS = -Wall -Wextra -std=c11 -O3 -g
 
 .PHONY: all
-all: build build_tests     # Build everything but runs nothing
+all: build build_tests $(BUILD_DIR)/gui/gui  # Build everything but runs nothing
 
 .PHONY: run
 run: all_tests             # Run all tests (alias)
@@ -51,7 +53,11 @@ $(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
 
-$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/chess.o $(BUILD_DIR)/src/list.o $(BUILD_DIR)/src/move.o $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/perft.o $(BUILD_DIR)/src/prettyprint.o
+$(BUILD_DIR)/tests/test_%: tests/test_%.c $(EXERCISE_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o$@ $^
+
+$(BUILD_DIR)/gui/gui: $(GUI_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o$@ $^
 
