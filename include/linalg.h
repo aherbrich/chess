@@ -10,7 +10,8 @@ typedef struct _matrix_t{
     int64_t col;
 } matrix_t;
 
-/* BASICS */
+/////////////////////////////////////////////////////////////
+//  BASIC OPERATIONS
 matrix_t* matrix_init(int64_t n, int64_t m);
 matrix_t* matrix_init_like(matrix_t* X);
 void matrix_free(matrix_t* matrix);
@@ -24,30 +25,35 @@ matrix_t* matrix_copy(matrix_t* X);
 
 void matrix_print(matrix_t* X);
 
-/* TRANSPOSE */
+/////////////////////////////////////////////////////////////
+//  TRANSPOSE
 matrix_t* matrix_transpose(matrix_t* X);
 matrix_t* matrix_transpose_square_inplace(matrix_t* X);
 
-/* ADDITION */
+/////////////////////////////////////////////////////////////
+//  ADDITION
 matrix_t* matrix_addition(matrix_t* X, matrix_t* Y);
 matrix_t* matrix_addition_inplace(matrix_t* X, matrix_t* Y, int free_Y);
 
 matrix_t* matrix_regularize(matrix_t* X, double lambda);
 matrix_t* matrix_regularize_inplace(matrix_t* X, double lambda);
 
-/* MULTIPLICATION */
+/////////////////////////////////////////////////////////////
+//  MULTIPLICATION
 matrix_t* matrix_mult(matrix_t* X, matrix_t* Y);
 matrix_t* matrix_mult_first_arg_transposed(matrix_t* X, matrix_t* Y);
 matrix_t* matrix_mult_gram(matrix_t* X);
 matrix_t* matrix_mult_gram_threaded(matrix_t* X, int max_threads);
 
-/* CHOLESKY */
+/////////////////////////////////////////////////////////////
+//  CHOLESKY
 matrix_t* cholesky(matrix_t* X);
 matrix_t* cholesky_inplace(matrix_t* X);
 matrix_t* cholesky_outer_inplace(matrix_t* X);
 matrix_t* cholesky_outer_inplace_threaded(matrix_t* X, int max_threads);
 
-/* SOLVE */
+/////////////////////////////////////////////////////////////
+//  SOLVE
 matrix_t* solve_cholesky(matrix_t* X, matrix_t* b);
 matrix_t* solve_cholesky_threaded(matrix_t* X, matrix_t* b, int max_threads);
 

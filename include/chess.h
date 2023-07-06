@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <time.h>
+#include <sys/time.h>
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"
@@ -151,6 +152,8 @@ typedef struct _searchdata_t {
     int stop;                       // tells the engine to stop search when stop == 1
     int time_available;             // tells the engine how much time it has to search in ms
 
+    struct timeval start;
+    struct timeval end;
     clock_t start_time;             // time the search was initiated (by the gui) 
     move_t *best_move;              // best move (so far) 
     int best_eval;                  // evaluation of board after best move made
@@ -193,29 +196,28 @@ extern bitboard_t KING_ATTACK[64];
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
-
-extern uint64_t random_uint64();
-extern uint64_t random_uint64_fewbits();
-extern idx_t pos_to_idx(int row, int col);
-extern int find_1st_bit(bitboard_t bb);
-extern int pop_1st_bit(bitboard_t *bitboard);
-extern void initialize_attack_boards();
-extern void initialize_helper_boards();
-extern void initialize_oldstate_array();
-extern void initialize_chess_engine_only_necessary();
+uint64_t random_uint64();
+uint64_t random_uint64_fewbits();
+idx_t pos_to_idx(int row, int col);
+int find_1st_bit(bitboard_t bb);
+int pop_1st_bit(bitboard_t *bitboard);
+void initialize_attack_boards();
+void initialize_helper_boards();
+void initialize_oldstate_array();
+void initialize_chess_engine_only_necessary();
 
 
 //////////////////////////////////////////////////////////////
-// PRIORITY QUEUE FUNCTIONS
-extern void initialize_maxpq(maxpq_t* pq);
-extern void print_pq(maxpq_t* pq);
+//  PRIORITY QUEUE FUNCTIONS
+void initialize_maxpq(maxpq_t* pq);
+void print_pq(maxpq_t* pq);
 
-extern void sink(maxpq_t* pq, int k);
-extern void swim(maxpq_t* pq, int k);
+void sink(maxpq_t* pq, int k);
+void swim(maxpq_t* pq, int k);
 void swap(maxpq_t* pq, int i, int k);
 
-extern void insert(maxpq_t* pq, move_t* elem);
-extern move_t* pop_max(maxpq_t* pq);
+void insert(maxpq_t* pq, move_t* elem);
+move_t* pop_max(maxpq_t* pq);
 
 void free_pq(maxpq_t* pq);
 
@@ -223,46 +225,46 @@ void heap_sort(maxpq_t* pq);
 
 //////////////////////////////////////////////////////////////
 //  BOARD FUNCTIONS
-extern board_t* init_board();
-extern board_t* copy_board(board_t* board);
-extern void recover_board(board_t* board, board_t* old_board);
-extern void clear_board(board_t *board);
-extern void free_board(board_t* board);
-extern void load_by_FEN(board_t* board, char* FEN);
-extern void update_white_black_all_boards(board_t *board);
-extern int is_same_board(board_t *board1, board_t* board2);
+board_t* init_board();
+board_t* copy_board(board_t* board);
+void recover_board(board_t* board, board_t* old_board);
+void clear_board(board_t *board);
+void free_board(board_t* board);
+void load_by_FEN(board_t* board, char* FEN);
+void update_white_black_all_boards(board_t *board);
+int is_same_board(board_t *board1, board_t* board2);
 
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION
-extern int is_capture(bitboard_t to, board_t *board);
-extern int is_in_check(board_t *board);
-extern int is_in_check_after_move(board_t *board);
-extern void generate_pseudo_moves(board_t *board, maxpq_t* movelst);
-extern void generate_moves(board_t* board, maxpq_t* movelst);
+int is_capture(bitboard_t to, board_t *board);
+int is_in_check(board_t *board);
+int is_in_check_after_move(board_t *board);
+void generate_pseudo_moves(board_t *board, maxpq_t* movelst);
+void generate_moves(board_t* board, maxpq_t* movelst);
 
 /////////////////////////////////////////////////////////////
 //  MOVE & EXECUTION
-extern move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
-extern move_t *copy_move(move_t *move);
-extern void free_move(move_t *move);
-extern int do_move(board_t* board, move_t* move);
-extern void undo_move(board_t* board);
-extern int is_same_move(move_t* move1, move_t* move2);
+move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
+move_t *copy_move(move_t *move);
+void free_move(move_t *move);
+int do_move(board_t* board, move_t* move);
+void undo_move(board_t* board);
+int is_same_move(move_t* move1, move_t* move2);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH DATA
-extern searchdata_t* init_search_data(board_t *board);
-extern void free_search_data(searchdata_t *data);
+searchdata_t* init_search_data(board_t *board);
+void free_search_data(searchdata_t *data);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH
-extern int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
-extern void search(searchdata_t* search_data);
+int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
+void search(searchdata_t* search_data);
 
 ///////////////////////////////////////////////////////////////
 //  PERFT 
-extern uint64_t perft(board_t* board, int depth);
-extern int perft_divide(board_t* board, int depth);
+uint64_t perft(board_t* board, int depth);
+int perft_divide(board_t* board, int depth);
 
 
 #endif

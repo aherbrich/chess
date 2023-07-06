@@ -12,11 +12,11 @@ extern const uint64_t BISHOP_MAGIC[64];
 
 /////////////////////////////////////////////////////////////
 //  MAGIC BITBOARDS
-extern int transform(bitboard_t mask, uint64_t magic, int bits);
-extern bitboard_t index_to_bitboard(int index, int bits, bitboard_t mask);
-extern bitboard_t rook_mask(int sq);
-extern bitboard_t bishop_mask(int sq);
-extern bitboard_t rook_attacks(int sq, bitboard_t block);
-extern bitboard_t bishop_attacks(int sq, bitboard_t block);
+int transform(bitboard_t mask, uint64_t magic, int bits);
+bitboard_t index_to_bitboard(int index, int bits, bitboard_t mask);
+bitboard_t rook_mask(int sq);
+bitboard_t bishop_mask(int sq);
+bitboard_t rook_attacks(int sq, bitboard_t block);
+bitboard_t bishop_attacks(int sq, bitboard_t block);
 
 #endif
