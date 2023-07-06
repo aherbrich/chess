@@ -64,12 +64,28 @@ int do_move(board_t* board, move_t* move){
     OLDSTATE[board->ply_no] = copy_board(board);
     HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
 
-    // move execution
     bitboard_t from_mask = 1ULL << move->from;
     bitboard_t from_clear_mask = ~from_mask;
     bitboard_t to_mask = 1ULL << move->to;
     bitboard_t to_clear_mask = ~to_mask;
 
+    // SECONDLY: adjust counters
+    // if move is a capture or a pawn move, reset counter
+    if((move->flags & 0b0100) || (from_mask & board->whitepawns) || (from_mask & board->blackpawns)){
+        board->fifty_move_counter = 0;
+        
+    } else{
+        // else increase it
+        board->fifty_move_counter++;
+    }
+
+    // if black is making the move/ made his move, then increase the full move counter
+    if(board->player == BLACK){
+        board->full_move_counter++;
+    }
+
+
+    // LASTLY: move execution
     // change the bitboard of moving piece
     // if moving piece is a...
 
@@ -171,19 +187,6 @@ int do_move(board_t* board, move_t* move){
     //  EXIT EARLY STATEMENTS BEGIN
     //
 
-    // if move is a capture or a pawn move, reset counter
-    if((move->flags & 0b0100) || (from_mask & board->whitepawns) || (from_mask & board->blackpawns)){
-        board->fifty_move_counter = 0;
-        
-    } else{
-        // else increase it
-        board->fifty_move_counter++;
-    }
-
-    // if black is making the move/ made his move, then increase the full move counter
-    if(board->player == BLACK){
-        board->full_move_counter++;
-    }
 
     // if move is quiet or simple capture
     if(move->flags == QUIET || move->flags == CAPTURE){
