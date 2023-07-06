@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int MAX_LEN = 1024;
+int MAX_LEN = 32768;
 
 board_t* OLDSTATE[2048];
 uint64_t HISTORY_HASHES[2048];
@@ -244,12 +244,7 @@ void *start_search(void *args) {
     searchdata_t *data = (searchdata_t *) args;
     // start iterative search
     search(data);
-
-    // output the best move found in search to stdout
-    printf("bestmove ");
-    print_LAN_move(data->best_move, data->board->player);
-    printf("\n");
-
+    
     // signal communication thread that search is finished 
     game_thread = 0;
 
@@ -268,7 +263,7 @@ void *main_interface_loop(void *args) {
     setbuf(stdout, NULL);
 
     // print chess engine info
-    printf("id name HerPiece 1.0\nid author Alexander Herbrich\n\n");
+    printf("id name Engine v1.0\nid author Alexander Herbrich\n\n");
     printf("uciok\n");
 
     while (1) {

@@ -5,13 +5,18 @@
 #include "../include/prettyprint.h"
 #include "../include/zobrist.h"
 
-#define TOLERANCE 10  // ms
-#define STOP_ACCURACY 10000
+#define TOLERANCE 15  // ms
+#define STOP_ACCURACY 1
 #define MAXDEPTH 100
 #define WINDOWSIZE 50
 
 int last_check = 0;
 int stop_immediately = FALSE;
+
+int delta_in_ms(searchdata_t* searchdata){
+    gettimeofday(&(searchdata->end), 0);
+    return (int) ((searchdata->end.tv_sec - searchdata->start.tv_sec) * 1000.0f + (searchdata->end.tv_usec - searchdata->start.tv_usec) / 1000.0f);
+}
 
 /* Creates score string for info output (for GUI) */
 char *get_mate_or_cp_value(int score, int depth) {
@@ -114,8 +119,7 @@ int search_has_to_be_stopped(searchdata_t *search_data) {
     // or, if search is not in infinite mode and the time has run out, stop
     // search immediately
     if (!search_data->run_infinite) {
-        if ((int)(((double)clock() - search_data->start_time) / 1000) >=
-            search_data->time_available) {
+        if(delta_in_ms(search_data) >= search_data->time_available){
             return 1;
         }
     }
@@ -425,11 +429,9 @@ void search(searchdata_t *searchdata) {
         searchdata->best_eval = eval;
 
         int nodes = searchdata->nodes_searched;
-        int nps = (int)(((double)searchdata->nodes_searched) /
-                        (((double)(clock() - (searchdata->start_time)) /
-                          CLOCKS_PER_SEC)));
-        int time = (int)((double)(clock() - (searchdata->start_time)) /
-                         CLOCKS_PER_SEC * 1000);
+        int nps = (int)(nodes /
+                        delta_in_ms(searchdata));
+        int time = delta_in_ms(searchdata);
         int hashfull = hashtable_full_permill();
         char *score = get_mate_or_cp_value(eval, depth);
 
@@ -441,4 +443,15 @@ void search(searchdata_t *searchdata) {
 
         free(score);
     }
+
+    int nodes = searchdata->nodes_searched;
+    int nps = (int)(nodes /
+                    delta_in_ms(searchdata));
+    int time = delta_in_ms(searchdata);
+    int hashfull = hashtable_full_permill();
+    char* move_str = get_LAN_move(searchdata->best_move, searchdata->board->player);
+    printf("info nodes %d time %d nps %d hasfull %d\nbestmove %s\n",
+        nodes, time, nps, hashfull, move_str);
+    printf("\n");
+    free(move_str);
 }

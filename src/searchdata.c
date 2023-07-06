@@ -18,7 +18,7 @@ searchdata_t* init_search_data(board_t *board){
     data->stop = 0;                   // tells the engine to stop search when stop == 1
     data->time_available = 0;         // tells the engine how much time it has to search in ms
 
-    data->start_time = clock();       // time the search was initiated (by the gui) 
+    gettimeofday(&(data->start), 0);
     data->best_move = NULL;           // best move (so far)
     data->best_eval = NEGINFINITY;    // evaluation of board after best move made
     data->nodes_searched = 0;         // amount of nodes searched in iterative search

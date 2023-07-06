@@ -154,7 +154,6 @@ typedef struct _searchdata_t {
 
     struct timeval start;
     struct timeval end;
-    clock_t start_time;             // time the search was initiated (by the gui) 
     move_t *best_move;              // best move (so far) 
     int best_eval;                  // evaluation of board after best move made
     int nodes_searched;             // amount of nodes searched in iterative search
