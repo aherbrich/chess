@@ -1,7 +1,6 @@
 #include "../include/chess.h"
-#include "../include/prettyprint.h"
 
-char *STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+char STARTING_FEN[] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 char TEST2_FEN[] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 char TEST22_FEN[] = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - - ";
 char TEST3_FEN[] = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
@@ -13,20 +12,20 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 
-int main() {
+int main(){
     board_t* board = init_board();
-    load_by_FEN(board, TEST7_FEN);
+    loadByFEN(board, TEST7_FEN);
 
     clock_t end;
     clock_t begin;
 
-    print_board(board);
+    printBoard(board);
 
     begin = clock();
-    int genresult = move_gen(board, 4);
+    int genresult = MoveGen(board, 4);
     printf("Found: \t\t%d\n", genresult);
     end = clock();
-    printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
-
+    printf("Time: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);   
+    
     free_board(board);
 }

@@ -1,18 +1,20 @@
 #include "../include/chess.h"
-#include "../include/zobrist.h"
 
-char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
-                     "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
-                     "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
-                     "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
-                     "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
-                     "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
-                     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
-                     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
+char FIELD[64][2] = {   "A1","B1","C1","D1","E1","F1","G1","H1",
+                        "A2","B2","C2","D2","E2","F2","G2","H2",
+                        "A3","B3","C3","D3","E3","F3","G3","H3",
+                        "A4","B4","C4","D4","E4","F4","G4","H4",
+                        "A5","B5","C5","D5","E5","F5","G5","H5",
+                        "A6","B6","C6","D6","E6","F6","G6","H6",
+                        "A7","B7","C7","D7","E7","F7","G7","H7",
+                        "A8","B8","C8","D8","E8","F8","G8","H8"};
+                        
+/////////////////////////////////////////////////////////////
+//  PRINT HELPERS
 
 /* Print a piece */
-char print_piece(piece_t piece) {
-    switch (piece) {
+char printPiece(piece_t piece){
+    switch(piece){
         case 2:
             return 'P';
         case 4:
@@ -23,7 +25,7 @@ char print_piece(piece_t piece) {
             return 'R';
         case 32:
             return 'Q';
-        case 64:
+        case 64: 
             return 'K';
         case 3:
             return 'p';
@@ -35,7 +37,7 @@ char print_piece(piece_t piece) {
             return 'r';
         case 33:
             return 'q';
-        case 65:
+        case 65: 
             return 'k';
         default:
             return '-';
@@ -43,84 +45,41 @@ char print_piece(piece_t piece) {
 }
 
 /* Print the board */
-void print_board(board_t* board) {
-    for (int x = 7; x >= 0; x--) {
-        for (int y = 0; y < 8; y++) {
-            if (y == 0) {
-                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
-            }
-
-            char piece = print_piece(board->playing_field[pos_to_idx(x, y)]);
-            if (COLOR(board->playing_field[pos_to_idx(x, y)]) == BLACK) {
-                fprintf(stderr, "%s", Color_CYAN);
-            }
-            fprintf(stderr, "%c%s  ", piece, Color_END);
+void printBoard(board_t *board){
+    for(int x = 7; x>=0; x--){
+        for(int y = 0; y < 8; y++){
+            char piece = printPiece(board->playingfield[posToIdx(x, y)]);
+            printf("%c  ", piece);
         }
-        fprintf(stderr, "\n");
+        printf("\n");
     }
-    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN, Color_END);
-    fprintf(stderr, "\n");
+    printf("\n");
 }
 
-/* Print move */
-void print_move(move_t* move) {
-    char* start_field = FIELD[move->start];
-    char* end_field = FIELD[move->end];
-    if (move->type_of_move == PROMOTIONMOVE) {
-        fprintf(stderr, "%s%.2s-%.2s-(%c)%s",Color_PURPLE, start_field, end_field, print_piece(move->piece_is),Color_END);
-
-    } else if (move->type_of_move == CASTLEMOVE) {
-        fprintf(stderr, "%s%.2s-%.2s-C%s", Color_PURPLE, start_field, end_field, Color_END);
-    } else {
-        fprintf(stderr, "%s%.2s-%.2s-%c%s",Color_PURPLE, start_field, end_field, print_piece(move->piece_was), Color_END);
+/* Print move*/
+void printMove(move_t *move){
+    char* startfield = FIELD[move->start];
+    char* endfield = FIELD[move->end];
+    if(move->typeofmove == PROMOTIONMOVE){
+        printf("%.2s-%.2s-(%c)", startfield, endfield, printPiece(move->piece_is));
+        
     }
-}
-
-/* Print move in the long algebraic notation */
-void print_LAN_move(move_t* move) {
-    char* start_field = FIELD[move->start];
-    char* end_field = FIELD[move->end];
-
-    if (move->type_of_move == PROMOTIONMOVE)
-        printf("%.2s%.2s%c", start_field, end_field, print_piece(move->piece_is));
-    else 
-        printf("%.2s%.2s", start_field, end_field);
-
-    return;
+    else if(move->typeofmove == CASTLEMOVE){
+        printf("%.2s-%.2s-C", startfield, endfield);
+    }
+    else{
+        printf("%.2s-%.2s-%c", startfield, endfield, printPiece(move->piece_was));
+    }
+   
 }
 
 /* Print list move */
-void print_moves(node_t* move_list) {
-    node_t* ptr = move_list->next;
-    while (ptr != NULL) {
-        print_move(ptr->move);
-        fprintf(stderr, "\n");
+void printMoves(node_t *movelst){
+    node_t *ptr = movelst->next;
+    while(ptr != NULL){
+        printMove(ptr->move);
+        printf("\n");
         ptr = ptr->next;
     }
-    fprintf(stderr, "\n");
-}
-
-/* Print the list of best possible moves until a depth (PV line) */
-void print_line(board_t* board, int depth) {
-    /* make a copy of the board */
-    board_t *board_copy = copy_board(board);
-
-    /* for all depth, figure out the best move from the hash-table and print it */
-    for (int d = depth; d > 0; d--) {
-        move_t* best_move = get_best_move_from_hashtable(board_copy);
-        if (best_move == NULL) {
-            free_board(board_copy);
-            return;
-        }
-
-        play_move(board_copy, best_move, board_copy->player);
-        print_LAN_move(best_move);
-        printf(" ");
-        free_move(best_move);
-    }
-
-    /* free the board */
-    free_board(board_copy);
-
-    return;
+    printf("\n");
 }

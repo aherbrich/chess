@@ -3,24 +3,25 @@
 /////////////////////////////////////////////////////////////
 // PERFT TESTER
 
-int move_gen(board_t* board, int depth) {
-    if (depth == 0) {
+int MoveGen(board_t* board, int depth){
+    if(depth == 0){
         return 1;
     }
 
-    node_t* move_list = generate_moves(board);
+    
+    node_t* movelst = generateMoves(board);
     move_t* move;
 
     int numPositions = 0;
 
-    player_t player_who_made_move = board->player;
-
-    while ((move = pop(move_list)) != NULL) {
-        play_move(board, move, player_who_made_move);
-        numPositions += move_gen(board, depth - 1);
-        reverse_move(board, move, player_who_made_move);
+    player_t playerwhomademove= board->player;
+    
+    while((move= pop(movelst)) != NULL){
+        playMove(board, move, playerwhomademove);
+        numPositions += MoveGen(board, depth-1);
+        reverseMove(board, move, playerwhomademove);
         free_move(move);
     }
-    free(move_list);
+    free(movelst);
     return numPositions;
 }

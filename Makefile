@@ -1,9 +1,7 @@
 BUILD_DIR = build
 
-CHESS_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c src/eval.c src/minmax.c src/zobrist.c src/book.c src/search.c
-CHESS_OBJ = $(addprefix $(BUILD_DIR)/, $(CHESS_SRC:%.c=%.o))
-
-UCI_SRC = src/uci.c
+EXERCISE_SRC = src/chess.c src/list.c src/move.c src/board.c src/helpers.c src/perft.c src/prettyprint.c
+EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 TEST_DIR = tests
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -16,13 +14,13 @@ CC = gcc
 CC_FLAGS = -Wall -Wextra -g -std=c11 -O3
 
 .PHONY: all
-all: build build_tests $(BUILD_DIR)/uci/uci   # Build everything but runs nothing
+all: build build_tests     # Build everything but runs nothing
 
 .PHONY: run
 run: all_tests             # Run all tests (alias)
 
 .PHONY: build
-build: $(CHESS_OBJ)     # Build the chess program
+build: $(EXERCISE_OBJ)     # Build the exercise
 
 .PHONY: build_tests
 build_tests: $(TEST_OBJ)   # Build the tests
@@ -48,18 +46,15 @@ $(TEST_TARGET): %: $(BUILD_DIR)/tests/%
 	@./$< && echo -e "<<< $(BASH_COLOR_GREEN)OK$(BASH_COLOR_NONE)" \
 		|| echo -e "<<< $(BASH_COLOR_RED)FAILED$(BASH_COLOR_NONE)"
 
-$(CHESS_OBJ): $(BUILD_DIR)/%.o: %.c
+$(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
 
-$(BUILD_DIR)/tests/test_%: tests/test_%.c $(CHESS_OBJ)
+$(BUILD_DIR)/tests/test_%: tests/test_%.c $(BUILD_DIR)/src/chess.o $(BUILD_DIR)/src/list.o $(BUILD_DIR)/src/move.o $(BUILD_DIR)/src/board.o $(BUILD_DIR)/src/helpers.o $(BUILD_DIR)/src/perft.o $(BUILD_DIR)/src/prettyprint.o
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o$@ $^
 
-$(BUILD_DIR)/uci/uci: $(UCI_SRC) $(CHESS_OBJ)
-	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o$@ $^
 
 .PHONY: clean
 clean:
