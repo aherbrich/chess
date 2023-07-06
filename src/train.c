@@ -98,8 +98,8 @@ int main(){
 
     fprintf(stderr, "\nUnique positions:%d\n", count);
 
-    matrix_t* XTX = matrix_mult_gram_N_threaded(X, 32);
-    matrix_regularize(XTX, 0.001);
+    matrix_t* XTX = matrix_mult_gram_threaded(X, 32);
+    matrix_regularize_inplace(XTX, 0.001);
     fprintf(stderr, "Solved XTX!\n");
 
     matrix_t* b = matrix_mult_first_arg_transposed(X, y);
@@ -108,7 +108,7 @@ int main(){
     matrix_free(y);
 
     fprintf(stderr, "Solving with cholesky!\n");
-    matrix_t* w = solve_cholesky(XTX, b);
+    matrix_t* w = solve_cholesky_threaded(XTX, b, 32);
 
     for(int test = 0; test < 12; test++){
         for(int time = 0; time < 30; time++){
