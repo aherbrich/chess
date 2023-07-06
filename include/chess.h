@@ -77,6 +77,10 @@
 
 #define PRIORITY_QUEUE_SIZE 512
 
+#define WINWHITE 1
+#define DRAW 0
+#define WINBLACK -1
+
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
 typedef uint8_t idx_t;
@@ -156,19 +160,23 @@ typedef struct _searchdata_t {
     int pv_node_hit;                // amount of pv moves that turned out to be the best move
 }  searchdata_t;
 
+typedef struct _chessgame_t{
+    char* movelist;
+    int winner;
+} chessgame_t;
 
 /////////////////////////////////////////////////////////////
 //  GLOBALS 
 
 //  SEARCH
-int nodes_searched;
-int hash_used;
-int hash_bounds_adjusted;
-int pv_node_hit;
+extern int nodes_searched;
+extern int hash_used;
+extern int hash_bounds_adjusted;
+extern int pv_node_hit;
 
 //  MOVE EXECUTION
-extern board_t* OLDSTATE[512];
-extern uint64_t HISTORY_HASHES[512];
+extern board_t* OLDSTATE[2048];
+extern uint64_t HISTORY_HASHES[2048];
 
 //  MOVE GENERATION
 extern bitboard_t MASK_FILE[8];

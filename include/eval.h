@@ -4,6 +4,26 @@
 
 #include "../include/chess.h"
 
+#define PAWNVALUE 100
+#define KNIGHTVALUE 320
+#define BISHOPVALUE 330
+#define ROOKVALUE 500
+#define QUEENVALUE 900
+
+/* pawn position values */
+extern int PAWN_POSITION_VALUE[64];
+/* knight position values */
+extern int KNIGHT_POSITION_VALUE[64];
+/* bishop position values */
+extern int BISHOP_POSITION_VALUE[64];
+/* rook position values */
+extern int ROOK_POSITION_VALUE[64];
+/* queen position values */
+extern int QUEEN_POSITION_VALUE[64];
+/* king position values */
+extern int KING_POSITION_VALUE[64];
+
+
 /////////////////////////////////////////////////////////////
 //   EVALUATION
 extern int eval_end_of_game(board_t *board, int depth);

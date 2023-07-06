@@ -1,10 +1,5 @@
 #include "../include/chess.h"
-
-#define PAWNVALUE 100
-#define KNIGHTVALUE 320
-#define BISHOPVALUE 330
-#define ROOKVALUE 500
-#define QUEENVALUE 900
+#include "../include/eval.h"
 
 /* pawn position values */
 int PAWN_POSITION_VALUE[64] = {0, 0, 0, 0, 0, 0, 0, 0,

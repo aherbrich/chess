@@ -4,10 +4,10 @@
 /* Generates a pseudo-random 64bit unsigned integer */
 uint64_t random_uint64() {
     uint64_t u1, u2, u3, u4;
-    u1 = (uint64_t) (random()) & 0xFFFF;
-    u2 = (uint64_t) (random()) & 0xFFFF;
-    u3 = (uint64_t) (random()) & 0xFFFF;
-    u4 = (uint64_t) (random()) & 0xFFFF;
+    u1 = (uint64_t) (rand()) & 0xFFFF;
+    u2 = (uint64_t) (rand()) & 0xFFFF;
+    u3 = (uint64_t) (rand()) & 0xFFFF;
+    u4 = (uint64_t) (rand()) & 0xFFFF;
     return (u1 | (u2 << 16) | (u3 << 32) | (u4 << 48));
 }
 
@@ -140,14 +140,14 @@ void initialize_helper_boards(){
 
 /* Initializes old state array */
 void initialize_oldstate_array(){
-    for(int i = 0; i < 512; i++){
+    for(int i = 0; i < 2048; i++){
         OLDSTATE[i] = 0;
     }
 }
 
 /* Initializes old state array */
 void initialize_history_hash_array(){
-    for(int i = 0; i < 512; i++){
+    for(int i = 0; i < 2048; i++){
         HISTORY_HASHES[i] = 0;
     }
 }

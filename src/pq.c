@@ -29,7 +29,7 @@ void print_pq(maxpq_t* pq){
         fprintf(stderr, " (%d)", pq->array[i]->value);
         fprintf(stderr, "   ");
     }
-    printf("\n");
+    fprintf(stderr, "\n");
 }
 
 /* Swaps element at (initially) index k with its parent until heap property satisfied */
@@ -73,7 +73,7 @@ void sink_N(maxpq_t* pq, int k, int N){
 void insert(maxpq_t* pq, move_t* elem){
     pq->nr_elem++;
     if(pq->nr_elem > pq->size){
-        printf("Out of space!\n");
+        fprintf(stderr, "Out of space!\n");
         exit(1);
     }
 
