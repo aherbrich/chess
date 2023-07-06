@@ -139,7 +139,7 @@ double all_positional(board_t *board, player_t color){
     return positional;
 }
 
-double positional_difference(board_t *board, player_t color){
+double positional_difference(board_t *board){
     double positional_diff = all_positional(board, WHITE) - all_positional(board, BLACK);
 
     // if (board->player == BLACK) {
@@ -256,7 +256,7 @@ double all_material(board_t *board, player_t color){
 }
 
 
-double material_difference(board_t *board, player_t color){
+double material_difference(board_t *board){
     double material_diff = all_material(board, WHITE) - all_material(board, BLACK);
 
     // if (board->player == BLACK) {

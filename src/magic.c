@@ -357,11 +357,11 @@ void print_magic_numbers(){
     int square;
     fprintf(stderr, "uint64_t ROOK_MAGIC[64] = {\n");
     for(square = 0; square < 64; square++)
-        fprintf(stderr, "  0x%lxULL,\n", find_magic(square, ROOK_BITS[square], 0));
+        fprintf(stderr, "  0x%llxULL,\n", find_magic(square, ROOK_BITS[square], 0));
     fprintf(stderr, "};\n\n");
 
     fprintf(stderr, "uint64_t BISHOP_MAGIC[64] = {\n");
     for(square = 0; square < 64; square++)
-        fprintf(stderr, "  0x%lxULL,\n", find_magic(square, BISHOP_BITS[square], 1));
+        fprintf(stderr, "  0x%llxULL,\n", find_magic(square, BISHOP_BITS[square], 1));
     fprintf(stderr, "};\n\n");
 }

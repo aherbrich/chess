@@ -21,7 +21,7 @@ idx_t str_to_idx(char file, char rank) {
 }
 
 /* Determines pawn move equal to the move described by flags */
-move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2, int capture, int promotion, char promopiece){
+move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2, int promotion, char promopiece){
     // generate all possible moves in the current position
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -103,7 +103,7 @@ move_t* find_castle_move(board_t* board, int kingside){
 }
 
 /* Determines knight move equal to the move described by flags */
-move_t* find_knight_move(board_t* board, char file1, char rank1, char file2, char rank2, int capture,  int single_ambigious, int double_ambigious){
+move_t* find_knight_move(board_t* board, char file1, char rank1, char file2, char rank2,  int single_ambigious, int double_ambigious){
     // generate all possible moves in the current position
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -150,7 +150,7 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2, cha
 }
 
 /* Determines bishop move equal to the move described by flags */
-move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2, char rank2, int capture,  int single_ambigious, int double_ambigious){
+move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2, char rank2,  int single_ambigious, int double_ambigious){
     // generate all possible moves in the current position
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -198,7 +198,7 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2, cha
 }
 
 /* Determines rook move equal to the move described by flags */
-move_t* find_rook_move(board_t* board, char file1, char rank1, char file2, char rank2, int capture,  int single_ambigious, int double_ambigious){
+move_t* find_rook_move(board_t* board, char file1, char rank1, char file2, char rank2,  int single_ambigious, int double_ambigious){
     // generate all possible moves in the current position
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -246,7 +246,7 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2, char 
 }
 
 /* Determines queen move equal to the move described by flags */
-move_t* find_queen_move(board_t* board, char file1, char rank1, char file2, char rank2, int capture, int single_ambigious, int double_ambigious){
+move_t* find_queen_move(board_t* board, char file1, char rank1, char file2, char rank2, int single_ambigious, int double_ambigious){
     // generate all possible moves in the current position
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -294,7 +294,7 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2, char
 }
 
 /* Determines king move equal to the move described by flags */
-move_t* find_king_move(board_t* board, char file1, char rank1, char file2, char rank2, int capture, int single_ambigious, int double_ambigious){
+move_t* find_king_move(board_t* board, char file1, char rank1, char file2, char rank2, int single_ambigious, int double_ambigious){
     // generate all possible moves in the current position
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -351,14 +351,12 @@ move_t* str_to_move(board_t* board, char* token){
         char file1 = token[idx];
         char file2;
         char rank2;
-        int capture = 0;
         int promotion = 0;
         char promopiece = '-';
         
         idx++;
         // if capture
         if(token[idx] == 'x'){
-            capture = 1;
             idx++;
             file2 = token[idx];
             idx++;
@@ -379,7 +377,7 @@ move_t* str_to_move(board_t* board, char* token){
         
         
         // FIND FITTING MOVE
-        move = find_pawn_move(board, file1, file2, rank2, capture, promotion, promopiece);
+        move = find_pawn_move(board, file1, file2, rank2, promotion, promopiece);
 
     } 
     // if piece move
@@ -389,7 +387,6 @@ move_t* str_to_move(board_t* board, char* token){
         char rank1;
         char rank2;
         char piece = token[idx];
-        int capture = 0;
         int single_ambigious = 0; // -1 if by rank, 1 if by file
         int double_ambigious = 0;
 
@@ -402,7 +399,6 @@ move_t* str_to_move(board_t* board, char* token){
                 file2 = token[idx];
                 rank2 = token[idx+1];
             } else if(token[idx] == 'x'){
-                capture = 1;
                 single_ambigious = AMBIG_BY_FILE;
                 file2 = token[idx+1];
                 rank2 = token[idx+2];
@@ -413,7 +409,6 @@ move_t* str_to_move(board_t* board, char* token){
                     file2 = token[idx+1];
                     rank2 = token[idx+2];
                 } else if(token[idx +1] == 'x'){
-                    capture = 1;
                     double_ambigious = 1;
                     file2 = token[idx+2];
                     rank2 = token[idx+3];
@@ -423,14 +418,12 @@ move_t* str_to_move(board_t* board, char* token){
                 }
             }
         } else if (token[idx] == 'x'){
-            capture = 1;
             file2 = token[idx+1];
             rank2 = token[idx+2];
         } else{
             single_ambigious = AMBIG_BY_RANK;
             rank1 = token[idx];
             if(token[idx+1] == 'x'){
-                capture = 1;
                 file2 = token[idx+2];
                 rank2 = token[idx+3];
             } else{
@@ -442,15 +435,15 @@ move_t* str_to_move(board_t* board, char* token){
 
         // FIND FITTING MOVE
         if(piece == 'N'){
-            move = find_knight_move(board, file1, rank1, file2, rank2, capture, single_ambigious, double_ambigious);
+            move = find_knight_move(board, file1, rank1, file2, rank2, single_ambigious, double_ambigious);
         }else if(piece == 'B'){
-            move = find_bishop_move(board, file1, rank1, file2, rank2, capture,  single_ambigious, double_ambigious);
+            move = find_bishop_move(board, file1, rank1, file2, rank2,  single_ambigious, double_ambigious);
         }else if(piece == 'R'){
-            move = find_rook_move(board, file1, rank1, file2, rank2, capture,  single_ambigious, double_ambigious);
+            move = find_rook_move(board, file1, rank1, file2, rank2,  single_ambigious, double_ambigious);
         }else if(piece == 'Q'){
-            move = find_queen_move(board, file1, rank1, file2, rank2, capture,  single_ambigious, double_ambigious);
+            move = find_queen_move(board, file1, rank1, file2, rank2,  single_ambigious, double_ambigious);
         } else{
-            move = find_king_move(board, file1, rank1, file2, rank2, capture,  single_ambigious, double_ambigious);
+            move = find_king_move(board, file1, rank1, file2, rank2,  single_ambigious, double_ambigious);
         }
     } 
     // if castle move

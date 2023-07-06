@@ -8,8 +8,8 @@ int count_number_of_games(){
     char buffer[buffersize];
 
     // open file
-    //FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
-    FILE *fp = fopen("/home/ubuntu/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
+    FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
+    //FILE *fp = fopen("/home/ubuntu/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
 
     // read line by line
     while(fgets(buffer, buffersize, fp) != NULL){
@@ -45,8 +45,8 @@ chessgame_t** parse_chessgames_file(int nr_of_games){
     }
 
     // open file
-    //FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
-    FILE *fp = fopen("/home/ubuntu/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
+    FILE *fp = fopen("/Users/aherbrich/src/myprojects/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
+    //FILE *fp = fopen("/home/ubuntu/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", "r");
 
     int buffersize = 8192;
     char buffer[buffersize];
