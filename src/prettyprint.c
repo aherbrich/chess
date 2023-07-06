@@ -71,23 +71,23 @@ char* create_board_string(board_t* board) {
 
 /* Prints the board */
 void print_board(board_t* board) {
-    // create string representing the playing field
+    /* create string representing the playing field */
     char* board_string = create_board_string(board);
 
-    // print the chessboard-string row for row
+    /* print the chessboard-string row for row */
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
-            // print row number
+            /* print row number */
             if (y == 0) {
                 fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
             }
-            // print piece
+            /* print piece */
             char piece = board_string[pos_to_idx(x, y)];
-            // in PURPLE if blacks piece
+            /* in PURPLE if blacks piece */
             if (piece >= 97 && piece <= 122) {
                 fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
             }
-            // in WHITE if whites piece
+            /* in WHITE if whites piece */
             else {
                 fprintf(stderr, "%c  ", piece);
             }
@@ -151,7 +151,7 @@ void print_LAN_move(move_t* move, player_t color_playing) {
     char* start_field = FIELD[move->from];
     char* end_field = FIELD[move->to];
 
-    // if promotion move
+    /* if promotion move */
     if (move->flags >= 8) {
         flag_t prom_flag = move->flags & (0b11);
         if (prom_flag == 0) {
@@ -180,7 +180,7 @@ void print_LAN_move(move_t* move, player_t color_playing) {
             }
         }
     }
-    // if not a promotion move
+    /* if not a promotion move */
     else {
         printf("%.2s%.2s", start_field, end_field);
     }
@@ -191,7 +191,7 @@ char* get_LAN_move(move_t* move, player_t color_playing) {
     char* start_field = FIELD[move->from];
     char* end_field = FIELD[move->to];
     char* buffer = NULL;
-    // if promotion move
+    /* if promotion move */
     if (move->flags >= 8) {
         buffer = (char*)malloc(6);
         flag_t prom_flag = move->flags & (0b11);
@@ -221,7 +221,7 @@ char* get_LAN_move(move_t* move, player_t color_playing) {
             }
         }
     }
-    // if not a promotion move
+    /* if not a promotion move */
     else {
         buffer = (char*)malloc(5);
         snprintf(buffer, 5, "%.2s%.2s", start_field, end_field);
@@ -232,14 +232,15 @@ char* get_LAN_move(move_t* move, player_t color_playing) {
 
 /* Prints the (PV line) upto given depth */
 void print_line(board_t* board, int depth) {
-    // make a copy of the board
+    /* make a copy of the board */
     board_t* board_copy = copy_board(board);
 
-    // for all depth, probe best move from the transpostiotn table and print it
+    /* for all depth, probe best move from the transpostiotn table and print it
+     */
     for (int d = depth; d > 0; d--) {
         move_t* best_move = get_best_move_from_hashtable(board_copy);
         if (best_move == NULL) {
-            // this can happen but shouldn't (if hash entry overwritten)
+            /* this can happen but shouldn't (if hash entry overwritten) */
             printf("NULL ");
             free_board(board_copy);
             return;
@@ -250,7 +251,7 @@ void print_line(board_t* board, int depth) {
         free_move(best_move);
     }
 
-    // free the board
+    /* free the board */
     free_board(board_copy);
 
     return;

@@ -46,27 +46,30 @@ void swim(maxpq_t* pq, int k) {
  * satisfied */
 void sink(maxpq_t* pq, int k) {
     while (2 * k <= pq->nr_elem) {
-        // index of first child
+        /* index of first child */
         int j = 2 * k;
-        // set j to index of child with higher value
+        /* set j to index of child with higher value */
         if (j < pq->nr_elem && less(pq, j, j + 1)) j++;
-        // if k'th element has higher value than both children we can exit early
+        /* if k'th element has higher value than both children we can exit early
+         */
         if (!less(pq, k, j)) break;
-        // else swap
+        /* else swap */
         swap(pq, k, j);
         k = j;
     }
 }
 
+/* Sink helper function for heap sort */
 void sink_N(maxpq_t* pq, int k, int N) {
     while (2 * k <= N) {
-        // index of first child
+        /* index of first child */
         int j = 2 * k;
-        // set j to index of child with higher value
+        /* set j to index of child with higher value */
         if (j < N && less(pq, j, j + 1)) j++;
-        // if k'th element has higher value than both children we can exit early
+        /* if k'th element has higher value than both children we can exit early
+         */
         if (!less(pq, k, j)) break;
-        // else swap
+        /* else swap */
         swap(pq, k, j);
         k = j;
     }
@@ -86,12 +89,12 @@ void insert(maxpq_t* pq, move_t* elem) {
 
 /* Removes element with highest value from queue and restores heap property */
 move_t* pop_max(maxpq_t* pq) {
-    // if no elements in array return NULL to indicate empty array
+    /* if no elements in array return NULL to indicate empty array */
     if (pq->nr_elem == 0) {
         return NULL;
     }
 
-    // else
+    /* else */
     move_t* max = pq->array[1];
     pq->array[1] = pq->array[pq->nr_elem];
     pq->array[pq->nr_elem] = NULL;
@@ -102,15 +105,16 @@ move_t* pop_max(maxpq_t* pq) {
 
 /* Frees all moves in a given priority queue */
 void free_pq(maxpq_t* pq) {
-    // we dont need to free pq explicitly since its memory was allocated on
-    // stack
+    /* we dont need to free pq explicitly since its memory was allocated on
+     * stack */
     if (pq->nr_elem == 0) return;
-    // free moves
+    /* free moves */
     for (int i = 1; i < pq->nr_elem + 1; i++) {
         free_move(pq->array[i]);
     }
 }
 
+/* Heap sort */
 void heap_sort(maxpq_t* pq) {
     int N = pq->nr_elem;
     for (int k = N / 2; k >= 1; k--) {

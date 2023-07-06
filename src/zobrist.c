@@ -8,14 +8,14 @@ htentry_t **ht_table;
 
 /* Initializes the global zobrist table */
 void initialize_zobrist_table() {
-    // Initialize random 64 bit number for each piece on each square of the
-    // board
+    /* Initialize random 64 bit number for each piece on each square of the
+     * board */
     for (int i = 0; i < 64; i++) {
         for (int piece = 0; piece < 12; piece++) {
             zobrist_table.piece_random64[piece][i] = random_uint64();
         }
     }
-    // Initialize random 64 bit number for every board flag
+    /* Initialize random 64 bit number for every board flag */
     for (int i = 0; i < 14; i++) {
         zobrist_table.flag_random64[i] = random_uint64();
     }
@@ -27,7 +27,7 @@ uint64_t calculate_zobrist_hash(board_t *board) {
 
     bitboard_t pawns, knights, bishops, rooks, queens, king;
 
-    // hash the WHITE piece positions
+    /* hash the WHITE piece positions */
 
     pawns = board->whitepawns;
     knights = board->whiteknights;
@@ -55,7 +55,7 @@ uint64_t calculate_zobrist_hash(board_t *board) {
         hash ^= zobrist_table.piece_random64[5][pop_1st_bit(&king)];
     }
 
-    // hash the BLACK piece positions
+    /* hash the BLACK piece positions */
 
     pawns = board->blackpawns;
     knights = board->blackknights;
@@ -83,7 +83,7 @@ uint64_t calculate_zobrist_hash(board_t *board) {
         hash ^= zobrist_table.piece_random64[11][pop_1st_bit(&king)];
     }
 
-    // hash the flags
+    /* hash the flags */
     if (board->ep_possible) {
         hash ^= zobrist_table.flag_random64[board->ep_field % 8];
     }
@@ -127,7 +127,7 @@ void initialize_hashtable() {
 /* Clears the global hashtable */
 void clear_hashtable() {
     for (int i = 0; i < HTSIZE; i++) {
-        // remove all (so possibly multiple) hash entries at index i
+        /* remove all (so possibly multiple) hash entries at index i */
         while (ht_table[i]) {
             htentry_t *tmp = ht_table[i]->next;
             free_move(ht_table[i]->best_move);
@@ -151,14 +151,14 @@ uint64_t get_memory_usage_hashtable_in_bytes() {
     uint64_t count = 0;
     for (int i = 0; i < HTSIZE; i++) {
         htentry_t *tmp = ht_table[i];
-        // 8 bytes for htentry pointer
+        /* 8 bytes for htentry pointer */
         count += sizeof(htentry_t *);
         while (tmp) {
-            // 32 bytes of htentry
+            /* 32 bytes of htentry */
             count += sizeof(htentry_t);
-            // 6 bytes for move
+            /* 6 bytes for move */
             count += sizeof(move_t);
-            // 10 bytes added due to 16 byte alignmemnt
+            /* 10 bytes added due to 16 byte alignmemnt */
             count += 10;
             tmp = tmp->next;
         }
@@ -173,21 +173,21 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
     uint64_t key = hash % HTSIZE;
 
     htentry_t *new = NULL;
-    // if there is no entry, just create a new one ...
+    /* if there is no entry, just create a new one ... */
     if (!ht_table[key]) {
         ht_table[key] = (htentry_t *)malloc(sizeof(htentry_t));
         new = ht_table[key];
     } else {
-        // otherwise, check if there already is an entry in the list with the
-        // same hash we ignore the insanley unlikely event that two different
-        // boards have the same hash
+        /* otherwise, check if there already is an entry in the list with the
+         * same hash we ignore the insanley unlikely event that two different
+         * boards have the same hash */
         int counter = 0;
         htentry_t *cur = ht_table[key];
         htentry_t *prev = cur;
         while (cur) {
-            // we want to limit bucket size to 4 (so that the hashtable doesnt
-            // grow into infinity) if we checked 4 slots but found no free slots
-            // nor an entry for that board: we REPLACE last entry in bucket
+            /* we want to limit bucket size to 4 (so that the hashtable doesnt
+             * grow into infinity) if we checked 4 slots but found no free slots
+             * nor an entry for that board: we REPLACE last entry in bucket */
             if (counter >= 3) {
                 cur->flags = flags;
                 cur->depth = depth;
@@ -197,8 +197,8 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
                 cur->hash = hash;
                 return;
             }
-            // if there exists an entry for the board
-            // we UPDATE the entry if it has a higher/same depth ... */
+            /* if there exists an entry for the board
+             * we UPDATE the entry if it has a higher/same depth ... */
             if (cur->hash == hash) {
                 if (depth >= cur->depth) {
                     cur->flags = flags;
@@ -213,13 +213,13 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
             cur = cur->next;
             counter++;
         }
-        // if there exists no entry for that board but we have a free slot
-        // create a new entry at the end of list we CREATE a new entry
+        /* if there exists no entry for that board but we have a free slot
+         * create a new entry at the end of list we CREATE a new entry */
         prev->next = (htentry_t *)malloc(sizeof(htentry_t));
         new = prev->next;
     }
 
-    // finally, fill the new entry with the data
+    /* finally, fill the new entry with the data */
     new->flags = flags;
     new->depth = depth;
     new->eval = value;
@@ -236,16 +236,16 @@ move_t *get_best_move_from_hashtable(board_t *board) {
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
-    // search the list for the entry with the same hash
+    /* search the list for the entry with the same hash */
     while (cur) {
-        // if there is one, return a deep copy of the best move
+        /* if there is one, return a deep copy of the best move */
         if (cur->hash == hash) {
             return (copy_move(cur->best_move));
         }
         cur = cur->next;
     }
 
-    // otherwise, return NULL
+    /* otherwise, return NULL */
     return (NULL);
 }
 
@@ -257,10 +257,10 @@ int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value,
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
-    // search the list for the entry with the same hash
+    /* search the list for the entry with the same hash */
     while (cur) {
-        // if there is one, return the values by reference copy and indicate by
-        // returning 1
+        /* if there is one, return the values by reference copy and indicate by
+         * returning 1 */
         if (cur->hash == hash) {
             *flags = cur->flags;
             *depth = cur->depth;
@@ -271,7 +271,7 @@ int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value,
         cur = cur->next;
     }
 
-    // otherwise, return 0
+    /* otherwise, return 0 */
     return 0;
 }
 
@@ -281,15 +281,15 @@ int get_eval_from_hashtable(board_t *board) {
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
-    // search the list for the entry with the same hash
+    /* search the list for the entry with the same hash */
     while (cur) {
-        // if there is one, return the value
+        /* if there is one, return the value */
         if (cur->hash == hash) {
             return (cur->eval);
         }
         cur = cur->next;
     }
 
-    // otherwise, return worst eval
+    /* otherwise, return worst eval */
     return -16000;
 }

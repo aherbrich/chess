@@ -23,31 +23,32 @@ idx_t str_to_idx(char file, char rank) {
 /* Determines pawn move equal to the move described by flags */
 move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2,
                        int promotion, char promopiece) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // determine index of to square
+    /* determine index of to square */
     idx_t to = str_to_idx(file2, rank2);
 
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
 
-        // check if move is a pawn move
+        /* check if move is a pawn move */
         bitboard_t from_mask = 1ULL << move->from;
         if ((from_mask & board->whitepawns) ||
             (from_mask & board->blackpawns)) {
-            // check if move is FROM the correct file and TO the correct square
+            /* check if move is FROM the correct file and TO the correct square
+             */
             if (move->to == to && (move->from % 8 + 'a') == file1) {
-                // if non-promotion
+                /* if non-promotion */
                 if (!promotion) {
                     move_t* copy = copy_move(move);
                     free_pq(&movelst);
                     return copy;
                 }
-                // if promotion
+                /* if promotion */
                 else {
                     if (promopiece == 'Q' &&
                         (move->flags == QPROM || move->flags == QCPROM)) {
@@ -83,21 +84,21 @@ move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2,
 
 /* Determines castle move equal to the move described by flags */
 move_t* find_castle_move(board_t* board, int kingside) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
-        // if kingside castle found
+        /* if kingside castle found */
         if (kingside && move->flags == KCASTLE) {
             move_t* copy = copy_move(move);
             free_pq(&movelst);
             return copy;
         }
-        // if queenside castle found
+        /* if queenside castle found */
         else if (!kingside && move->flags == QCASTLE) {
             move_t* copy = copy_move(move);
             free_pq(&movelst);
@@ -112,32 +113,32 @@ move_t* find_castle_move(board_t* board, int kingside) {
 move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
                          char rank2, int single_ambigious,
                          int double_ambigious) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // determine index of to square
+    /* determine index of to square */
     idx_t to = str_to_idx(file2, rank2);
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
 
-        // check if move is a knight move
+        /* check if move is a knight move */
         bitboard_t from_mask = 1ULL << move->from;
         if (((from_mask & board->whiteknights) ||
              (from_mask & board->blackknights))) {
-            // check if TO square is the correct TO square
+            /* check if TO square is the correct TO square */
             if (move->to == to) {
-                // if move is unambigious, we can instantly return
+                /* if move is unambigious, we can instantly return */
                 if (!single_ambigious && !double_ambigious) {
                     move_t* copy = copy_move(move);
                     free_pq(&movelst);
                     return copy;
                 }
-                // if move is ambigious by rank and file
+                /* if move is ambigious by rank and file */
                 else if (double_ambigious) {
-                    // check if file AND rank of FROM square is correct
+                    /* check if file AND rank of FROM square is correct */
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
@@ -145,7 +146,7 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
                         return copy;
                     }
                 } else if (single_ambigious) {
-                    // check if file OR rank of FROM square is correct
+                    /* check if file OR rank of FROM square is correct */
                     if ((single_ambigious == AMBIG_BY_FILE &&
                          (move->from % 8 + 'a') == file1) ||
                         (single_ambigious == AMBIG_BY_RANK &&
@@ -166,33 +167,33 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
 move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
                          char rank2, int single_ambigious,
                          int double_ambigious) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // determine index of to square
+    /* determine index of to square */
     idx_t to = str_to_idx(file2, rank2);
 
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
 
-        // check if move is a bishop move
+        /* check if move is a bishop move */
         bitboard_t from_mask = 1ULL << move->from;
         if (((from_mask & board->whitebishops) ||
              (from_mask & board->blackbishops))) {
-            // check if TO square is the correct TO square
+            /* check if TO square is the correct TO square */
             if (move->to == to) {
-                // if move is unambigious, we can instantly return
+                /* if move is unambigious, we can instantly return */
                 if (!single_ambigious && !double_ambigious) {
                     move_t* copy = copy_move(move);
                     free_pq(&movelst);
                     return copy;
                 }
-                // if move is ambigious by rank and file
+                /* if move is ambigious by rank and file */
                 else if (double_ambigious) {
-                    // check if file AND rank of FROM square is correct
+                    /* check if file AND rank of FROM square is correct */
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
@@ -200,7 +201,7 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
                         return copy;
                     }
                 } else if (single_ambigious) {
-                    // check if file OR rank of FROM square is correct
+                    /* check if file OR rank of FROM square is correct */
                     if ((single_ambigious == AMBIG_BY_FILE &&
                          (move->from % 8 + 'a') == file1) ||
                         (single_ambigious == AMBIG_BY_RANK &&
@@ -220,33 +221,33 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
 /* Determines rook move equal to the move described by flags */
 move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
                        char rank2, int single_ambigious, int double_ambigious) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // determine index of to square
+    /* determine index of to square */
     idx_t to = str_to_idx(file2, rank2);
 
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
 
-        // check if move is a rook move
+        /* check if move is a rook move */
         bitboard_t from_mask = 1ULL << move->from;
         if (((from_mask & board->whiterooks) ||
              (from_mask & board->blackrooks))) {
-            // check if TO square is the correct TO square
+            /* check if TO square is the correct TO square */
             if (move->to == to) {
-                // if move is unambigious, we can instantly return
+                /* if move is unambigious, we can instantly return */
                 if (!single_ambigious && !double_ambigious) {
                     move_t* copy = copy_move(move);
                     free_pq(&movelst);
                     return copy;
                 }
-                // if move is ambigious by rank and file
+                /* if move is ambigious by rank and file */
                 else if (double_ambigious) {
-                    // check if file AND rank of FROM square is correct
+                    /* check if file AND rank of FROM square is correct */
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
@@ -254,7 +255,7 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
                         return copy;
                     }
                 } else if (single_ambigious) {
-                    // check if file OR rank of FROM square is correct
+                    /* check if file OR rank of FROM square is correct */
                     if ((single_ambigious == AMBIG_BY_FILE &&
                          (move->from % 8 + 'a') == file1) ||
                         (single_ambigious == AMBIG_BY_RANK &&
@@ -275,33 +276,33 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
 move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
                         char rank2, int single_ambigious,
                         int double_ambigious) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // determine index of to square
+    /* determine index of to square */
     idx_t to = str_to_idx(file2, rank2);
 
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
 
-        // check if move is a queen move
+        /* check if move is a queen move */
         bitboard_t from_mask = 1ULL << move->from;
         if (((from_mask & board->whitequeens) ||
              (from_mask & board->blackqueens))) {
-            // check if TO square is the correct TO square
+            /* check if TO square is the correct TO square */
             if (move->to == to) {
-                // if move is unambigious, we can instantly return
+                /* if move is unambigious, we can instantly return */
                 if (!single_ambigious && !double_ambigious) {
                     move_t* copy = copy_move(move);
                     free_pq(&movelst);
                     return copy;
                 }
-                // if move is ambigious by rank and file
+                /* if move is ambigious by rank and file */
                 else if (double_ambigious) {
-                    // check if file AND rank of FROM square is correct
+                    /* check if file AND rank of FROM square is correct */
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
@@ -309,7 +310,7 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
                         return copy;
                     }
                 } else if (single_ambigious) {
-                    // check if file OR rank of FROM square is correct
+                    /* check if file OR rank of FROM square is correct */
                     if ((single_ambigious == AMBIG_BY_FILE &&
                          (move->from % 8 + 'a') == file1) ||
                         (single_ambigious == AMBIG_BY_RANK &&
@@ -329,33 +330,33 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
 /* Determines king move equal to the move described by flags */
 move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
                        char rank2, int single_ambigious, int double_ambigious) {
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // determine index of to square
+    /* determine index of to square */
     idx_t to = str_to_idx(file2, rank2);
 
-    // iterate through all moves
+    /* iterate through all moves */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t* move = (&movelst)->array[i];
 
-        // check if move is a king move
+        /* check if move is a king move */
         bitboard_t from_mask = 1ULL << move->from;
         if (((from_mask & board->whiteking) ||
              (from_mask & board->blackking))) {
-            // check if TO square is the correct TO square
+            /* check if TO square is the correct TO square */
             if (move->to == to) {
-                // if move is unambigious, we can instantly return
+                /* if move is unambigious, we can instantly return */
                 if (!single_ambigious && !double_ambigious) {
                     move_t* copy = copy_move(move);
                     free_pq(&movelst);
                     return copy;
                 }
-                // if move is ambigious by rank and file
+                /* if move is ambigious by rank and file */
                 else if (double_ambigious) {
-                    // check if file AND rank of FROM square is correct
+                    /* check if file AND rank of FROM square is correct */
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
@@ -363,7 +364,7 @@ move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
                         return copy;
                     }
                 } else if (single_ambigious) {
-                    // check if file OR rank of FROM square is correct
+                    /* check if file OR rank of FROM square is correct */
                     if ((single_ambigious == AMBIG_BY_FILE &&
                          (move->from % 8 + 'a') == file1) ||
                         (single_ambigious == AMBIG_BY_RANK &&
@@ -385,7 +386,7 @@ move_t* str_to_move(board_t* board, char* token) {
     move_t* move = NULL;
     int idx = 0;
 
-    // if pawn move
+    /* if pawn move */
     if (is_file(token[idx])) {
         char file1 = token[idx];
         char file2;
@@ -394,32 +395,32 @@ move_t* str_to_move(board_t* board, char* token) {
         char promopiece = '-';
 
         idx++;
-        // if capture
+        /* if capture */
         if (token[idx] == 'x') {
             idx++;
             file2 = token[idx];
             idx++;
             rank2 = token[idx];
         }
-        // if non-capture
+        /* if non-capture */
         else {
             file2 = file1;
             rank2 = token[idx];
         }
         idx++;
-        // if promotion
+        /* if promotion */
         if (token[idx] == '=') {
             promotion = 1;
             idx++;
             promopiece = token[idx];
         }
 
-        // FIND FITTING MOVE
+        /* FIND FITTING MOVE */
         move =
             find_pawn_move(board, file1, file2, rank2, promotion, promopiece);
 
     }
-    // if piece move
+    /* if piece move */
     else if (is_piece(token[idx])) {
         char file1;
         char file2;
@@ -471,7 +472,7 @@ move_t* str_to_move(board_t* board, char* token) {
             }
         }
 
-        // FIND FITTING MOVE
+        /* FIND FITTING MOVE */
         if (piece == 'N') {
             move = find_knight_move(board, file1, rank1, file2, rank2,
                                     single_ambigious, double_ambigious);
@@ -489,21 +490,21 @@ move_t* str_to_move(board_t* board, char* token) {
                                   single_ambigious, double_ambigious);
         }
     }
-    // if castle move
+    /* if castle move */
     else if (token[0] == 'O') {
-        // assume kingside castle
+        /* assume kingside castle */
         int kingside = 1;
 
-        // if queenside castle though, change variable
+        /* if queenside castle though, change variable */
         if (token[3] == '-') {
             kingside = 0;
         }
 
-        // FIND FITTING MOVE
+        /* FIND FITTING MOVE */
         move = find_castle_move(board, kingside);
     }
 
-    // check if we found a move
+    /* check if we found a move */
     if (!move) {
         fprintf(stderr, "THIS SHOULD NOT HAPPEN! MOVE %s SHOULD BE POSSIBLE!\n",
                 token);

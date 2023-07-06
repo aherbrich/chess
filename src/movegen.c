@@ -50,11 +50,11 @@ int is_in_check_after_move(board_t *board) {
         bitboard_t attackers;
         bitboard_t blockers;
 
-        // check by knights
+        /* check by knights */
         attackers = KNIGHT_ATTACK[king_sq] & board->blackknights;
         if (attackers) return TRUE;
 
-        // check by bishops, rooks, and queens
+        /* check by bishops, rooks, and queens */
         blockers = rook_mask(king_sq) & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
@@ -70,13 +70,13 @@ int is_in_check_after_move(board_t *board) {
                     board->blackqueens;
         if (attackers) return TRUE;
 
-        // check by pawns
+        /* check by pawns */
         attackers = (((board->whiteking & CLEAR_FILE[A]) << 7) |
                      ((board->whiteking & CLEAR_FILE[H]) << 9)) &
                     board->blackpawns;
         if (attackers) return TRUE;
 
-        // 'check by king'
+        /* 'check by king' */
         attackers = KING_ATTACK[king_sq] & board->blackking;
         if (attackers) return TRUE;
 
@@ -88,11 +88,11 @@ int is_in_check_after_move(board_t *board) {
         bitboard_t attackers;
         bitboard_t blockers;
 
-        // check by knights
+        /* check by knights */
         attackers = KNIGHT_ATTACK[king_sq] & board->whiteknights;
         if (attackers) return TRUE;
 
-        // check by bishops, rooks, and queens
+        /* check by bishops, rooks, and queens */
         blockers = rook_mask(king_sq) & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
@@ -108,13 +108,13 @@ int is_in_check_after_move(board_t *board) {
                     board->whitequeens;
         if (attackers) return TRUE;
 
-        // check by pawns
+        /* check by pawns */
         attackers = (((board->blackking & CLEAR_FILE[H]) >> 7) |
                      ((board->blackking & CLEAR_FILE[A]) >> 9)) &
                     board->whitepawns;
         if (attackers) return TRUE;
 
-        // 'check by king'
+        /* 'check by king' */
         attackers = KING_ATTACK[king_sq] & board->whiteking;
         if (attackers) return TRUE;
 
@@ -132,11 +132,11 @@ int is_in_check(board_t *board) {
         bitboard_t attackers;
         bitboard_t blockers;
 
-        // check by knights
+        /* check by knights */
         attackers = KNIGHT_ATTACK[king_sq] & board->blackknights;
         if (attackers) return TRUE;
 
-        // check by bishops, rooks, and queens
+        /* check by bishops, rooks, and queens */
         blockers = rook_mask(king_sq) & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
@@ -152,13 +152,13 @@ int is_in_check(board_t *board) {
                     board->blackqueens;
         if (attackers) return TRUE;
 
-        //  check by pawns
+        /* check by pawns */
         attackers = (((board->whiteking & CLEAR_FILE[A]) << 7) |
                      ((board->whiteking & CLEAR_FILE[H]) << 9)) &
                     board->blackpawns;
         if (attackers) return TRUE;
 
-        // 'check by king'
+        /* 'check by king' */
         attackers = KING_ATTACK[king_sq] & board->blackking;
         if (attackers) return TRUE;
 
@@ -170,11 +170,11 @@ int is_in_check(board_t *board) {
         bitboard_t attackers;
         bitboard_t blockers;
 
-        // check by knights
+        /* check by knights */
         attackers = KNIGHT_ATTACK[king_sq] & board->whiteknights;
         if (attackers) return TRUE;
 
-        // check by bishops, rooks, and queens
+        /* check by bishops, rooks, and queens */
         blockers = rook_mask(king_sq) & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
@@ -190,13 +190,13 @@ int is_in_check(board_t *board) {
                     board->whitequeens;
         if (attackers) return TRUE;
 
-        // check by pawns
+        /* check by pawns */
         attackers = (((board->blackking & CLEAR_FILE[H]) >> 7) |
                      ((board->blackking & CLEAR_FILE[A]) >> 9)) &
                     board->whitepawns;
         if (attackers) return TRUE;
 
-        // 'check by king'
+        /* 'check by king' */
         attackers = KING_ATTACK[king_sq] & board->whiteking;
         if (attackers) return TRUE;
 
@@ -208,8 +208,8 @@ int is_in_check(board_t *board) {
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_knight_attacks(int sq, board_t *board) {
     bitboard_t attacks = KNIGHT_ATTACK[sq];
-    // exclude attack squares that would attack an own piece (since we cant move
-    // there)
+    /* exclude attack squares that would attack an own piece (since we cant move
+     * there) */
     attacks = (board->player == WHITE) ? (attacks & ~board->white)
                                        : (attacks & ~board->black);
     return attacks;
@@ -219,8 +219,8 @@ inline bitboard_t get_knight_attacks(int sq, board_t *board) {
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_king_attacks(int sq, board_t *board) {
     bitboard_t attacks = KING_ATTACK[sq];
-    // exclude attack squares that would attack an own piece (since we cant move
-    // there)
+    /* exclude attack squares that would attack an own piece (since we cant move
+     * there) */
     attacks = (board->player == WHITE) ? (attacks & ~board->white)
                                        : (attacks & ~board->black);
     return attacks;
@@ -230,19 +230,19 @@ inline bitboard_t get_king_attacks(int sq, board_t *board) {
  * enpassant moves) */
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_white_pawn_attacks(bitboard_t pawn, board_t *board) {
-    // one and two steps forward
+    /* one and two steps forward */
     bitboard_t pawn_one_step = (pawn << 8) & ~board->all;
     bitboard_t pawn_two_steps =
         ((pawn_one_step & MASK_RANK[RANK3]) << 8) & ~board->all;
     bitboard_t pawn_valid_moves = pawn_one_step | pawn_two_steps;
 
-    // attacks to right and left
+    /* attacks to right and left */
     bitboard_t pawn_left_attack = (pawn & CLEAR_FILE[A]) << 7;
     bitboard_t pawn_right_attack = (pawn & CLEAR_FILE[H]) << 9;
     bitboard_t pawn_attacks = pawn_left_attack | pawn_right_attack;
     bitboard_t pawn_valid_attacks = pawn_attacks & board->black;
 
-    // all attacks
+    /* all attacks */
     bitboard_t pawn_all_valid = pawn_valid_moves | pawn_valid_attacks;
 
     return pawn_all_valid;
@@ -252,19 +252,19 @@ inline bitboard_t get_white_pawn_attacks(bitboard_t pawn, board_t *board) {
  * enpassant moves) */
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_black_pawn_attacks(bitboard_t pawn, board_t *board) {
-    // one and two steps forward
+    /* one and two steps forward */
     bitboard_t pawn_one_step = (pawn >> 8) & ~board->all;
     bitboard_t pawn_two_steps =
         ((pawn_one_step & MASK_RANK[RANK6]) >> 8) & ~board->all;
     bitboard_t pawn_valid_moves = pawn_one_step | pawn_two_steps;
 
-    // attacks to right and left
+    /* attacks to right and left */
     bitboard_t pawn_left_attack = (pawn & CLEAR_FILE[A]) >> 9;
     bitboard_t pawn_right_attack = (pawn & CLEAR_FILE[H]) >> 7;
     bitboard_t pawn_attacks = pawn_left_attack | pawn_right_attack;
     bitboard_t pawn_valid_attacks = pawn_attacks & board->white;
 
-    // all attacks
+    /* all attacks */
     bitboard_t pawn_all_valid = pawn_valid_moves | pawn_valid_attacks;
 
     return pawn_all_valid;
@@ -273,13 +273,13 @@ inline bitboard_t get_black_pawn_attacks(bitboard_t pawn, board_t *board) {
 /* Returns a bitboard of attack squares for BISHOP at sqaure sq */
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_bishop_attacks(int sq, board_t *board) {
-    // use magic bitboards to get attack squares
+    /* use magic bitboards to get attack squares */
     bitboard_t blockers = bishop_mask(sq) & board->all;
     int j = transform(blockers, BISHOP_MAGIC[sq], BISHOP_BITS[sq]);
     bitboard_t attacks = BISHOP_ATTACK[sq][j];
 
-    // exclude attack squares that would attack an own piece (since we cant move
-    // there)
+    /* exclude attack squares that would attack an own piece (since we cant move
+     * there) */
     attacks = (board->player == WHITE) ? (attacks & ~board->white)
                                        : (attacks & ~board->black);
 
@@ -289,13 +289,13 @@ inline bitboard_t get_bishop_attacks(int sq, board_t *board) {
 /* Returns a bitboard of attack squares for ROOK at sqaure sq */
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_rook_attacks(int sq, board_t *board) {
-    // use magic bitboards to get attack squares
+    /* use magic bitboards to get attack squares */
     bitboard_t blockers = rook_mask(sq) & board->all;
     int j = transform(blockers, ROOK_MAGIC[sq], ROOK_BITS[sq]);
     bitboard_t attacks = ROOK_ATTACK[sq][j];
 
-    // exclude attack squares that would attack an own piece (since we cant move
-    // there)
+    /* exclude attack squares that would attack an own piece (since we cant move
+     * there) */
     attacks = (board->player == WHITE) ? (attacks & ~board->white)
                                        : (attacks & ~board->black);
 
@@ -305,13 +305,13 @@ inline bitboard_t get_rook_attacks(int sq, board_t *board) {
 /* Generates and adds all pseudolegal KNIGHT moves to movelst */
 void generate_knight_moves(bitboard_t knights, board_t *board,
                            maxpq_t *movelst) {
-    // for every knight
+    /* for every knight */
     while (knights) {
-        // get attacks squares
+        /* get attacks squares */
         idx_t from = pop_1st_bit(&knights);
         bitboard_t attacks = get_knight_attacks(from, board);
 
-        // and add moves to movelist
+        /* and add moves to movelist */
         while (attacks) {
             idx_t to = pop_1st_bit(&attacks);
             move_t *move;
@@ -329,11 +329,11 @@ void generate_knight_moves(bitboard_t knights, board_t *board,
 
 /* Generates and adds all pseudolegal KING moves to movelst */
 void generate_king_moves(bitboard_t kings, board_t *board, maxpq_t *movelst) {
-    // get attacks squares
+    /* get attacks squares */
     idx_t from = pop_1st_bit(&kings);
     bitboard_t attacks = get_king_attacks(from, board);
 
-    // and add moves to movelist
+    /* and add moves to movelist */
     while (attacks) {
         idx_t to = pop_1st_bit(&attacks);
         move_t *move;
@@ -351,20 +351,20 @@ void generate_king_moves(bitboard_t kings, board_t *board, maxpq_t *movelst) {
 /* Generates and adds all pseudolegal BISHOP moves to movelst */
 void generate_bishop_moves(bitboard_t bishops, board_t *board, maxpq_t *movelst,
                            flag_t actually_queen) {
-    // for every bishop (queen if flag is set)
+    /* for every bishop (queen if flag is set) */
     while (bishops) {
-        // get attacks squares
+        /* get attacks squares */
         idx_t from = pop_1st_bit(&bishops);
         bitboard_t attacks = get_bishop_attacks(from, board);
 
-        // and add moves to movelist
+        /* and add moves to movelist */
         while (attacks) {
             idx_t to = pop_1st_bit(&attacks);
             move_t *move;
             int captured_piece;
             if ((captured_piece = is_capture(to, board))) {
-                // if bishop move generation was called from queen move
-                // generation use different move value (due to MVV LVA)
+                /* if bishop move generation was called from queen move
+                 * generation use different move value (due to MVV LVA) */
                 if (actually_queen) {
                     move = generate_move(from, to, CAPTURE,
                                          captured_piece * 100 + (KING - QUEEN));
@@ -384,20 +384,20 @@ void generate_bishop_moves(bitboard_t bishops, board_t *board, maxpq_t *movelst,
 /* Generates and adds all pseudolegal ROOK moves to movelst */
 void generate_rook_moves(bitboard_t rooks, board_t *board, maxpq_t *movelst,
                          flag_t actually_queen) {
-    // for every rook (queen if set)
+    /* for every rook (queen if set) */
     while (rooks) {
-        // get attacks squares
+        /* get attacks squares */
         idx_t from = pop_1st_bit(&rooks);
         bitboard_t attacks = get_rook_attacks(from, board);
 
-        // and add moves to movelist
+        /* and add moves to movelist */
         while (attacks) {
             idx_t to = pop_1st_bit(&attacks);
             move_t *move;
             int captured_piece;
             if ((captured_piece = is_capture(to, board))) {
-                // if rook move generation was called from queen move generation
-                // use different move value (due to MVV LVA)
+                /* if rook move generation was called from queen move generation
+                 * use different move value (due to MVV LVA) */
                 if (actually_queen) {
                     move = generate_move(from, to, CAPTURE,
                                          captured_piece * 100 + (KING - QUEEN));
@@ -415,7 +415,7 @@ void generate_rook_moves(bitboard_t rooks, board_t *board, maxpq_t *movelst,
 
 /* Generates and adds all pseudolegal QUEEN moves to movelst */
 void generate_queen_moves(bitboard_t queens, board_t *board, maxpq_t *movelst) {
-    // Queen moves are given by union of bishop and queen moves
+    /* Queen moves are given by union of bishop and queen moves */
     generate_bishop_moves(queens, board, movelst, TRUE);
     generate_rook_moves(queens, board, movelst, TRUE);
 }
@@ -423,17 +423,17 @@ void generate_queen_moves(bitboard_t queens, board_t *board, maxpq_t *movelst) {
 /* Generates and adds all pseudolegal WHITE PAWN moves to movelst */
 void generate_white_pawn_moves(board_t *board, maxpq_t *movelst) {
     bitboard_t pawns = board->whitepawns;
-    // for every white pawn
+    /* for every white pawn */
     while (pawns) {
-        // get attack squares
+        /* get attack squares */
         idx_t from = pop_1st_bit(&pawns);
         bitboard_t piece = (1ULL << from);
         bitboard_t attacks = get_white_pawn_attacks(piece, board);
 
-        // and add moves to movelist
+        /* and add moves to movelist */
         while (attacks) {
             idx_t to = pop_1st_bit(&attacks);
-            // if move  is a promotion move
+            /* if move  is a promotion move */
             if (to >= 56 && to <= 63) {
                 if (is_capture(to, board)) {
                     insert(movelst, generate_move(from, to, KCPROM, 2500));
@@ -447,11 +447,11 @@ void generate_white_pawn_moves(board_t *board, maxpq_t *movelst) {
                     insert(movelst, generate_move(from, to, QPROM, 2490));
                 }
             }
-            // if move is a double pawn push
+            /* if move is a double pawn push */
             else if ((to - 16) == from) {
                 insert(movelst, generate_move(from, to, DOUBLEP, 0));
             }
-            // if move is a quiet or capture move
+            /* if move is a quiet or capture move */
             else {
                 int captured_piece;
                 if ((captured_piece = is_capture(to, board))) {
@@ -468,18 +468,18 @@ void generate_white_pawn_moves(board_t *board, maxpq_t *movelst) {
 
 /* Generates and adds all pseudolegal BLACK PAWN moves to movelst */
 void generate_black_pawn_moves(board_t *board, maxpq_t *movelst) {
-    // for every black pawn
+    /* for every black pawn */
     bitboard_t pawns = board->blackpawns;
     while (pawns) {
-        // get attack squares
+        /* get attack squares */
         idx_t from = pop_1st_bit(&pawns);
         bitboard_t piece = (1ULL << from);
         bitboard_t attacks = get_black_pawn_attacks(piece, board);
 
-        // and add moves to movelist
+        /* and add moves to movelist */
         while (attacks) {
             idx_t to = pop_1st_bit(&attacks);
-            // if move  is a promotion move
+            /* if move  is a promotion move */
             if (to >= 0 && to <= 7) {
                 if (is_capture(to, board)) {
                     insert(movelst, generate_move(from, to, KCPROM, 2500));
@@ -493,11 +493,11 @@ void generate_black_pawn_moves(board_t *board, maxpq_t *movelst) {
                     insert(movelst, generate_move(from, to, QPROM, 2490));
                 }
             }
-            // if move is a double pawn push
+            /* if move is a double pawn push */
             else if ((to + 16) == from) {
                 insert(movelst, generate_move(from, to, DOUBLEP, 0));
             }
-            // if move is a quiet or capture move
+            /* if move is a quiet or capture move */
             else {
                 int captured_piece;
                 if ((captured_piece = is_capture(to, board))) {
@@ -515,18 +515,18 @@ void generate_black_pawn_moves(board_t *board, maxpq_t *movelst) {
 /* Generates and adds all pseudolegal WHITE PAWN ENPASSANT moves to movelst */
 void generate_white_enpassant_moves(board_t *board, maxpq_t *movelst) {
     bitboard_t pawns = board->whitepawns;
-    // check if enpassant capture is possible
+    /* check if enpassant capture is possible */
     if (board->ep_possible) {
         bitboard_t ep = (1ULL << board->ep_field);
-        // for every white pawn
+        /* for every white pawn */
         while (pawns) {
             idx_t from = pop_1st_bit(&pawns);
             bitboard_t piece = (1ULL << from);
-            // check if pawn can capture on enpassant square
+            /* check if pawn can capture on enpassant square */
             bitboard_t attacks = (((piece & CLEAR_FILE[A]) << 7) & ep) |
                                  (((piece & CLEAR_FILE[H]) << 9) & ep);
 
-            // and add move to movelist
+            /* and add move to movelist */
             while (attacks) {
                 idx_t to = pop_1st_bit(&attacks);
                 insert(movelst, generate_move(from, to, EPCAPTURE,
@@ -541,18 +541,18 @@ void generate_white_enpassant_moves(board_t *board, maxpq_t *movelst) {
 /* Generates and adds all pseudolegal BLACK PAWN ENPASSANT moves to movelst */
 void generate_black_enpassant_moves(board_t *board, maxpq_t *movelst) {
     bitboard_t pawns = board->blackpawns;
-    // check if enpassant capture is possible
+    /* check if enpassant capture is possible */
     if (board->ep_possible) {
         bitboard_t ep = (1ULL << board->ep_field);
-        // for every black pawn
+        /* for every black pawn */
         while (pawns) {
             idx_t from = pop_1st_bit(&pawns);
             bitboard_t piece = (1ULL << from);
-            // check if pawn can capture on enpassant square
+            /* check if pawn can capture on enpassant square */
             bitboard_t attacks = (((piece & CLEAR_FILE[H]) >> 7) & ep) |
                                  (((piece & CLEAR_FILE[A]) >> 9) & ep);
 
-            // and add move to movelist
+            /* and add move to movelist */
             while (attacks) {
                 idx_t to = pop_1st_bit(&attacks);
                 insert(movelst, generate_move(from, to, EPCAPTURE,
@@ -566,55 +566,55 @@ void generate_black_enpassant_moves(board_t *board, maxpq_t *movelst) {
 
 /* Generates and adds all pseudolegal WHITE CASTLE moves to movelst */
 void generate_white_castle_moves(board_t *board, maxpq_t *movelst) {
-    // exit early if in check (since we cant castle)
+    /* exit early if in check (since we cant castle) */
     if (is_in_check(board)) return;
 
-    // if we could castle king/shortside
+    /* if we could castle king/shortside */
     if ((board->all & ((1ULL << 5) | (1ULL << 6))) == 0 &&
         (board->castle_rights & SHORTSIDEW)) {
-        // if not passing through check
+        /* if not passing through check */
         board->whiteking = ((1ULL << 5));
         int through_check = is_in_check(board);
         board->whiteking = ((1ULL << 4));
-        // add move to movelist
+        /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(4, 6, KCASTLE, 0));
     }
-    // if we could castle queen/longside
+    /* if we could castle queen/longside */
     if ((board->all & ((1ULL << 1) | (1ULL << 2) | (1ULL << 3))) == 0 &&
         (board->castle_rights & LONGSIDEW)) {
-        // if not passing through check
+        /* if not passing through check */
         board->whiteking = ((1ULL << 3));
         int through_check = is_in_check(board);
         board->whiteking = ((1ULL << 4));
-        // add move to movelist
+        /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(4, 2, QCASTLE, 0));
     }
 }
 
 /* Generates and adds all pseudolegal WHITE CASTLE moves to movelst */
 void generate_black_castle_moves(board_t *board, maxpq_t *movelst) {
-    // exit early if in check (since we cant castle)
+    /* exit early if in check (since we cant castle) */
     if (is_in_check(board)) return;
 
-    // if we could castle king/shortside
+    /* if we could castle king/shortside */
     if ((board->all & ((1ULL << 61) | (1ULL << 62))) == 0 &&
         (board->castle_rights & SHORTSIDEB)) {
-        // if not passing through check
+        /* if not passing through check */
         board->blackking = ((1ULL << 61));
         int through_check = is_in_check(board);
         board->blackking = ((1ULL << 60));
-        // add move to movelist
+        /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(60, 62, KCASTLE, 0));
         ;
     }
-    // if we could castle queen/longside
+    /* if we could castle queen/longside */
     if ((board->all & ((1ULL << 57) | (1ULL << 58) | (1ULL << 59))) == 0 &&
         (board->castle_rights & LONGSIDEB)) {
-        // if not passing through check
+        /* if not passing through check */
         board->blackking = ((1ULL << 59));
         int through_check = is_in_check(board);
         board->blackking = ((1ULL << 60));
-        // add move to movelist
+        /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(60, 58, QCASTLE, 0));
         ;
     }
@@ -650,7 +650,7 @@ void filter_illegal_moves(board_t *board, maxpq_t *movelst) {
     move_t *move;
 
     while ((move = pop_max(movelst))) {
-        // We play a move and filter out those that turn out to be illegal
+        /* We play a move and filter out those that turn out to be illegal */
         if (!do_move(board, move)) {
             undo_move(board);
             free_move(move);

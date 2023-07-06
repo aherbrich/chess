@@ -31,7 +31,7 @@ int is_same_board(board_t* board1, board_t* board2) {
 }
 /* Clears the board */
 void clear_board(board_t* board) {
-    // clear the playing field
+    /* clear the playing field */
     board->whitepawns = 0;
     board->whiteknights = 0;
     board->whitebishops = 0;
@@ -50,7 +50,7 @@ void clear_board(board_t* board) {
     board->white = 0;
     board->all = 0;
 
-    // reset player, en passant field/possible, castle rights and ply number
+    /* reset player, en passant field/possible, castle rights and ply number */
     board->player = WHITE;
     board->ep_field = -1;
     board->ep_possible = FALSE;
@@ -64,7 +64,7 @@ void clear_board(board_t* board) {
 board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
 
-    // copy the playing field
+    /* copy the playing field */
     copy->whitepawns = board->whitepawns;
     copy->whiteknights = board->whiteknights;
     copy->whitebishops = board->whitebishops;
@@ -83,7 +83,7 @@ board_t* copy_board(board_t* board) {
     copy->white = board->white;
     copy->all = board->all;
 
-    // copy player, en passant field/possible, castle rights and ply number
+    /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;
     copy->ep_field = board->ep_field;
     copy->ep_possible = board->ep_possible;
@@ -96,8 +96,9 @@ board_t* copy_board(board_t* board) {
 }
 
 /* Recovers old board state from a different (the old) board */
+/* WARNING: Frees the old board */
 void recover_board(board_t* board, board_t* old_board) {
-    // copy the playing field
+    /* copy the playing field */
     board->whitepawns = old_board->whitepawns;
     board->whiteknights = old_board->whiteknights;
     board->whitebishops = old_board->whitebishops;
@@ -116,7 +117,7 @@ void recover_board(board_t* board, board_t* old_board) {
     board->white = old_board->white;
     board->all = old_board->all;
 
-    // copy player, en passant field/possible, castle rights and ply number
+    /* copy player, en passant field/possible, castle rights and ply number */
     board->player = old_board->player;
     board->ep_field = old_board->ep_field;
     board->ep_possible = old_board->ep_possible;
@@ -158,10 +159,10 @@ void load_by_FEN(board_t* board, char* FEN) {
     char* ptr = buffer;
     uint64_t shift = 0;
 
-    // clear board before setting it from a FEN
+    /* clear board before setting it from a FEN */
     clear_board(board);
 
-    // set bitboards
+    /* set bitboards */
     while ((row != 0) || (col != 8)) {
         switch (*ptr) {
             case 'p':
@@ -246,7 +247,7 @@ void load_by_FEN(board_t* board, char* FEN) {
 
     ptr++;
 
-    // set player at turn
+    /* set player at turn */
     switch (*ptr) {
         case 'w':
             board->player = WHITE;
@@ -258,7 +259,7 @@ void load_by_FEN(board_t* board, char* FEN) {
 
     ptr += 2;
 
-    // set castle rights
+    /* set castle rights */
     board->castle_rights = 0;
     while (*ptr != ' ') {
         switch (*ptr) {
@@ -285,7 +286,7 @@ void load_by_FEN(board_t* board, char* FEN) {
     }
     ptr++;
 
-    // set enpassant field (if possible)
+    /* set enpassant field (if possible) */
     if (*ptr == '-') {
         board->ep_field = -1;
         board->ep_possible = FALSE;
@@ -322,12 +323,12 @@ void load_by_FEN(board_t* board, char* FEN) {
         ptr++;
     }
 
-    // set number of consecutive non-captures and non-pawn moves
+    /* set number of consecutive non-captures and non-pawn moves */
     char* tmp;
     char* fifty_count = strtok_r(ptr, " ", &tmp);
     board->fifty_move_counter = (uint16_t)atoi(fifty_count);
 
-    // set full move counter
+    /* set full move counter */
     char* full_move = strtok_r(NULL, " ", &tmp);
     board->full_move_counter = (uint8_t)atoi(full_move);
 

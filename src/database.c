@@ -22,18 +22,18 @@ void update_database_entry(board_t *board, int winner) {
     uint64_t key = hash % DATABASESIZE;
 
     databaseentry_t *new = NULL;
-    // if there is no entry at key, just create a new one ...
+    /* if there is no entry at key, just create a new one ... */
     if (!database[key]) {
         database[key] = (databaseentry_t *)malloc(sizeof(databaseentry_t));
         new = database[key];
     } else {
-        // otherwise, check if there already is an entry in the list with the
-        // same hash we ignore the insanley unlikely event that two different
-        // boards have the same hash
+        /* otherwise, check if there already is an entry in the list with the
+         * same hash we ignore the insanley unlikely event that two different
+         * boards have the same hash */
         databaseentry_t *cur = database[key];
         databaseentry_t *prev = cur;
         while (cur) {
-            // if there exists an entry for the board, update winrate
+            /* if there exists an entry for the board, update winrate */
             if (cur->hash == hash) {
                 cur->seen++;
                 if (winner == WINWHITE) cur->white_won++;
@@ -44,13 +44,13 @@ void update_database_entry(board_t *board, int winner) {
             prev = cur;
             cur = cur->next;
         }
-        // if there exists no entry for that board
-        // we CREATE a new entry
+        /* if there exists no entry for that board
+        we CREATE a new entry */
         prev->next = (databaseentry_t *)malloc(sizeof(databaseentry_t));
         new = prev->next;
     }
 
-    // finally, fill the new entry with the data
+    /* finally, fill the new entry with the data */
     new->hash = hash;
     new->board = copy_board(board);
     new->next = NULL;
@@ -69,9 +69,9 @@ void probe_database_entry(board_t *board) {
     uint64_t key = hash % DATABASESIZE;
 
     databaseentry_t *cur = database[key];
-    // search the list for the entry with the same hash
+    /* search the list for the entry with the same hash */
     while (cur) {
-        // if there is one, print eval
+        /* if there is one, print eval */
         if (cur->hash == hash) {
             fprintf(stderr, "\n#:\t%d\nW:\t%f\nB:\t%f\nD:\t%f\n", cur->seen,
                     (float)cur->white_won / cur->seen,

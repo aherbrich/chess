@@ -20,25 +20,25 @@ int pv_node_hit = 0;
 /*  Playes all games in given chess game list and
     stores all chess positions and corresponding winrates */
 void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {
-    // play games
+    /* play games */
     for (int i = 0; i < nr_of_games; i++) {
         if ((i % 1000) == 0) {
             fprintf(stderr, ".");
         }
         chessgame_t* chessgame = chessgames[i];
-        // (0) intialize board
+        /* (0) intialize board */
         board_t* board = init_board();
         load_by_FEN(board,
                     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        // (1) read move
+        /* (1) read move */
         char* token = strtok(chessgame->movelist, " ");
 
         do {
-            // (2) parse move
+            /* (2) parse move */
             move_t* move = str_to_move(board, token);
 
-            // (3) play move
+            /* (3) play move */
             if (move) {
                 do_move(board, move);
                 update_database_entry(board, chessgame->winner);
@@ -49,13 +49,13 @@ void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {
                         Color_END);
                 exit(-1);
             }
-            // (4) repeat until all moves played
+            /* (4) repeat until all moves played */
         } while ((token = strtok(NULL, " ")));
 
         free_board(board);
     }
 
-    // free chess games
+    /* free chess games */
     for (int i = 0; i < nr_of_games; i++) {
         free(chessgames[i]->movelist);
     }
@@ -63,18 +63,18 @@ void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {
 }
 
 int main() {
-    // parse chess game file
+    /* parse chess game file */
     int nr_of_games = count_number_of_games();
     chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
 
-    // initialize chess engine
+    /* initialize chess engine */
     initialize_chess_engine_only_necessary();
     initialize_zobrist_table();
     initialize_database();
 
     load_games_into_database(chessgames, nr_of_games);
 
-    // number of different boards = 1739062
+    /* number of different boards = 1739062 */
 
     int m = 23040;
     int n = m * 10;

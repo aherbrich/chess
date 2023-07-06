@@ -59,22 +59,23 @@ idx_t gui_str_to_idx(char *ptr, int len) {
     return (idx);
 }
 
+/* Converts a string to a move */
 move_t *gui_str_to_move(board_t *board, char *move_str) {
-    // extracts the from and to position of the move
+    /* extracts the from and to position of the move */
     idx_t from = gui_str_to_idx(move_str, 2);
     idx_t to = gui_str_to_idx(&(move_str[2]), 2);
 
-    // generate all possible moves in the current position
+    /* generate all possible moves in the current position */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    // find the move in the movelist that is described by the move string
+    /* find the move in the movelist that is described by the move string */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t *move = (&movelst)->array[i];
-        // if the move has matching from and to squares
+        /* if the move has matching from and to squares */
         if (move->from == from && move->to == to) {
-            // if promotion move
+            /* if promotion move */
             if (move->flags & 0b1000 && strlen(move_str) == 5) {
                 if ((move_str[4] == 'q' || move_str[4] == 'Q') &&
                     (move->flags == QPROM || move->flags == QCPROM)) {
@@ -98,7 +99,7 @@ move_t *gui_str_to_move(board_t *board, char *move_str) {
                     return copy;
                 }
             }
-            // if not a promotion move
+            /* if not a promotion move */
             else if (!(move->flags & 0b1000) && strlen(move_str) == 4) {
                 move_t *copy = copy_move(move);
                 free_pq(&movelst);
@@ -112,11 +113,12 @@ move_t *gui_str_to_move(board_t *board, char *move_str) {
     return NULL;
 }
 
+/* Parses the go command */
 searchdata_t *parse_go_command(char *token, board_t *board) {
     const char delim[] = " \n\t";
     searchdata_t *data = init_search_data(board);
 
-    // if not specified run infinite
+    /* if no time is specified, just run infinite */
     data->run_infinite = 1;
     data->max_depth = 100;
 
@@ -180,7 +182,7 @@ searchdata_t *parse_go_command(char *token, board_t *board) {
                 data->max_depth = atoi(token);
             }
         } else if (!strcmp(token, "infinite")) {
-            // nothing to do
+            /* nothing to do */
             break;
         } else {
             fprintf(stderr, "%sincorrect command: %s%s\n", Color_PURPLE, token,
@@ -188,24 +190,26 @@ searchdata_t *parse_go_command(char *token, board_t *board) {
         }
     }
 
+    /* Block this thread and wait for initiation of the new search until running
+     * search has finished */
     while (game_thread) {
         fprintf(stderr, "%sSearch underway ... sleeping for 1 second%s\n",
                 Color_PURPLE, Color_END);
         sleep(1);
     }
 
-    clear_hashtable();
-
     return data;
 }
 
+/* Parses position command */
 void parse_position_command(char *token, board_t *board) {
     const char delim[] = " \n\t";
     char fen[MAX_LEN];
 
     token = strtok(NULL, delim);
 
-    // handle the parsing of position given either by fen or startpos
+    /* handle the parsing of position given either by fen or startpos */
+    /* handle startpos */
     if (!strcmp(token, "startpos")) {
         load_by_FEN(board,
                     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -217,7 +221,9 @@ void parse_position_command(char *token, board_t *board) {
                 Color_PURPLE, token, Color_END);
             return;
         }
-    } else if (!strcmp(token, "fen")) {
+    }
+    /* handle fen string */
+    else if (!strcmp(token, "fen")) {
         int fen_idx = 0;
         token = strtok(NULL, delim);
         while (token && strcmp(token, "moves")) {
@@ -234,7 +240,7 @@ void parse_position_command(char *token, board_t *board) {
                 Color_PURPLE, token, Color_END);
     }
 
-    // finally, read all the moves, if there are any
+    /* finally, read all the moves, if there are any */
     if (token) {
         while ((token = strtok(NULL, delim))) {
             move_t *move = gui_str_to_move(board, token);
@@ -252,12 +258,16 @@ void parse_position_command(char *token, board_t *board) {
     return;
 }
 
+/* Starts the search intitiated by user/gui */
 void *start_search(void *args) {
     searchdata_t *data = (searchdata_t *)args;
-    // start iterative search
+
+    /* clear hash table form last search*/
+    clear_hashtable();
+    /* start iterative search */
     search(data);
 
-    // signal communication thread that search is finished
+    /* signal communication thread that search is finished */
     game_thread = 0;
 
     free_search_data(data);
@@ -266,15 +276,14 @@ void *start_search(void *args) {
 
 /* runs the main loop of the the UCI communication interface */
 void *main_interface_loop(void *args) {
-    // initialize options
     board_t *board = (board_t *)args;
     searchdata_t *searchdata = NULL;
 
-    // remove buffering from stdin and stdout
+    /* remove buffering from stdin and stdout */
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
-    // print chess engine info
+    /* print chess engine info */
     printf("id name Engine v1.0\nid author Alexander Herbrich\n\n");
     printf("uciok\n");
 
@@ -283,53 +292,53 @@ void *main_interface_loop(void *args) {
         char *token;
         const char delim[] = " \n\t";
 
-        // read a whole line from input
+        /* read a whole line from input */
         fgets(buffer, MAX_LEN - 1, stdin);
 
-        // get the first token
+        /* get the first token */
         token = strtok(buffer, delim);
 
-        // if no token read, continue reading
+        /* if no token read, continue reading */
         if (!token) continue;
 
-        // else if token read
-        // start parsing
+        /* else if token read
+        START parsing */
 
-        // UCI command
+        /* UCI command */
         if (!strcmp(token, "uci")) {
             printf("id name HerPiece 1.0\nid author Alexander Herbrich\n\n");
             printf("uciok\n");
         }
-        // ISREADY command
+        /* ISREADY command */
         else if (!strcmp(token, "isready")) {
             printf("readyok\n");
         }
-        // GO command
+        /* GO command */
         else if (!strcmp(token, "go")) {
             searchdata = parse_go_command(token, board);
             pthread_create(&game_thread, NULL, start_search,
                            (void *)searchdata);
         }
-        // NEWGAME command
+        /* NEWGAME command */
         else if (!strcmp(token, "ucinewgame")) {
             clear_board(board);
             clear_hashtable();
         }
-        // POSITION command
+        /* POSITION command */
         else if (!strcmp(token, "position")) {
             parse_position_command(token, board);
         }
-        // PRINT
+        /* PRINT */
         else if (!strcmp(token, "bugprint")) {
             print_board(board);
         }
-        // STOP command
+        /* STOP command */
         else if (!strcmp(token, "stop")) {
             if (searchdata) {
                 searchdata->stop = 1;
             }
         }
-        // QUIT command
+        /* QUIT command */
         else if (!strcmp(token, "quit")) {
             break;
         }
@@ -338,18 +347,17 @@ void *main_interface_loop(void *args) {
     return (NULL);
 }
 
-////////////////////////////////////////////////////////////////
-// MAIN ENTRY POINT
+/* MAIN ENTRY POINT */
 int main() {
-    // Initialize all necessary structures
+    /* Initialize all necessary structures */
     board_t *board = init_board();
     initialize_chess_engine_only_necessary();
     initialize_zobrist_table();
     initialize_hashtable();
 
-    // start chess engine
+    /* start chess engine */
     main_interface_loop(board);
 
-    // free the board
+    /* free the board */
     free_board(board);
 }

@@ -2,6 +2,7 @@
 #include "../include/eval.h"
 #include "../include/linalg.h"
 
+/* Number of pieces */
 int nr_of_pieces(board_t *board) {
     int counter = 0;
     bitboard_t all = board->all;
@@ -14,6 +15,7 @@ int nr_of_pieces(board_t *board) {
     return counter;
 }
 
+/* Positional value of pawns */
 double pawn_positional(board_t *board, player_t color) {
     int positional = 0;
     bitboard_t pawns;
@@ -33,6 +35,7 @@ double pawn_positional(board_t *board, player_t color) {
     return (double)positional;
 }
 
+/* Positional value of knights */
 double knight_positional(board_t *board, player_t color) {
     int positional = 0;
     bitboard_t knights;
@@ -52,6 +55,7 @@ double knight_positional(board_t *board, player_t color) {
     return (double)positional;
 }
 
+/* Positional value of bishops */
 double bishop_positional(board_t *board, player_t color) {
     int positional = 0;
     bitboard_t bishops;
@@ -71,6 +75,7 @@ double bishop_positional(board_t *board, player_t color) {
     return (double)positional;
 }
 
+/* Positional value of rooks */
 double rook_positional(board_t *board, player_t color) {
     int positional = 0;
     bitboard_t rooks;
@@ -90,6 +95,7 @@ double rook_positional(board_t *board, player_t color) {
     return (double)positional;
 }
 
+/* Positional value of queens */
 double queen_positional(board_t *board, player_t color) {
     int positional = 0;
     bitboard_t queens;
@@ -109,6 +115,7 @@ double queen_positional(board_t *board, player_t color) {
     return (double)positional;
 }
 
+/* Positional value of kings */
 double king_positional(board_t *board, player_t color) {
     int positional = 0;
     bitboard_t king;
@@ -128,6 +135,7 @@ double king_positional(board_t *board, player_t color) {
     return (double)positional;
 }
 
+/* Positional value of all pieces */
 double all_positional(board_t *board, player_t color) {
     double positional = 0.0;
     positional += pawn_positional(board, color);
@@ -139,16 +147,14 @@ double all_positional(board_t *board, player_t color) {
     return positional;
 }
 
+/* Positional value difference of all pieces */
 double positional_difference(board_t *board) {
     double positional_diff =
         all_positional(board, WHITE) - all_positional(board, BLACK);
-
-    // if (board->player == BLACK) {
-    //     return -positional_diff;
-    // }
     return positional_diff / 300.0;
 }
 
+/* Material value of pawns */
 double pawn_material(board_t *board, player_t color) {
     int material = 0;
     bitboard_t pawns;
@@ -165,6 +171,7 @@ double pawn_material(board_t *board, player_t color) {
     return (double)material;
 }
 
+/* Material value of knights */
 double knight_material(board_t *board, player_t color) {
     int material = 0;
     bitboard_t knights;
@@ -181,6 +188,7 @@ double knight_material(board_t *board, player_t color) {
     return (double)material;
 }
 
+/* Material value of bishops */
 double bishop_material(board_t *board, player_t color) {
     int material = 0;
     bitboard_t bishops;
@@ -197,6 +205,7 @@ double bishop_material(board_t *board, player_t color) {
     return (double)material;
 }
 
+/* Material value of rooks */
 double rook_material(board_t *board, player_t color) {
     int material = 0;
     bitboard_t rooks;
@@ -213,6 +222,7 @@ double rook_material(board_t *board, player_t color) {
     return (double)material;
 }
 
+/* Material value of queens */
 double queen_material(board_t *board, player_t color) {
     int material = 0;
     bitboard_t queens;
@@ -229,6 +239,7 @@ double queen_material(board_t *board, player_t color) {
     return (double)material;
 }
 
+/* Material value of kings */
 double king_material(board_t *board, player_t color) {
     int material = 0;
     bitboard_t king;
@@ -245,6 +256,7 @@ double king_material(board_t *board, player_t color) {
     return (double)material;
 }
 
+/* Material value of all pieces */
 double all_material(board_t *board, player_t color) {
     double material = 0.0;
     material += pawn_material(board, color);
@@ -256,78 +268,98 @@ double all_material(board_t *board, player_t color) {
     return material;
 }
 
+/* Material value difference of all pieces */
 double material_difference(board_t *board) {
     double material_diff =
         all_material(board, WHITE) - all_material(board, BLACK);
-
-    // if (board->player == BLACK) {
-    //     return -material_diff;
-    // }
     return material_diff / 800.0;
 }
 
+/* White king at idx k */
 double white_king_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->whiteking) return 1.0;
     return 0.0;
 }
+
+/* White queen at idx k */
 double white_queen_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->whitequeens) return 1.0;
     return 0.0;
 }
+
+/* White rook at idx k */
 double white_rook_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->whiterooks) return 1.0;
     return 0.0;
 }
+
+/* White bishop at idx k */
 double white_bishop_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->whitebishops) return 1.0;
     return 0.0;
 }
+
+/* White knight at idx k */
 double white_knight_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->whiteknights) return 1.0;
     return 0.0;
 }
+
+/* White pawn at idx k */
 double white_pawn_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->whitepawns) return 1.0;
     return 0.0;
 }
 
+/* Black king at idx k */
 double black_king_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->blackking) return -1.0;
     return 0.0;
 }
+
+/* Black queen at idx k */
 double black_queen_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->blackqueens) return -1.0;
     return 0.0;
 }
+
+/* Black rook at idx k */
 double black_rook_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->blackrooks) return -1.0;
     return 0.0;
 }
+
+/* Black bishop at idx k */
 double black_bishop_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->blackbishops) return -1.0;
     return 0.0;
 }
+
+/* Black knight at idx k */
 double black_knight_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->blackknights) return -1.0;
     return 0.0;
 }
+
+/* Black pawn at idx k */
 double black_pawn_loc(board_t *board, idx_t idx) {
     bitboard_t mask = 1ULL << idx;
     if (mask & board->blackpawns) return -1.0;
     return 0.0;
 }
 
+/* Number of legal moves */
 double mobility(board_t *board) {
     maxpq_t movelst;
     initialize_maxpq(&movelst);
@@ -339,6 +371,7 @@ double mobility(board_t *board) {
     return nr_moves / 50.0;
 }
 
+/* Calculates feature matrix */
 void calculate_feautures(board_t *board, matrix_t *X, int idx) {
     int nr_pieces = nr_of_pieces(board);
 

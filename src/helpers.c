@@ -46,41 +46,39 @@ int pop_1st_bit(bitboard_t *bitboard) {
     return idx;
 }
 
-/*
- * Initializes hashtables with attack board for each square
- * WARNING: initialize_helper_boards should always be called BEFORE
- */
+/* Initializes hashtables with attack board for each square */
+/* WARNING: initialize_helper_boards should always be called BEFORE */
 void initialize_attack_boards() {
-    // precaution call (see WARNING above)
+    /* precaution call (see WARNING above) */
     initialize_helper_boards();
 
-    // bishop attacks
+    /* bishop attacks */
     for (int sq = 0; sq < 64; sq++) {
         bitboard_t mask = bishop_mask(sq);
 
-        // pre-generate attack boards for each square and blocking mask with
-        // magic bitboards
+        /* pre-generate attack boards for each square and blocking mask with */
+        /* magic bitboards */
         for (int i = 0; i < (1 << BISHOP_BITS[sq]); i++) {
             bitboard_t blockermap = index_to_bitboard(i, BISHOP_BITS[sq], mask);
             int j = transform(blockermap, BISHOP_MAGIC[sq], BISHOP_BITS[sq]);
             BISHOP_ATTACK[sq][j] = bishop_attacks(sq, blockermap);
         }
     }
-    // rook attacks
+    /* rook attacks */
     for (int sq = 0; sq < 64; sq++) {
         bitboard_t mask = rook_mask(sq);
 
-        // pre-generate attack boards for each square and blocking mask with
-        // magic bitboards
+        /* pre-generate attack boards for each square and blocking mask with
+         * magic bitboards */
         for (int i = 0; i < (1 << ROOK_BITS[sq]); i++) {
             bitboard_t blockermap = index_to_bitboard(i, ROOK_BITS[sq], mask);
             int j = transform(blockermap, ROOK_MAGIC[sq], ROOK_BITS[sq]);
             ROOK_ATTACK[sq][j] = rook_attacks(sq, blockermap);
         }
     }
-    // knight attacks
+    /* knight attacks */
     for (int sq = 0; sq < 64; sq++) {
-        // pre-generate attack boards for each square
+        /* pre-generate attack boards for each square */
         bitboard_t knight = (1ULL << sq);
         bitboard_t attacks =
             ((knight & CLEAR_FILE[A] & CLEAR_FILE[B]) << 6 |
@@ -91,9 +89,9 @@ void initialize_attack_boards() {
             ((knight & CLEAR_FILE[H]) << 17 | (knight & CLEAR_FILE[H]) >> 15);
         KNIGHT_ATTACK[sq] = attacks;
     }
-    // king attacks
+    /* king attacks */
     for (int sq = 0; sq < 64; sq++) {
-        // pre-generate attack boards for each square
+        /* pre-generate attack boards for each square */
         bitboard_t king = (1ULL << sq);
         bitboard_t attacks =
             ((king & CLEAR_FILE[A]) >> 1 | (king & CLEAR_FILE[A]) >> 9 |
@@ -105,22 +103,20 @@ void initialize_attack_boards() {
     }
 }
 
-/*
- * Initializes hashtables with masks for ranks and files
- * WARNING: Should always be called BEFORE initialize_attack_boards
- */
+/* Initializes hashtables with masks for ranks and files */
+/* WARNING: Should always be called BEFORE initialize_attack_boards */
 void initialize_helper_boards() {
-    // mask rank
+    /* mask rank */
     for (int i = 0; i < 8; i++) {
         MASK_RANK[i] = 255ULL << (i * 8);
     }
 
-    // clear rank
+    /* clear rank */
     for (int i = 0; i < 8; i++) {
         CLEAR_RANK[i] = ~MASK_RANK[i];
     }
 
-    // mask file
+    /* mask file */
     for (int i = 0; i < 8; i++) {
         bitboard_t mask = 0;
         for (int j = i; j < 64; j = j + 8) {
@@ -129,12 +125,12 @@ void initialize_helper_boards() {
         MASK_FILE[i] = mask;
     }
 
-    // clear file
+    /* clear file */
     for (int i = 0; i < 8; i++) {
         CLEAR_FILE[i] = ~MASK_FILE[i];
     }
 
-    // universal board
+    /* universal board */
     UNIBOARD = 18446744073709551615ULL;
 }
 

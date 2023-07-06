@@ -47,7 +47,7 @@ int KING_POSITION_VALUE[64] = {
     -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
     0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20};
 
-/* Sums up the material and positional values of each piece */
+/* Very simple evaluation by material and positional value */
 int simple_eval(board_t *board, player_t color) {
     int material = 0;
     bitboard_t pawns, knights, bishops, rooks, queens, king;
@@ -119,29 +119,31 @@ int simple_eval(board_t *board, player_t color) {
     return material;
 }
 
-/* Evaluates game over situations */
+/* Evaluates a board (when game is over) */
+/* WARNING: Use only if game is over i.e. draw/check mate*/
 int eval_end_of_game(board_t *board, int depth) {
-    // check for stalemate
+    /* check for stalemate */
     int in_check = is_in_check(board);
 
-    // if check (mate) delivered
+    /* if check (mate) delivered */
     if (in_check) {
         return -16000 - depth;
     }
-    // if stalemate
+    /* if stalemate */
     else {
         return 0;
     }
 }
 
-/* Evaluates a board (used when game is not over) */
+/* Evaluates a board (when game is not over) */
+/* WARNING: Use only if game is not over i.e. no draw/no checkmate*/
 int eval_board(board_t *board) {
     int white_eval = simple_eval(board, WHITE);
     int black_eval = simple_eval(board, BLACK);
 
     int eval = white_eval - black_eval;
 
-    // due to negamax we want both players to maximize
+    /* due to negamax we want both players to maximize */
     if (board->player == BLACK) {
         eval *= -1;
     }
