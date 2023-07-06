@@ -13,9 +13,11 @@
 int last_check = 0;
 int stop_immediately = FALSE;
 
-int delta_in_ms(searchdata_t* searchdata){
+int delta_in_ms(searchdata_t *searchdata) {
     gettimeofday(&(searchdata->end), 0);
-    return (int) ((searchdata->end.tv_sec - searchdata->start.tv_sec) * 1000.0f + (searchdata->end.tv_usec - searchdata->start.tv_usec) / 1000.0f);
+    return (int)((searchdata->end.tv_sec - searchdata->start.tv_sec) * 1000.0f +
+                 (searchdata->end.tv_usec - searchdata->start.tv_usec) /
+                     1000.0f);
 }
 
 /* Creates score string for info output (for GUI) */
@@ -119,7 +121,7 @@ int search_has_to_be_stopped(searchdata_t *search_data) {
     // or, if search is not in infinite mode and the time has run out, stop
     // search immediately
     if (!search_data->run_infinite) {
-        if(delta_in_ms(search_data) >= search_data->time_available){
+        if (delta_in_ms(search_data) >= search_data->time_available) {
             return 1;
         }
     }
@@ -225,7 +227,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
         // quiet_search(searchdata->board, alpha, beta, searchdata)
-        // return 
+        // return
         return eval_board(searchdata->board);
     }
 
@@ -274,11 +276,11 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
-    // move ordering technique is to try PV-Moves first. A PV-Move is part // 
+    // move ordering technique is to try PV-Moves first. A PV-Move is part //
     // of the principal variation and therefor a best move found in the    //
     // previous iteration of an iterative deepening framework.             //
     // =================================================================== //
-    if(entry_found){
+    if (entry_found) {
         for (int i = 1; i <= movelst.nr_elem; i++) {
             if (is_same_move(movelst.array[i], pv_move)) {
                 movelst.array[i]->value = 10000;
@@ -287,7 +289,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
             }
         }
     }
-    
+
     free_move(pv_move);
 
     int legal_moves = 0;
@@ -365,7 +367,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
 void search(searchdata_t *searchdata) {
     // Reset the history hash table from previous searches
-    // Of course we keep the hashes of already played 
+    // Of course we keep the hashes of already played
     // positions untouched
     for (int i = searchdata->board->ply_no; i < 2048; i++) {
         HISTORY_HASHES[i] = 0;
@@ -429,8 +431,7 @@ void search(searchdata_t *searchdata) {
         searchdata->best_eval = eval;
 
         int nodes = searchdata->nodes_searched;
-        int nps = (int)(nodes /
-                        delta_in_ms(searchdata));
+        int nps = (int)(nodes / delta_in_ms(searchdata));
         int time = delta_in_ms(searchdata);
         int hashfull = hashtable_full_permill();
         char *score = get_mate_or_cp_value(eval, depth);
@@ -445,13 +446,13 @@ void search(searchdata_t *searchdata) {
     }
 
     int nodes = searchdata->nodes_searched;
-    int nps = (int)(nodes /
-                    delta_in_ms(searchdata));
+    int nps = (int)(nodes / delta_in_ms(searchdata));
     int time = delta_in_ms(searchdata);
     int hashfull = hashtable_full_permill();
-    char* move_str = get_LAN_move(searchdata->best_move, searchdata->board->player);
-    printf("info nodes %d time %d nps %d hasfull %d\nbestmove %s\n",
-        nodes, time, nps, hashfull, move_str);
+    char *move_str =
+        get_LAN_move(searchdata->best_move, searchdata->board->player);
+    printf("info nodes %d time %d nps %d hasfull %d\nbestmove %s\n", nodes,
+           time, nps, hashfull, move_str);
     printf("\n");
     free(move_str);
 }

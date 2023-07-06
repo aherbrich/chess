@@ -1,10 +1,10 @@
 #ifndef __LINALG_H__
 #define __LINALG_H__
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-typedef struct _matrix_t{
+typedef struct _matrix_t {
     double* value;
     int64_t row;
     int64_t col;

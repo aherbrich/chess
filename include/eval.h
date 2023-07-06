@@ -23,7 +23,6 @@ extern int QUEEN_POSITION_VALUE[64];
 /* king position values */
 extern int KING_POSITION_VALUE[64];
 
-
 /////////////////////////////////////////////////////////////
 //  EVALUATION
 int eval_end_of_game(board_t *board, int depth);

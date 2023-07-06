@@ -1,13 +1,13 @@
 #ifndef __CHESS_H__
 #define __CHESS_H__
 
+#include <assert.h>
 #include <limits.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
-#include <time.h>
+#include <stdlib.h>
 #include <sys/time.h>
+#include <time.h>
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"
@@ -126,49 +126,52 @@ typedef struct _node_t {
     struct _node_t* prev;
 } node_t;
 
-typedef struct _list_t{
+typedef struct _list_t {
     int len;
-    node_t *first;
-    node_t *last;
+    node_t* first;
+    node_t* last;
 } list_t;
 
-typedef struct _maxpq_t{
+typedef struct _maxpq_t {
     int size;
     int nr_elem;
     move_t* array[PRIORITY_QUEUE_SIZE];
 } maxpq_t;
 typedef struct _searchdata_t {
-    board_t *board;                 // pointer to the actual board 
-    int max_depth;                  // maximum search depth in plies
-    int max_seldepth;               // maximum search depth with quiescence search 
-    int max_nodes;                  // maximum nodes allowed to search 
-    int max_time;                   // maximum time allowed 
-    int wtime;                      // time white has left on clock in ms
-    int btime;                      // time black has left on clock in ms
-    int winc;                       // white time increment in ms   
-    int binc;                       // black time increment in ms 
-    int ponder;                     // tells engine to start search at ponder move 
-    int run_infinite;               // tells the engine to run aslong as stop != 1
-    int stop;                       // tells the engine to stop search when stop == 1
-    int time_available;             // tells the engine how much time it has to search in ms
+    board_t* board;      // pointer to the actual board
+    int max_depth;       // maximum search depth in plies
+    int max_seldepth;    // maximum search depth with quiescence search
+    int max_nodes;       // maximum nodes allowed to search
+    int max_time;        // maximum time allowed
+    int wtime;           // time white has left on clock in ms
+    int btime;           // time black has left on clock in ms
+    int winc;            // white time increment in ms
+    int binc;            // black time increment in ms
+    int ponder;          // tells engine to start search at ponder move
+    int run_infinite;    // tells the engine to run aslong as stop != 1
+    int stop;            // tells the engine to stop search when stop == 1
+    int time_available;  // tells the engine how much time it has to search in
+                         // ms
 
     struct timeval start;
     struct timeval end;
-    move_t *best_move;              // best move (so far) 
-    int best_eval;                  // evaluation of board after best move made
-    int nodes_searched;             // amount of nodes searched in iterative search
-    int hash_used;                  // amount of hash entries that lead to not needing to search the node again 
-    int hash_bounds_adjusted;       // amount of hash entries that lead to a adjustment of alpha/beta bounds
-    int pv_node_hit;                // amount of pv moves that turned out to be the best move
-}  searchdata_t;
+    move_t* best_move;   // best move (so far)
+    int best_eval;       // evaluation of board after best move made
+    int nodes_searched;  // amount of nodes searched in iterative search
+    int hash_used;  // amount of hash entries that lead to not needing to search
+                    // the node again
+    int hash_bounds_adjusted;  // amount of hash entries that lead to a
+                               // adjustment of alpha/beta bounds
+    int pv_node_hit;  // amount of pv moves that turned out to be the best move
+} searchdata_t;
 
-typedef struct _chessgame_t{
+typedef struct _chessgame_t {
     char* movelist;
     int winner;
 } chessgame_t;
 
 /////////////////////////////////////////////////////////////
-//  GLOBALS 
+//  GLOBALS
 
 //  SEARCH
 extern int nodes_searched;
@@ -189,9 +192,8 @@ extern bitboard_t UNIBOARD;
 
 extern bitboard_t ROOK_ATTACK[64][4096];
 extern bitboard_t BISHOP_ATTACK[64][4096];
-extern bitboard_t KNIGHT_ATTACK[64]; 
+extern bitboard_t KNIGHT_ATTACK[64];
 extern bitboard_t KING_ATTACK[64];
-
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
@@ -199,12 +201,11 @@ uint64_t random_uint64();
 uint64_t random_uint64_fewbits();
 idx_t pos_to_idx(int row, int col);
 int find_1st_bit(bitboard_t bb);
-int pop_1st_bit(bitboard_t *bitboard);
+int pop_1st_bit(bitboard_t* bitboard);
 void initialize_attack_boards();
 void initialize_helper_boards();
 void initialize_oldstate_array();
 void initialize_chess_engine_only_necessary();
-
 
 //////////////////////////////////////////////////////////////
 //  PRIORITY QUEUE FUNCTIONS
@@ -227,43 +228,43 @@ void heap_sort(maxpq_t* pq);
 board_t* init_board();
 board_t* copy_board(board_t* board);
 void recover_board(board_t* board, board_t* old_board);
-void clear_board(board_t *board);
+void clear_board(board_t* board);
 void free_board(board_t* board);
 void load_by_FEN(board_t* board, char* FEN);
-void update_white_black_all_boards(board_t *board);
-int is_same_board(board_t *board1, board_t* board2);
+void update_white_black_all_boards(board_t* board);
+int is_same_board(board_t* board1, board_t* board2);
 
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION
-int is_capture(bitboard_t to, board_t *board);
-int is_in_check(board_t *board);
-int is_in_check_after_move(board_t *board);
-void generate_pseudo_moves(board_t *board, maxpq_t* movelst);
+int is_capture(bitboard_t to, board_t* board);
+int is_in_check(board_t* board);
+int is_in_check_after_move(board_t* board);
+void generate_pseudo_moves(board_t* board, maxpq_t* movelst);
 void generate_moves(board_t* board, maxpq_t* movelst);
 
 /////////////////////////////////////////////////////////////
 //  MOVE & EXECUTION
-move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
-move_t *copy_move(move_t *move);
-void free_move(move_t *move);
+move_t* generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
+move_t* copy_move(move_t* move);
+void free_move(move_t* move);
 int do_move(board_t* board, move_t* move);
 void undo_move(board_t* board);
 int is_same_move(move_t* move1, move_t* move2);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH DATA
-searchdata_t* init_search_data(board_t *board);
-void free_search_data(searchdata_t *data);
+searchdata_t* init_search_data(board_t* board);
+void free_search_data(searchdata_t* data);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH
-int alpha_beta_search(board_t *board, int depth, int alpha, int beta, searchdata_t* searchs_data);
+int alpha_beta_search(board_t* board, int depth, int alpha, int beta,
+                      searchdata_t* searchs_data);
 void search(searchdata_t* search_data);
 
 ///////////////////////////////////////////////////////////////
-//  PERFT 
+//  PERFT
 uint64_t perft(board_t* board, int depth);
 int perft_divide(board_t* board, int depth);
-
 
 #endif

@@ -10,11 +10,10 @@ uint64_t perft(board_t* board, int depth) {
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
-    
+
     move_t* move;
 
     uint64_t num_positions = 0;
-
 
     while ((move = pop_max(&movelst)) != NULL) {
         do_move(board, move);
@@ -26,7 +25,7 @@ uint64_t perft(board_t* board, int depth) {
 }
 
 /* Runs perft divide test for a given board and depth */
-int perft_divide(board_t* board, int depth){
+int perft_divide(board_t* board, int depth) {
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
@@ -35,7 +34,7 @@ int perft_divide(board_t* board, int depth){
     uint64_t all_nodes_count = 0;
     while ((move = pop_max(&movelst))) {
         do_move(board, move);
-        uint64_t num_positions = perft(board, depth-1);
+        uint64_t num_positions = perft(board, depth - 1);
         undo_move(board);
 
         print_LAN_move(move, board->player);

@@ -1,7 +1,6 @@
 #ifndef __PRETTYPRINT_H__
 #define __PRETTYPRINT_H__
 
-
 #include "../include/chess.h"
 
 //////////////////////////////////////////////////////////////

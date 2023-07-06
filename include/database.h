@@ -3,12 +3,12 @@
 
 #include "../include/chess.h"
 
-#define DATABASESIZE  18815231  
+#define DATABASESIZE 18815231
 
 typedef struct _databaseentry_t {
     uint64_t hash;
     board_t* board;
-    struct _databaseentry_t *next;
+    struct _databaseentry_t* next;
 
     int seen;
     int white_won;
@@ -16,12 +16,12 @@ typedef struct _databaseentry_t {
     int draw;
 } databaseentry_t;
 
-extern databaseentry_t** database;  
+extern databaseentry_t** database;
 
 //////////////////////////////////////////////////////////////
 //  FUNCTIONS
 void initialize_database();
-void update_database_entry(board_t *board, int winner);
+void update_database_entry(board_t* board, int winner);
 void probe_database_entry(board_t* board);
 
 #endif

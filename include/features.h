@@ -6,6 +6,6 @@
 
 //////////////////////////////////////////////////////////////
 //  FUNCTIONS
-void calculate_feautures(board_t *board, matrix_t* X, int idx);
+void calculate_feautures(board_t* board, matrix_t* X, int idx);
 
 #endif

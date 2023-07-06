@@ -1,79 +1,65 @@
-#include "../include/chess.h"
 #include "../include/eval.h"
 
+#include "../include/chess.h"
+
 /* pawn position values */
-int PAWN_POSITION_VALUE[64] = {0, 0, 0, 0, 0, 0, 0, 0,
-                   50, 50, 50, 50, 50, 50, 50, 50,
-                   10, 10, 20, 30, 30, 20, 10, 10,
-                   5, 5, 10, 25, 25, 10, 5, 5,
-                   0, 0, 0, 20, 20, 0, 0, 0,
-                   5, -5, -10, 0, 0, -10, -5, 5,
-                   5, 10, 10, -20, -20, 10, 10, 5,
-                   0, 0, 0, 0, 0, 0, 0, 0};
+int PAWN_POSITION_VALUE[64] = {
+    0,  0,  0,  0,   0,   0,  0,  0,  50, 50, 50,  50, 50, 50,  50, 50,
+    10, 10, 20, 30,  30,  20, 10, 10, 5,  5,  10,  25, 25, 10,  5,  5,
+    0,  0,  0,  20,  20,  0,  0,  0,  5,  -5, -10, 0,  0,  -10, -5, 5,
+    5,  10, 10, -20, -20, 10, 10, 5,  0,  0,  0,   0,  0,  0,   0,  0};
 
 /* knight position values */
-int KNIGHT_POSITION_VALUE[64] = {-50, -40, -30, -30, -30, -30, -40, -50,
-                     -40, -20, 0, 0, 0, 0, -20, -40,
-                     -30, 0, 10, 15, 15, 10, 0, -30,
-                     -30, 5, 15, 20, 20, 15, 5, -30,
-                     -30, 0, 15, 20, 20, 15, 0, -30,
-                     -30, 5, 10, 15, 15, 10, 5, -30,
-                     -40, -20, 0, 5, 5, 0, -20, -40,
-                     -50, -40, -30, -30, -30, -30, -40, -50};
+int KNIGHT_POSITION_VALUE[64] = {
+    -50, -40, -30, -30, -30, -30, -40, -50, -40, -20, 0,   0,   0,
+    0,   -20, -40, -30, 0,   10,  15,  15,  10,  0,   -30, -30, 5,
+    15,  20,  20,  15,  5,   -30, -30, 0,   15,  20,  20,  15,  0,
+    -30, -30, 5,   10,  15,  15,  10,  5,   -30, -40, -20, 0,   5,
+    5,   0,   -20, -40, -50, -40, -30, -30, -30, -30, -40, -50};
 
 /* bishop position values */
-int BISHOP_POSITION_VALUE[64] = {-20, -10, -10, -10, -10, -10, -10, -20,
-                     -10, 0, 0, 0, 0, 0, 0, -10,
-                     -10, 0, 5, 10, 10, 5, 0, -10,
-                     -10, 5, 5, 10, 10, 5, 5, -10,
-                     -10, 0, 10, 10, 10, 10, 0, -10,
-                     -10, 10, 10, 10, 10, 10, 10, -10,
-                     -10, 5, 0, 0, 0, 0, 5, -10,
-                     -20, -10, -10, -10, -10, -10, -10, -20};
+int BISHOP_POSITION_VALUE[64] = {
+    -20, -10, -10, -10, -10, -10, -10, -20, -10, 0,   0,   0,   0,
+    0,   0,   -10, -10, 0,   5,   10,  10,  5,   0,   -10, -10, 5,
+    5,   10,  10,  5,   5,   -10, -10, 0,   10,  10,  10,  10,  0,
+    -10, -10, 10,  10,  10,  10,  10,  10,  -10, -10, 5,   0,   0,
+    0,   0,   5,   -10, -20, -10, -10, -10, -10, -10, -10, -20};
 
 /* rook position values */
-int ROOK_POSITION_VALUE[64] = {0, 0, 0, 0, 0, 0, 0, 0,
-                   5, 10, 10, 10, 10, 10, 10, 5,
-                   -5, 0, 0, 0, 0, 0, 0, -5,
-                   -5, 0, 0, 0, 0, 0, 0, -5,
-                   -5, 0, 0, 0, 0, 0, 0, -5,
-                   -5, 0, 0, 0, 0, 0, 0, -5,
-                   -5, 0, 0, 0, 0, 0, 0, -5,
-                   0, 0, 0, 5, 5, 0, 0, 0};
+int ROOK_POSITION_VALUE[64] = {0,  0,  0, 0,  0, 0,  0,  0, 5,  10, 10, 10, 10,
+                               10, 10, 5, -5, 0, 0,  0,  0, 0,  0,  -5, -5, 0,
+                               0,  0,  0, 0,  0, -5, -5, 0, 0,  0,  0,  0,  0,
+                               -5, -5, 0, 0,  0, 0,  0,  0, -5, -5, 0,  0,  0,
+                               0,  0,  0, -5, 0, 0,  0,  5, 5,  0,  0,  0};
 
 /* queen position values */
-int QUEEN_POSITION_VALUE[64] = {0, 0, 0, 0, 0, 0, 0, 0,
-                    5, 10, 10, 10, 10, 10, 10, 5,
-                    -5, 0, 0, 0, 0, 0, 0, -5,
-                    -5, 0, 0, 0, 0, 0, 0, -5,
-                    -5, 0, 0, 0, 0, 0, 0, -5,
-                    -5, 0, 0, 0, 0, 0, 0, -5,
-                    -5, 0, 0, 0, 0, 0, 0, -5,
-                    0, 0, 0, 5, 5, 0, 0, 0};
+int QUEEN_POSITION_VALUE[64] = {0,  0,  0, 0,  0, 0,  0,  0, 5,  10, 10, 10, 10,
+                                10, 10, 5, -5, 0, 0,  0,  0, 0,  0,  -5, -5, 0,
+                                0,  0,  0, 0,  0, -5, -5, 0, 0,  0,  0,  0,  0,
+                                -5, -5, 0, 0,  0, 0,  0,  0, -5, -5, 0,  0,  0,
+                                0,  0,  0, -5, 0, 0,  0,  5, 5,  0,  0,  0};
 
 /* king position values */
-int KING_POSITION_VALUE[64] = {-30, -40, -40, -50, -50, -40, -40, -30,
-                   -30, -40, -40, -50, -50, -40, -40, -30,
-                   -30, -40, -40, -50, -50, -40, -40, -30,
-                   -30, -40, -40, -50, -50, -40, -40, -30,
-                   -20, -30, -30, -40, -40, -30, -30, -20,
-                   -10, -20, -20, -20, -20, -20, -20, -10,
-                   20, 20, 0, 0, 0, 0, 20, 20,
-                   20, 30, 10, 0, 0, 10, 30, 20};
+int KING_POSITION_VALUE[64] = {
+    -30, -40, -40, -50, -50, -40, -40, -30, -30, -40, -40, -50, -50,
+    -40, -40, -30, -30, -40, -40, -50, -50, -40, -40, -30, -30, -40,
+    -40, -50, -50, -40, -40, -30, -20, -30, -30, -40, -40, -30, -30,
+    -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
+    0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20};
 
 /* Sums up the material and positional values of each piece */
 int simple_eval(board_t *board, player_t color) {
     int material = 0;
     bitboard_t pawns, knights, bishops, rooks, queens, king;
 
-    if(color == WHITE){
+    if (color == WHITE) {
         pawns = board->whitepawns;
         knights = board->whiteknights;
         bishops = board->whitebishops;
         rooks = board->whiterooks;
         queens = board->whitequeens;
         king = board->whiteking;
-    } else{
+    } else {
         pawns = board->blackpawns;
         knights = board->blackknights;
         bishops = board->blackbishops;
@@ -82,50 +68,50 @@ int simple_eval(board_t *board, player_t color) {
         king = board->blackking;
     }
 
-    while(pawns){
+    while (pawns) {
         material += PAWNVALUE;
-        if(color == WHITE) {
-            material += PAWN_POSITION_VALUE[63-pop_1st_bit(&pawns)];
-        } else{
+        if (color == WHITE) {
+            material += PAWN_POSITION_VALUE[63 - pop_1st_bit(&pawns)];
+        } else {
             material += PAWN_POSITION_VALUE[pop_1st_bit(&pawns)];
         }
     }
-    while(knights){
+    while (knights) {
         material += KNIGHTVALUE;
-        if(color == WHITE) {
-            material += KNIGHT_POSITION_VALUE[63-pop_1st_bit(&knights)];
-        } else{
+        if (color == WHITE) {
+            material += KNIGHT_POSITION_VALUE[63 - pop_1st_bit(&knights)];
+        } else {
             material += KNIGHT_POSITION_VALUE[pop_1st_bit(&knights)];
         }
     }
-    while(bishops){
+    while (bishops) {
         material += BISHOPVALUE;
-        if(color == WHITE) {
-            material += BISHOP_POSITION_VALUE[63-pop_1st_bit(&bishops)];
-        } else{
+        if (color == WHITE) {
+            material += BISHOP_POSITION_VALUE[63 - pop_1st_bit(&bishops)];
+        } else {
             material += BISHOP_POSITION_VALUE[pop_1st_bit(&bishops)];
         }
     }
-    while(rooks){
+    while (rooks) {
         material += ROOKVALUE;
-        if(color == WHITE) {
-            material += ROOK_POSITION_VALUE[63-pop_1st_bit(&rooks)];
-        } else{
+        if (color == WHITE) {
+            material += ROOK_POSITION_VALUE[63 - pop_1st_bit(&rooks)];
+        } else {
             material += ROOK_POSITION_VALUE[pop_1st_bit(&rooks)];
         }
     }
-    while(queens){
+    while (queens) {
         material += QUEENVALUE;
-        if(color == WHITE) {
-            material += QUEEN_POSITION_VALUE[63-pop_1st_bit(&queens)];
-        } else{
+        if (color == WHITE) {
+            material += QUEEN_POSITION_VALUE[63 - pop_1st_bit(&queens)];
+        } else {
             material += QUEEN_POSITION_VALUE[pop_1st_bit(&queens)];
         }
     }
-    while(king){
-        if(color == WHITE) {
-            material += KING_POSITION_VALUE[63-pop_1st_bit(&king)];
-        } else{
+    while (king) {
+        if (color == WHITE) {
+            material += KING_POSITION_VALUE[63 - pop_1st_bit(&king)];
+        } else {
             material += KING_POSITION_VALUE[pop_1st_bit(&king)];
         }
     }
@@ -138,11 +124,11 @@ int eval_end_of_game(board_t *board, int depth) {
     // check for stalemate
     int in_check = is_in_check(board);
 
-    // if check (mate) delivered 
+    // if check (mate) delivered
     if (in_check) {
         return -16000 - depth;
     }
-    // if stalemate 
+    // if stalemate
     else {
         return 0;
     }
