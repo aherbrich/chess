@@ -2,6 +2,7 @@
 
 #include "../include/chess.h"
 #include "../include/prettyprint.h"
+#include "sys/time.h"
 
 typedef struct _perfttest_t {
     char fen[256];
@@ -11,6 +12,7 @@ typedef struct _perfttest_t {
 
 board_t *OLDSTATE[2048];
 uint64_t HISTORY_HASHES[2048];
+uint64_t GLOBAL_COUNT = 0; 
 
 /* pads whitespaces left and right of given string until given width reached */
 char *pad_to_center(char *str, int width) {
@@ -49,17 +51,18 @@ char *pad_to_center(char *str, int width) {
 
 /* prints perft test row */
 void print_perft_test_row(char *fen, char *depth, char *expected, char *found,
-                          char *passed, char *color) {
+                          char* nps ,char *passed, char *color) {
     // pad the info strings
     char *padded_fen = pad_to_center(fen, 84);
     char *padded_depth = pad_to_center(depth, 6);
     char *padded_expected = pad_to_center(expected, 10);
+    char *padded_nps = pad_to_center(nps, 17);
     char *padded_found = pad_to_center(found, 10);
     char *padded_passed = pad_to_center(passed, 8);
 
     // print accordingly
-    printf("| %s | %s | %s | %s | %s%s%s |\n", padded_fen, padded_depth,
-           padded_expected, padded_found, color, padded_passed, Color_END);
+    printf("| %s | %s | %s | %s | %s | %s%s%s |\n", padded_fen, padded_depth,
+           padded_expected, padded_found, padded_nps, color, padded_passed, Color_END);
 
     // free padded strings
     free(padded_fen);
@@ -73,13 +76,13 @@ void print_perft_test_row(char *fen, char *depth, char *expected, char *found,
 void print_perft_test_row_separator() {
     printf(
         "+---------------------------------------------------------------------"
-        "-----------------+--------+------------+------------+----------+\n");
+        "-----------------+--------+------------+------------+-------------------+----------+\n");
 }
 
 /* determines number of lines in a file */
 int count_lines_in_file() {
     FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
+        "/Users/aherbrich/src/myprojects/chess/data/perft_suite_small.txt", "r");
     // FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
     int line_count = 0;
     int character;
@@ -103,7 +106,7 @@ perfttest_t **load_perft_test_suite(int nr_of_tests) {
 
     // open file
     FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
+        "/Users/aherbrich/src/myprojects/chess/data/perft_suite_small.txt", "r");
     // FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
 
     char *line = NULL;
@@ -150,26 +153,35 @@ int run_specific_test(perfttest_t *test) {
     load_by_FEN(board, test->fen);
 
     int nr_of_moves;
+    struct timeval start;
+    struct timeval end;
 
     // run perft test for given depths and output results
     for (int i = 0; i < 16 && test->results[i] != -1; i++) {
         char depth_str[32];
         char expected_str[32];
         char found_str[32];
+        char nps_str[32];
 
         // perft result for given depth
+        gettimeofday(&start, 0);
         nr_of_moves = perft(board, test->depths[i]);
+        GLOBAL_COUNT += (uint64_t) nr_of_moves;
+        gettimeofday(&end, 0);
+
+        double nps = ((nr_of_moves)/((end.tv_sec-start.tv_sec)*1000.0 + (end.tv_usec-start.tv_usec)/1000.0))/1000.0;
 
         // string formatting and output
         sprintf(depth_str, "%d", test->depths[i]);
         sprintf(expected_str, "%d", test->results[i]);
         sprintf(found_str, "%d", nr_of_moves);
+        sprintf(nps_str, "%.2f Mn/s", nps);
 
         if (test->results[i] == nr_of_moves) {
-            print_perft_test_row(test->fen, depth_str, expected_str, found_str,
+            print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
                                  "yes", Color_GREEN);
         } else {
-            print_perft_test_row(test->fen, depth_str, expected_str, found_str,
+            print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
                                  "no", Color_RED);
         }
         print_perft_test_row_separator();
@@ -194,17 +206,26 @@ int main() {
 
     // print header
     print_perft_test_row_separator();
-    print_perft_test_row("fen", "depth", "expected", "found", "passed",
+    print_perft_test_row("fen", "depth", "expected", "found", "nps", "passed",
                          Color_WHITE);
     print_perft_test_row_separator();
 
     // start testing and output the results
     int fail_counter = 0;
 
+    struct timeval global_start;
+    struct timeval global_end;
+
+    gettimeofday(&global_start, 0);
     for (int i = 0; i < nr_of_tests && perfttests[i]; i++) {
         fail_counter += run_specific_test(perfttests[i]);
         free(perfttests[i]);
     }
+    gettimeofday(&global_end, 0);
+
+
+    printf("Average nps: %.2f Mn/s\n", ((GLOBAL_COUNT)/((global_end.tv_sec-global_start.tv_sec)*1000.0 + (global_end.tv_usec-global_start.tv_usec)/1000.0))/1000.0);
+
 
     // notify if testing was successful
     if (fail_counter) {
