@@ -12,6 +12,8 @@ bitboard_t ROOK_ATTACK[64][4096];
 bitboard_t BISHOP_ATTACK[64][4096];
 bitboard_t KNIGHT_ATTACK[64];
 bitboard_t KING_ATTACK[64];
+bitboard_t ROOK_ATTACK_MASK[64];
+bitboard_t BISHOP_ATTACK_MASK[64];
 
 /* Checks if piece would capture on a given TO-field and returns the piece type
  */
@@ -55,12 +57,12 @@ int is_in_check_after_move(board_t *board) {
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
-        blockers = rook_mask(king_sq) & board->all;
+        blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
         if (attackers) return TRUE;
 
-        blockers = bishop_mask(king_sq) & board->all;
+        blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
         attackers = BISHOP_ATTACK[king_sq][k] & board->blackbishops;
@@ -92,13 +94,13 @@ int is_in_check_after_move(board_t *board) {
         attackers = KNIGHT_ATTACK[king_sq] & board->whiteknights;
         if (attackers) return TRUE;
 
-        /* check by bishops, rooks, and queens */
-        blockers = rook_mask(king_sq) & board->all;
+        /* check by bishops, rooks, and queens */      
+        blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
         if (attackers) return TRUE;
 
-        blockers = bishop_mask(king_sq) & board->all;
+        blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
         attackers = BISHOP_ATTACK[king_sq][k] & board->whitebishops;
@@ -137,12 +139,12 @@ int is_in_check(board_t *board) {
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
-        blockers = rook_mask(king_sq) & board->all;
+        blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
         if (attackers) return TRUE;
 
-        blockers = bishop_mask(king_sq) & board->all;
+        blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
         attackers = BISHOP_ATTACK[king_sq][k] & board->blackbishops;
@@ -175,12 +177,12 @@ int is_in_check(board_t *board) {
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
-        blockers = rook_mask(king_sq) & board->all;
+        blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
         if (attackers) return TRUE;
 
-        blockers = bishop_mask(king_sq) & board->all;
+        blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
         attackers = BISHOP_ATTACK[king_sq][k] & board->whitebishops;
@@ -274,7 +276,7 @@ inline bitboard_t get_black_pawn_attacks(bitboard_t pawn, board_t *board) {
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_bishop_attacks(int sq, board_t *board) {
     /* use magic bitboards to get attack squares */
-    bitboard_t blockers = bishop_mask(sq) & board->all;
+    bitboard_t blockers = BISHOP_ATTACK_MASK[sq] & board->all;
     int j = transform(blockers, BISHOP_MAGIC[sq], BISHOP_BITS[sq]);
     bitboard_t attacks = BISHOP_ATTACK[sq][j];
 
@@ -290,7 +292,7 @@ inline bitboard_t get_bishop_attacks(int sq, board_t *board) {
 /* Squares that would attack own pieces are excluded */
 inline bitboard_t get_rook_attacks(int sq, board_t *board) {
     /* use magic bitboards to get attack squares */
-    bitboard_t blockers = rook_mask(sq) & board->all;
+    bitboard_t blockers = ROOK_ATTACK_MASK[sq] & board->all;
     int j = transform(blockers, ROOK_MAGIC[sq], ROOK_BITS[sq]);
     bitboard_t attacks = ROOK_ATTACK[sq][j];
 

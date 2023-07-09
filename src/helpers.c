@@ -55,7 +55,8 @@ void initialize_attack_boards() {
     /* bishop attacks */
     for (int sq = 0; sq < 64; sq++) {
         bitboard_t mask = bishop_mask(sq);
-
+        BISHOP_ATTACK_MASK[sq] = mask;
+        
         /* pre-generate attack boards for each square and blocking mask with */
         /* magic bitboards */
         for (int i = 0; i < (1 << BISHOP_BITS[sq]); i++) {
@@ -67,6 +68,7 @@ void initialize_attack_boards() {
     /* rook attacks */
     for (int sq = 0; sq < 64; sq++) {
         bitboard_t mask = rook_mask(sq);
+        ROOK_ATTACK_MASK[sq] = mask;
 
         /* pre-generate attack boards for each square and blocking mask with
          * magic bitboards */

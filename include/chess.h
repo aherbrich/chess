@@ -194,6 +194,8 @@ extern bitboard_t ROOK_ATTACK[64][4096];
 extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64];
 extern bitboard_t KING_ATTACK[64];
+extern bitboard_t ROOK_ATTACK_MASK[64];
+extern bitboard_t BISHOP_ATTACK_MASK[64];
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
