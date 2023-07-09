@@ -17,51 +17,51 @@ char* create_board_string(board_t* board) {
     }
 
     int idx;
-    bitboard_t copy = board->whitepawns;
+    bitboard_t copy = board->piece_bb[W_PAWN];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'P';
     }
-    copy = board->blackpawns;
+    copy = board->piece_bb[B_PAWN];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'p';
     }
-    copy = board->whiteknights;
+    copy = board->piece_bb[W_KNIGHT];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'N';
     }
-    copy = board->blackknights;
+    copy = board->piece_bb[B_KNIGHT];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'n';
     }
-    copy = board->whitebishops;
+    copy = board->piece_bb[W_BISHOP];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'B';
     }
-    copy = board->blackbishops;
+    copy = board->piece_bb[B_BISHOP];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'b';
     }
-    copy = board->whiterooks;
+    copy = board->piece_bb[W_ROOK];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'R';
     }
-    copy = board->blackrooks;
+    copy = board->piece_bb[B_ROOK];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'r';
     }
-    copy = board->whitequeens;
+    copy = board->piece_bb[W_QUEEN];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'Q';
     }
-    copy = board->blackqueens;
+    copy = board->piece_bb[B_QUEEN];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'q';
     }
-    copy = board->whiteking;
+    copy = board->piece_bb[W_KING];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'K';
     }
-    copy = board->blackking;
+    copy = board->piece_bb[B_KING];
     while ((idx = pop_1st_bit(&copy)) != -1) {
         string[idx] = 'k';
     }

@@ -21,22 +21,22 @@ int is_capture(bitboard_t to, board_t *board) {
     bitboard_t to_mask = (1ULL << to);
     if (board->player == WHITE) {
         if (board->black & to_mask) {
-            if (board->blackpawns & to_mask) return PAWN;
-            if (board->blackknights & to_mask) return KNIGHT;
-            if (board->blackbishops & to_mask) return BISHOP;
-            if (board->blackrooks & to_mask) return ROOK;
-            if (board->blackqueens & to_mask) return QUEEN;
-            if (board->blackking & to_mask) return KING;
+            if (board->piece_bb[B_PAWN] & to_mask) return PAWN;
+            if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT;
+            if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP;
+            if (board->piece_bb[B_ROOK] & to_mask) return ROOK;
+            if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN;
+            if (board->piece_bb[B_KING] & to_mask) return KING;
         }
         return EMPTY;
     } else {
         if (board->white & to_mask) {
-            if (board->whitepawns & to_mask) return PAWN;
-            if (board->whiteknights & to_mask) return KNIGHT;
-            if (board->whitebishops & to_mask) return BISHOP;
-            if (board->whiterooks & to_mask) return ROOK;
-            if (board->whitequeens & to_mask) return QUEEN;
-            if (board->whiteking & to_mask) return KING;
+            if (board->piece_bb[W_PAWN] & to_mask) return PAWN;
+            if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT;
+            if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP;
+            if (board->piece_bb[W_ROOK] & to_mask) return ROOK;
+            if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN;
+            if (board->piece_bb[W_KING] & to_mask) return KING;
         }
         return EMPTY;
     }
@@ -46,78 +46,78 @@ int is_capture(bitboard_t to, board_t *board) {
 /* WARNING: Call only AFTER making a move */
 int is_in_check_after_move(board_t *board) {
     if (board->player == BLACK) {
-        if (!board->whiteking) return TRUE;
-        int king_sq = find_1st_bit(board->whiteking);
+        if (!board->piece_bb[W_KING]) return TRUE;
+        int king_sq = find_1st_bit(board->piece_bb[W_KING]);
 
         bitboard_t attackers;
         bitboard_t blockers;
 
         /* check by knights */
-        attackers = KNIGHT_ATTACK[king_sq] & board->blackknights;
+        attackers = KNIGHT_ATTACK[king_sq] & board->piece_bb[B_KNIGHT];
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
         blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
-        attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
+        attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[B_ROOK];
         if (attackers) return TRUE;
 
         blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
-        attackers = BISHOP_ATTACK[king_sq][k] & board->blackbishops;
+        attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[B_BISHOP];
         if (attackers) return TRUE;
 
         attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) &
-                    board->blackqueens;
+                    board->piece_bb[B_QUEEN];
         if (attackers) return TRUE;
 
         /* check by pawns */
-        attackers = (((board->whiteking & CLEAR_FILE[A]) << 7) |
-                     ((board->whiteking & CLEAR_FILE[H]) << 9)) &
-                    board->blackpawns;
+        attackers = (((board->piece_bb[W_KING] & CLEAR_FILE[A]) << 7) |
+                     ((board->piece_bb[W_KING] & CLEAR_FILE[H]) << 9)) &
+                    board->piece_bb[B_PAWN];
         if (attackers) return TRUE;
 
         /* 'check by king' */
-        attackers = KING_ATTACK[king_sq] & board->blackking;
+        attackers = KING_ATTACK[king_sq] & board->piece_bb[B_KING];
         if (attackers) return TRUE;
 
         return FALSE;
     } else {
-        if (!board->blackking) return TRUE;
-        int king_sq = find_1st_bit(board->blackking);
+        if (!board->piece_bb[B_KING]) return TRUE;
+        int king_sq = find_1st_bit(board->piece_bb[B_KING]);
 
         bitboard_t attackers;
         bitboard_t blockers;
 
         /* check by knights */
-        attackers = KNIGHT_ATTACK[king_sq] & board->whiteknights;
+        attackers = KNIGHT_ATTACK[king_sq] & board->piece_bb[W_KNIGHT];
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */      
         blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
-        attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
+        attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[W_ROOK];
         if (attackers) return TRUE;
 
         blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
-        attackers = BISHOP_ATTACK[king_sq][k] & board->whitebishops;
+        attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[W_BISHOP];
         if (attackers) return TRUE;
 
         attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) &
-                    board->whitequeens;
+                    board->piece_bb[W_QUEEN];
         if (attackers) return TRUE;
 
         /* check by pawns */
-        attackers = (((board->blackking & CLEAR_FILE[H]) >> 7) |
-                     ((board->blackking & CLEAR_FILE[A]) >> 9)) &
-                    board->whitepawns;
+        attackers = (((board->piece_bb[B_KING] & CLEAR_FILE[H]) >> 7) |
+                     ((board->piece_bb[B_KING] & CLEAR_FILE[A]) >> 9)) &
+                    board->piece_bb[W_PAWN];
         if (attackers) return TRUE;
 
         /* 'check by king' */
-        attackers = KING_ATTACK[king_sq] & board->whiteking;
+        attackers = KING_ATTACK[king_sq] & board->piece_bb[W_KING];
         if (attackers) return TRUE;
 
         return FALSE;
@@ -128,78 +128,78 @@ int is_in_check_after_move(board_t *board) {
 /* WARNING: (Generally) Call BEFORE making a move  */
 int is_in_check(board_t *board) {
     if (board->player == WHITE) {
-        if (!board->whiteking) return TRUE;
-        int king_sq = find_1st_bit(board->whiteking);
+        if (!board->piece_bb[W_KING]) return TRUE;
+        int king_sq = find_1st_bit(board->piece_bb[W_KING]);
 
         bitboard_t attackers;
         bitboard_t blockers;
 
         /* check by knights */
-        attackers = KNIGHT_ATTACK[king_sq] & board->blackknights;
+        attackers = KNIGHT_ATTACK[king_sq] & board->piece_bb[B_KNIGHT];
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
         blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
-        attackers = ROOK_ATTACK[king_sq][j] & board->blackrooks;
+        attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[B_ROOK];
         if (attackers) return TRUE;
 
         blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
-        attackers = BISHOP_ATTACK[king_sq][k] & board->blackbishops;
+        attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[B_BISHOP];
         if (attackers) return TRUE;
 
         attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) &
-                    board->blackqueens;
+                    board->piece_bb[B_QUEEN];
         if (attackers) return TRUE;
 
         /* check by pawns */
-        attackers = (((board->whiteking & CLEAR_FILE[A]) << 7) |
-                     ((board->whiteking & CLEAR_FILE[H]) << 9)) &
-                    board->blackpawns;
+        attackers = (((board->piece_bb[W_KING] & CLEAR_FILE[A]) << 7) |
+                     ((board->piece_bb[W_KING] & CLEAR_FILE[H]) << 9)) &
+                    board->piece_bb[B_PAWN];
         if (attackers) return TRUE;
 
         /* 'check by king' */
-        attackers = KING_ATTACK[king_sq] & board->blackking;
+        attackers = KING_ATTACK[king_sq] & board->piece_bb[B_KING];
         if (attackers) return TRUE;
 
         return FALSE;
     } else {
-        if (!board->blackking) return TRUE;
-        int king_sq = find_1st_bit(board->blackking);
+        if (!board->piece_bb[B_KING]) return TRUE;
+        int king_sq = find_1st_bit(board->piece_bb[B_KING]);
 
         bitboard_t attackers;
         bitboard_t blockers;
 
         /* check by knights */
-        attackers = KNIGHT_ATTACK[king_sq] & board->whiteknights;
+        attackers = KNIGHT_ATTACK[king_sq] & board->piece_bb[W_KNIGHT];
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
         blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
-        attackers = ROOK_ATTACK[king_sq][j] & board->whiterooks;
+        attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[W_ROOK];
         if (attackers) return TRUE;
 
         blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
-        attackers = BISHOP_ATTACK[king_sq][k] & board->whitebishops;
+        attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[W_BISHOP];
         if (attackers) return TRUE;
 
         attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) &
-                    board->whitequeens;
+                    board->piece_bb[W_QUEEN];
         if (attackers) return TRUE;
 
         /* check by pawns */
-        attackers = (((board->blackking & CLEAR_FILE[H]) >> 7) |
-                     ((board->blackking & CLEAR_FILE[A]) >> 9)) &
-                    board->whitepawns;
+        attackers = (((board->piece_bb[B_KING] & CLEAR_FILE[H]) >> 7) |
+                     ((board->piece_bb[B_KING] & CLEAR_FILE[A]) >> 9)) &
+                    board->piece_bb[W_PAWN];
         if (attackers) return TRUE;
 
         /* 'check by king' */
-        attackers = KING_ATTACK[king_sq] & board->whiteking;
+        attackers = KING_ATTACK[king_sq] & board->piece_bb[W_KING];
         if (attackers) return TRUE;
 
         return FALSE;
@@ -424,7 +424,7 @@ void generate_queen_moves(bitboard_t queens, board_t *board, maxpq_t *movelst) {
 
 /* Generates and adds all pseudolegal WHITE PAWN moves to movelst */
 void generate_white_pawn_moves(board_t *board, maxpq_t *movelst) {
-    bitboard_t pawns = board->whitepawns;
+    bitboard_t pawns = board->piece_bb[W_PAWN];
     /* for every white pawn */
     while (pawns) {
         /* get attack squares */
@@ -471,7 +471,7 @@ void generate_white_pawn_moves(board_t *board, maxpq_t *movelst) {
 /* Generates and adds all pseudolegal BLACK PAWN moves to movelst */
 void generate_black_pawn_moves(board_t *board, maxpq_t *movelst) {
     /* for every black pawn */
-    bitboard_t pawns = board->blackpawns;
+    bitboard_t pawns = board->piece_bb[B_PAWN];
     while (pawns) {
         /* get attack squares */
         idx_t from = pop_1st_bit(&pawns);
@@ -516,7 +516,7 @@ void generate_black_pawn_moves(board_t *board, maxpq_t *movelst) {
 
 /* Generates and adds all pseudolegal WHITE PAWN ENPASSANT moves to movelst */
 void generate_white_enpassant_moves(board_t *board, maxpq_t *movelst) {
-    bitboard_t pawns = board->whitepawns;
+    bitboard_t pawns = board->piece_bb[W_PAWN];
     /* check if enpassant capture is possible */
     if (board->ep_possible) {
         bitboard_t ep = (1ULL << board->ep_field);
@@ -542,7 +542,7 @@ void generate_white_enpassant_moves(board_t *board, maxpq_t *movelst) {
 
 /* Generates and adds all pseudolegal BLACK PAWN ENPASSANT moves to movelst */
 void generate_black_enpassant_moves(board_t *board, maxpq_t *movelst) {
-    bitboard_t pawns = board->blackpawns;
+    bitboard_t pawns = board->piece_bb[B_PAWN];
     /* check if enpassant capture is possible */
     if (board->ep_possible) {
         bitboard_t ep = (1ULL << board->ep_field);
@@ -575,9 +575,9 @@ void generate_white_castle_moves(board_t *board, maxpq_t *movelst) {
     if ((board->all & ((1ULL << 5) | (1ULL << 6))) == 0 &&
         (board->castle_rights & SHORTSIDEW)) {
         /* if not passing through check */
-        board->whiteking = ((1ULL << 5));
+        board->piece_bb[W_KING] = ((1ULL << 5));
         int through_check = is_in_check(board);
-        board->whiteking = ((1ULL << 4));
+        board->piece_bb[W_KING] = ((1ULL << 4));
         /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(4, 6, KCASTLE, 0));
     }
@@ -585,9 +585,9 @@ void generate_white_castle_moves(board_t *board, maxpq_t *movelst) {
     if ((board->all & ((1ULL << 1) | (1ULL << 2) | (1ULL << 3))) == 0 &&
         (board->castle_rights & LONGSIDEW)) {
         /* if not passing through check */
-        board->whiteking = ((1ULL << 3));
+        board->piece_bb[W_KING] = ((1ULL << 3));
         int through_check = is_in_check(board);
-        board->whiteking = ((1ULL << 4));
+        board->piece_bb[W_KING] = ((1ULL << 4));
         /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(4, 2, QCASTLE, 0));
     }
@@ -602,9 +602,9 @@ void generate_black_castle_moves(board_t *board, maxpq_t *movelst) {
     if ((board->all & ((1ULL << 61) | (1ULL << 62))) == 0 &&
         (board->castle_rights & SHORTSIDEB)) {
         /* if not passing through check */
-        board->blackking = ((1ULL << 61));
+        board->piece_bb[B_KING] = ((1ULL << 61));
         int through_check = is_in_check(board);
-        board->blackking = ((1ULL << 60));
+        board->piece_bb[B_KING] = ((1ULL << 60));
         /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(60, 62, KCASTLE, 0));
         ;
@@ -613,9 +613,9 @@ void generate_black_castle_moves(board_t *board, maxpq_t *movelst) {
     if ((board->all & ((1ULL << 57) | (1ULL << 58) | (1ULL << 59))) == 0 &&
         (board->castle_rights & LONGSIDEB)) {
         /* if not passing through check */
-        board->blackking = ((1ULL << 59));
+        board->piece_bb[B_KING] = ((1ULL << 59));
         int through_check = is_in_check(board);
-        board->blackking = ((1ULL << 60));
+        board->piece_bb[B_KING] = ((1ULL << 60));
         /* add move to movelist */
         if (!through_check) insert(movelst, generate_move(60, 58, QCASTLE, 0));
         ;
@@ -626,20 +626,20 @@ void generate_black_castle_moves(board_t *board, maxpq_t *movelst) {
 void generate_pseudo_moves(board_t *board, maxpq_t *movelst) {
     if (board->player == WHITE) {
         generate_white_pawn_moves(board, movelst);
-        generate_knight_moves(board->whiteknights, board, movelst);
-        generate_bishop_moves(board->whitebishops, board, movelst, FALSE);
-        generate_rook_moves(board->whiterooks, board, movelst, FALSE);
-        generate_queen_moves(board->whitequeens, board, movelst);
-        generate_king_moves(board->whiteking, board, movelst);
+        generate_knight_moves(board->piece_bb[W_KNIGHT], board, movelst);
+        generate_bishop_moves(board->piece_bb[W_BISHOP], board, movelst, FALSE);
+        generate_rook_moves(board->piece_bb[W_ROOK], board, movelst, FALSE);
+        generate_queen_moves(board->piece_bb[W_QUEEN], board, movelst);
+        generate_king_moves(board->piece_bb[W_KING], board, movelst);
         generate_white_enpassant_moves(board, movelst);
         generate_white_castle_moves(board, movelst);
     } else {
         generate_black_pawn_moves(board, movelst);
-        generate_knight_moves(board->blackknights, board, movelst);
-        generate_bishop_moves(board->blackbishops, board, movelst, FALSE);
-        generate_rook_moves(board->blackrooks, board, movelst, FALSE);
-        generate_queen_moves(board->blackqueens, board, movelst);
-        generate_king_moves(board->blackking, board, movelst);
+        generate_knight_moves(board->piece_bb[B_KNIGHT], board, movelst);
+        generate_bishop_moves(board->piece_bb[B_BISHOP], board, movelst, FALSE);
+        generate_rook_moves(board->piece_bb[B_ROOK], board, movelst, FALSE);
+        generate_queen_moves(board->piece_bb[B_QUEEN], board, movelst);
+        generate_king_moves(board->piece_bb[B_KING], board, movelst);
         generate_black_enpassant_moves(board, movelst);
         generate_black_castle_moves(board, movelst);
     }

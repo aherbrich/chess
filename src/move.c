@@ -70,8 +70,8 @@ int do_move(board_t *board, move_t *move) {
 
     /* SECONDLY: adjust counters */
     /* if move is a capture or a pawn move, reset counter */
-    if ((move->flags & 0b0100) || (from_mask & board->whitepawns) ||
-        (from_mask & board->blackpawns)) {
+    if ((move->flags & 0b0100) || (from_mask & board->piece_bb[W_PAWN]) ||
+        (from_mask & board->piece_bb[B_PAWN])) {
         board->fifty_move_counter = 0;
 
     } else {
@@ -85,97 +85,40 @@ int do_move(board_t *board, move_t *move) {
         board->full_move_counter++;
     }
 
-    /* LASTLY: move execution
-     * change the bitboard of moving piece
-     * if moving piece is a... */
 
-    /* PAWN */
-    if (from_mask & board->whitepawns) {
-        board->whitepawns |= to_mask;
-        board->whitepawns &= from_clear_mask;
-    } else if (from_mask & board->blackpawns) {
-        board->blackpawns |= to_mask;
-        board->blackpawns &= from_clear_mask;
-    }
-
-    /* KNIGHT */
-    else if (from_mask & board->whiteknights) {
-        board->whiteknights |= to_mask;
-        board->whiteknights &= from_clear_mask;
-    } else if (from_mask & board->blackknights) {
-        board->blackknights |= to_mask;
-        board->blackknights &= from_clear_mask;
-    }
-
-    /* BISHOP */
-    else if (from_mask & board->whitebishops) {
-        board->whitebishops |= to_mask;
-        board->whitebishops &= from_clear_mask;
-    } else if (from_mask & board->blackbishops) {
-        board->blackbishops |= to_mask;
-        board->blackbishops &= from_clear_mask;
-    }
-
-    /* QUEEN */
-    else if (from_mask & board->whitequeens) {
-        board->whitequeens |= to_mask;
-        board->whitequeens &= from_clear_mask;
-    } else if (from_mask & board->blackqueens) {
-        board->blackqueens |= to_mask;
-        board->blackqueens &= from_clear_mask;
-    }
-
-    /* ROOK */
-    else if (from_mask & board->whiterooks) {
-        board->whiterooks |= to_mask;
-        board->whiterooks &= from_clear_mask;
+    /* adjust castling rights */
+    if(board->playingfield[move->from] == W_ROOK){
         if (move->from == 0) board->castle_rights &= ~(LONGSIDEW);
         if (move->from == 7) board->castle_rights &= ~(SHORTSIDEW);
-    } else if (from_mask & board->blackrooks) {
-        board->blackrooks |= to_mask;
-        board->blackrooks &= from_clear_mask;
+    }
+    else if(board->playingfield[move->from] == B_ROOK){
         if (move->from == 56) board->castle_rights &= ~(LONGSIDEB);
         if (move->from == 63) board->castle_rights &= ~(SHORTSIDEB);
     }
-
-    /* KING */
-    else if (from_mask & board->whiteking) {
-        board->whiteking |= to_mask;
-        board->whiteking &= from_clear_mask;
+    else if(board->playingfield[move->from] == W_KING){
         board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
-    } else if (from_mask & board->blackking) {
-        board->blackking |= to_mask;
-        board->blackking &= from_clear_mask;
+    }
+    else if(board->playingfield[move->from] == B_KING){
         board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
     }
 
-    /* now we change the bitboard of captured piece */
     if (move->flags & 0b0100) {
         /* first off, adjust castle rights if rooks were captured */
         if (move->to == 7) board->castle_rights &= ~(SHORTSIDEW);
         if (move->to == 0) board->castle_rights &= ~(LONGSIDEW);
         if (move->to == 63) board->castle_rights &= ~(SHORTSIDEB);
         if (move->to == 56) board->castle_rights &= ~(LONGSIDEB);
-
-        /* then, remove captured piece from (bit)board */
-        if (board->player == WHITE) {
-            board->black &= to_clear_mask;
-            board->blackpawns &= board->black;
-            board->blackknights &= board->black;
-            board->blackbishops &= board->black;
-            board->blackrooks &= board->black;
-            board->blackqueens &= board->black;
-            board->blackking &= board->black;
-        } else {
-            board->white &= to_clear_mask;
-            board->whitepawns &= board->white;
-            board->whiteknights &= board->white;
-            board->whitebishops &= board->white;
-            board->whiterooks &= board->white;
-            board->whitequeens &= board->white;
-            board->whiteking &= board->white;
-        }
     }
+
+    /* LASTLY: move execution
+     * change the bitboard of moving piece
+     * if moving piece is a... */
+
+    bitboard_t mask = from_mask | to_mask;
+    board->piece_bb[board->playingfield[move->from]] ^= mask;
+    board->piece_bb[board->playingfield[move->to]] &= ~mask;
+    board->playingfield[move->to] = board->playingfield[move->from];
+    board->playingfield[move->from] = NO_PIECE;
 
     /*
      * EXIT EARLY STATEMENTS BEGIN
@@ -216,12 +159,18 @@ int do_move(board_t *board, move_t *move) {
         board->ep_field = -1;
 
         if (board->player == WHITE) {
-            board->whiterooks |= (1ULL << 5);
-            board->whiterooks &= ~(1ULL << 7);
+            mask = (1ULL << 7) | (1ULL << 5);
+            board->piece_bb[W_ROOK] ^= mask;
+            board->playingfield[5] = W_ROOK;
+            board->playingfield[7] = NO_PIECE;
+
             board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
         } else {
-            board->blackrooks |= (1ULL << 61);
-            board->blackrooks &= ~(1ULL << 63);
+            mask = (1ULL << 63) | (1ULL << 61);
+            board->piece_bb[B_ROOK] ^= mask;
+            board->playingfield[61] = B_ROOK;
+            board->playingfield[63] = NO_PIECE;
+
             board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
         }
 
@@ -238,12 +187,18 @@ int do_move(board_t *board, move_t *move) {
         board->ep_field = -1;
 
         if (board->player == WHITE) {
-            board->whiterooks |= (1ULL << 3);
-            board->whiterooks &= ~(1ULL << 0);
+            mask = (1ULL << 0) | (1ULL << 3);
+            board->piece_bb[W_ROOK] ^= mask;
+            board->playingfield[3] = W_ROOK;
+            board->playingfield[0] = NO_PIECE;
+
             board->castle_rights &= ~(LONGSIDEW | SHORTSIDEW);
         } else {
-            board->blackrooks |= (1ULL << 59);
-            board->blackrooks &= ~(1ULL << 56);
+            mask = (1ULL << 56) | (1ULL << 59);
+            board->piece_bb[B_ROOK] ^= mask;
+            board->playingfield[59] = B_ROOK;
+            board->playingfield[56] = NO_PIECE;
+
             board->castle_rights &= ~(LONGSIDEB | SHORTSIDEB);
         }
 
@@ -261,11 +216,13 @@ int do_move(board_t *board, move_t *move) {
 
         /* remove pawn from to square and replace it by a queen */
         if (board->player == WHITE) {
-            board->whitepawns &= to_clear_mask;
-            board->whitequeens |= to_mask;
+            board->piece_bb[W_PAWN] &= to_clear_mask;
+            board->piece_bb[W_QUEEN] |= to_mask;
+            board->playingfield[move->to] = W_QUEEN;
         } else {
-            board->blackpawns &= to_clear_mask;
-            board->blackqueens |= to_mask;
+            board->piece_bb[B_PAWN] &= to_clear_mask;
+            board->piece_bb[B_QUEEN] |= to_mask;
+            board->playingfield[move->to] = B_QUEEN;
         }
         board->ply_no++;
         board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
@@ -281,11 +238,13 @@ int do_move(board_t *board, move_t *move) {
 
         /* remove pawn from to square and replace it by a rook */
         if (board->player == WHITE) {
-            board->whitepawns &= to_clear_mask;
-            board->whiterooks |= to_mask;
+            board->piece_bb[W_PAWN] &= to_clear_mask;
+            board->piece_bb[W_ROOK] |= to_mask;
+            board->playingfield[move->to] = W_ROOK;
         } else {
-            board->blackpawns &= to_clear_mask;
-            board->blackrooks |= to_mask;
+            board->piece_bb[B_PAWN] &= to_clear_mask;
+            board->piece_bb[B_ROOK] |= to_mask;
+            board->playingfield[move->to] = B_ROOK;
         }
         board->ply_no++;
         board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
@@ -301,11 +260,13 @@ int do_move(board_t *board, move_t *move) {
 
         /* remove pawn from to square and replace it by a knight */
         if (board->player == WHITE) {
-            board->whitepawns &= to_clear_mask;
-            board->whiteknights |= to_mask;
+            board->piece_bb[W_PAWN] &= to_clear_mask;
+            board->piece_bb[W_KNIGHT] |= to_mask;
+            board->playingfield[move->to] = W_KNIGHT;
         } else {
-            board->blackpawns &= to_clear_mask;
-            board->blackknights |= to_mask;
+            board->piece_bb[B_PAWN] &= to_clear_mask;
+            board->piece_bb[B_KNIGHT] |= to_mask;
+            board->playingfield[move->to] = B_KNIGHT;
         }
         board->ply_no++;
         board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
@@ -321,11 +282,13 @@ int do_move(board_t *board, move_t *move) {
 
         /* remove pawn from to square and replace it by a bishop */
         if (board->player == WHITE) {
-            board->whitepawns &= to_clear_mask;
-            board->whitebishops |= to_mask;
+            board->piece_bb[W_PAWN] &= to_clear_mask;
+            board->piece_bb[W_BISHOP] |= to_mask;
+            board->playingfield[move->to] = W_BISHOP;
         } else {
-            board->blackpawns &= to_clear_mask;
-            board->blackbishops |= to_mask;
+            board->piece_bb[B_PAWN] &= to_clear_mask;
+            board->piece_bb[B_BISHOP] |= to_mask;
+            board->playingfield[move->to] = B_BISHOP;
         }
         board->ply_no++;
         board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
@@ -341,9 +304,11 @@ int do_move(board_t *board, move_t *move) {
 
         /* special handling of removance of captured piece */
         if (board->player == WHITE) {
-            board->blackpawns &= ~(1ULL << (move->to - 8));
+            board->piece_bb[B_PAWN] &= ~(1ULL << (move->to - 8));
+            board->playingfield[move->to-8] = NO_PIECE;
         } else {
-            board->whitepawns &= ~(1ULL << (move->to + 8));
+            board->piece_bb[W_PAWN] &= ~(1ULL << (move->to + 8));
+            board->playingfield[move->to+8] = NO_PIECE;
         }
 
         board->ply_no++;

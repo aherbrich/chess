@@ -82,25 +82,22 @@
 #define DRAW 0
 #define WINBLACK -1
 
+typedef enum piece_t_ {
+	B_PAWN=0, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING,
+	W_PAWN=8, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
+    NO_PIECE
+} piece_t;
+
+#define NR_PIECES 14
+
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
 typedef uint8_t idx_t;
 typedef uint8_t flag_t;
-typedef uint8_t piece_t;
 
 typedef struct _board_t {
-    bitboard_t whitepawns;
-    bitboard_t whiteknights;
-    bitboard_t whitebishops;
-    bitboard_t whiterooks;
-    bitboard_t whitequeens;
-    bitboard_t whiteking;
-    bitboard_t blackpawns;
-    bitboard_t blackknights;
-    bitboard_t blackbishops;
-    bitboard_t blackrooks;
-    bitboard_t blackqueens;
-    bitboard_t blackking;
+    piece_t playingfield[64];
+    bitboard_t piece_bb[NR_PIECES];
     bitboard_t black;
     bitboard_t white;
     bitboard_t all;

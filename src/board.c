@@ -8,19 +8,9 @@ int is_same_board(board_t* board1, board_t* board2) {
     if (board1->white != board2->white) return 0;
     if (board1->black != board2->black) return 0;
 
-    if (board1->whitepawns != board2->whitepawns) return 0;
-    if (board1->whiteknights != board2->whiteknights) return 0;
-    if (board1->whitebishops != board2->whitebishops) return 0;
-    if (board1->whiterooks != board2->whiterooks) return 0;
-    if (board1->whitequeens != board2->whitequeens) return 0;
-    if (board1->whiteking != board2->whiteking) return 0;
-
-    if (board1->blackpawns != board2->blackpawns) return 0;
-    if (board1->blackknights != board2->blackknights) return 0;
-    if (board1->blackbishops != board2->blackbishops) return 0;
-    if (board1->blackrooks != board2->blackrooks) return 0;
-    if (board1->blackqueens != board2->blackqueens) return 0;
-    if (board1->blackking != board2->blackking) return 0;
+    for(int i = 0; i < NR_PIECES; i++){
+        if(board1->piece_bb[i] !=  board2->piece_bb[i]) return 0;
+    }
 
     if (board1->ep_possible != board2->ep_possible) return 0;
     if (board1->ep_field != board2->ep_field) return 0;
@@ -32,23 +22,17 @@ int is_same_board(board_t* board1, board_t* board2) {
 /* Clears the board */
 void clear_board(board_t* board) {
     /* clear the playing field */
-    board->whitepawns = 0;
-    board->whiteknights = 0;
-    board->whitebishops = 0;
-    board->whiterooks = 0;
-    board->whitequeens = 0;
-    board->whiteking = 0;
-
-    board->blackpawns = 0;
-    board->blackknights = 0;
-    board->blackbishops = 0;
-    board->blackrooks = 0;
-    board->blackqueens = 0;
-    board->blackking = 0;
+    for(int i = 0; i < NR_PIECES; i++){
+        board->piece_bb[i] = 0;
+    }
 
     board->black = 0;
     board->white = 0;
     board->all = 0;
+
+    for(int i = 0; i < 64; i++){
+        board->playingfield[i] = NO_PIECE;
+    }
 
     /* reset player, en passant field/possible, castle rights and ply number */
     board->player = WHITE;
@@ -65,23 +49,17 @@ board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
 
     /* copy the playing field */
-    copy->whitepawns = board->whitepawns;
-    copy->whiteknights = board->whiteknights;
-    copy->whitebishops = board->whitebishops;
-    copy->whiterooks = board->whiterooks;
-    copy->whitequeens = board->whitequeens;
-    copy->whiteking = board->whiteking;
-
-    copy->blackpawns = board->blackpawns;
-    copy->blackknights = board->blackknights;
-    copy->blackbishops = board->blackbishops;
-    copy->blackrooks = board->blackrooks;
-    copy->blackqueens = board->blackqueens;
-    copy->blackking = board->blackking;
+    for(int i = 0; i < NR_PIECES; i++){
+        copy->piece_bb[i] = board->piece_bb[i];
+    }
 
     copy->black = board->black;
     copy->white = board->white;
     copy->all = board->all;
+
+    for(int i = 0; i < 64; i++){
+        copy->playingfield[i] = board->playingfield[i];
+    }
 
     /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;
@@ -99,23 +77,17 @@ board_t* copy_board(board_t* board) {
 /* WARNING: Frees the old board */
 void recover_board(board_t* board, board_t* old_board) {
     /* copy the playing field */
-    board->whitepawns = old_board->whitepawns;
-    board->whiteknights = old_board->whiteknights;
-    board->whitebishops = old_board->whitebishops;
-    board->whiterooks = old_board->whiterooks;
-    board->whitequeens = old_board->whitequeens;
-    board->whiteking = old_board->whiteking;
-
-    board->blackpawns = old_board->blackpawns;
-    board->blackknights = old_board->blackknights;
-    board->blackbishops = old_board->blackbishops;
-    board->blackrooks = old_board->blackrooks;
-    board->blackqueens = old_board->blackqueens;
-    board->blackking = old_board->blackking;
+    for(int i = 0; i < NR_PIECES; i++){
+        board->piece_bb[i] = old_board->piece_bb[i];
+    }
 
     board->black = old_board->black;
     board->white = old_board->white;
     board->all = old_board->all;
+
+    for(int i = 0; i < 64; i++){
+        board->playingfield[i] = old_board->playingfield[i];
+    }
 
     /* copy player, en passant field/possible, castle rights and ply number */
     board->player = old_board->player;
@@ -141,12 +113,12 @@ void free_board(board_t* board) { free(board); }
 
 /* Updates the white, the black and the all bitboard */
 void update_white_black_all_boards(board_t* board) {
-    board->black = board->blackpawns | board->blackknights |
-                   board->blackbishops | board->blackrooks |
-                   board->blackqueens | board->blackking;
-    board->white = board->whitepawns | board->whiteknights |
-                   board->whitebishops | board->whiterooks |
-                   board->whitequeens | board->whiteking;
+    board->black = board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] |
+                   board->piece_bb[B_BISHOP] | board->piece_bb[B_ROOK] |
+                   board->piece_bb[B_QUEEN] | board->piece_bb[B_KING];
+    board->white = board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] |
+                   board->piece_bb[W_BISHOP] | board->piece_bb[W_ROOK] |
+                   board->piece_bb[W_QUEEN] | board->piece_bb[W_KING];
     board->all = board->black | board->white;
 }
 
@@ -167,62 +139,74 @@ void load_by_FEN(board_t* board, char* FEN) {
         switch (*ptr) {
             case 'p':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->blackpawns |= shift;
+                board->piece_bb[B_PAWN] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = B_PAWN;
                 col++;
                 break;
             case 'n':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->blackknights |= shift;
+                board->piece_bb[B_KNIGHT] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = B_KNIGHT;
                 col++;
                 break;
             case 'b':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->blackbishops |= shift;
+                board->piece_bb[B_BISHOP] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = B_BISHOP;
                 col++;
                 break;
             case 'r':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->blackrooks |= shift;
+                board->piece_bb[B_ROOK] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = B_ROOK;
                 col++;
                 break;
             case 'q':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->blackqueens |= shift;
+                board->piece_bb[B_QUEEN] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = B_QUEEN;
                 col++;
                 break;
             case 'k':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->blackking |= shift;
+                board->piece_bb[B_KING] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = B_KING;
                 col++;
                 break;
             case 'P':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->whitepawns |= shift;
+                board->piece_bb[W_PAWN] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = W_PAWN;
                 col++;
                 break;
             case 'N':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->whiteknights |= shift;
+                board->piece_bb[W_KNIGHT] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = W_KNIGHT;
                 col++;
                 break;
             case 'B':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->whitebishops |= shift;
+                board->piece_bb[W_BISHOP] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = W_BISHOP;
                 col++;
                 break;
             case 'R':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->whiterooks |= shift;
+                board->piece_bb[W_ROOK] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = W_ROOK;
                 col++;
                 break;
             case 'Q':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->whitequeens |= shift;
+                board->piece_bb[W_QUEEN] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = W_QUEEN;
                 col++;
                 break;
             case 'K':
                 shift = (1ULL << pos_to_idx(row, col));
-                board->whiteking |= shift;
+                board->piece_bb[W_KING] |= shift;
+                board->playingfield[pos_to_idx(row, col)] = W_KING;
                 col++;
                 break;
             case '/':

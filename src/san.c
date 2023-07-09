@@ -37,8 +37,8 @@ move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2,
 
         /* check if move is a pawn move */
         bitboard_t from_mask = 1ULL << move->from;
-        if ((from_mask & board->whitepawns) ||
-            (from_mask & board->blackpawns)) {
+        if ((from_mask & board->piece_bb[W_PAWN]) ||
+            (from_mask & board->piece_bb[B_PAWN])) {
             /* check if move is FROM the correct file and TO the correct square
              */
             if (move->to == to && (move->from % 8 + 'a') == file1) {
@@ -126,8 +126,8 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
 
         /* check if move is a knight move */
         bitboard_t from_mask = 1ULL << move->from;
-        if (((from_mask & board->whiteknights) ||
-             (from_mask & board->blackknights))) {
+        if (((from_mask & board->piece_bb[W_KNIGHT]) ||
+             (from_mask & board->piece_bb[B_KNIGHT]))) {
             /* check if TO square is the correct TO square */
             if (move->to == to) {
                 /* if move is unambigious, we can instantly return */
@@ -181,8 +181,8 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
 
         /* check if move is a bishop move */
         bitboard_t from_mask = 1ULL << move->from;
-        if (((from_mask & board->whitebishops) ||
-             (from_mask & board->blackbishops))) {
+        if (((from_mask & board->piece_bb[W_BISHOP]) ||
+             (from_mask & board->piece_bb[B_BISHOP]))) {
             /* check if TO square is the correct TO square */
             if (move->to == to) {
                 /* if move is unambigious, we can instantly return */
@@ -235,8 +235,8 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
 
         /* check if move is a rook move */
         bitboard_t from_mask = 1ULL << move->from;
-        if (((from_mask & board->whiterooks) ||
-             (from_mask & board->blackrooks))) {
+        if (((from_mask & board->piece_bb[W_ROOK]) ||
+             (from_mask & board->piece_bb[B_ROOK]))) {
             /* check if TO square is the correct TO square */
             if (move->to == to) {
                 /* if move is unambigious, we can instantly return */
@@ -290,8 +290,8 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
 
         /* check if move is a queen move */
         bitboard_t from_mask = 1ULL << move->from;
-        if (((from_mask & board->whitequeens) ||
-             (from_mask & board->blackqueens))) {
+        if (((from_mask & board->piece_bb[W_QUEEN]) ||
+             (from_mask & board->piece_bb[B_QUEEN]))) {
             /* check if TO square is the correct TO square */
             if (move->to == to) {
                 /* if move is unambigious, we can instantly return */
@@ -344,8 +344,8 @@ move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
 
         /* check if move is a king move */
         bitboard_t from_mask = 1ULL << move->from;
-        if (((from_mask & board->whiteking) ||
-             (from_mask & board->blackking))) {
+        if (((from_mask & board->piece_bb[W_KING]) ||
+             (from_mask & board->piece_bb[B_KING]))) {
             /* check if TO square is the correct TO square */
             if (move->to == to) {
                 /* if move is unambigious, we can instantly return */

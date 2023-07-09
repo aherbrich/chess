@@ -29,12 +29,12 @@ uint64_t calculate_zobrist_hash(board_t *board) {
 
     /* hash the WHITE piece positions */
 
-    pawns = board->whitepawns;
-    knights = board->whiteknights;
-    bishops = board->whitebishops;
-    rooks = board->whiterooks;
-    queens = board->whitequeens;
-    king = board->whiteking;
+    pawns = board->piece_bb[W_PAWN];
+    knights = board->piece_bb[W_KNIGHT];
+    bishops = board->piece_bb[W_BISHOP];
+    rooks = board->piece_bb[W_ROOK];
+    queens = board->piece_bb[W_QUEEN];
+    king = board->piece_bb[W_KING];
 
     while (pawns) {
         hash ^= zobrist_table.piece_random64[0][pop_1st_bit(&pawns)];
@@ -57,12 +57,12 @@ uint64_t calculate_zobrist_hash(board_t *board) {
 
     /* hash the BLACK piece positions */
 
-    pawns = board->blackpawns;
-    knights = board->blackknights;
-    bishops = board->blackbishops;
-    rooks = board->blackrooks;
-    queens = board->blackqueens;
-    king = board->blackking;
+    pawns = board->piece_bb[B_PAWN];
+    knights = board->piece_bb[B_KNIGHT];
+    bishops = board->piece_bb[B_BISHOP];
+    rooks = board->piece_bb[B_ROOK];
+    queens = board->piece_bb[B_QUEEN];
+    king = board->piece_bb[B_KING];
 
     while (pawns) {
         hash ^= zobrist_table.piece_random64[6][pop_1st_bit(&pawns)];
