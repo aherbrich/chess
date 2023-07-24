@@ -39,6 +39,10 @@ int find_1st_bit(bitboard_t bb) {
 
 /* Sets the LS1B (least significant 1 bit) to 0 and returns it index */
 int pop_1st_bit(bitboard_t *bb) {
+    if (!(*bb)) {
+        return -1;
+    }
+
     int idx = find_1st_bit(*bb);
     *bb &= *bb - 1;
     return idx;

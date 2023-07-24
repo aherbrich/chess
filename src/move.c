@@ -1,6 +1,21 @@
 #include "../include/chess.h"
 #include "../include/zobrist.h"
 
+
+void move_piece(board_t* board, square_t from, square_t to) {
+	bitboard_t mask = SQUARE_BB[from] | SQUARE_BB[to];
+	board->piece_bb[board->playingfield[from]] ^= mask;
+	board->piece_bb[board->playingfield[to]] &= ~mask;
+	board->playingfield[to] = board->playingfield[from];
+	board->playingfield[from] = NO_PIECE;
+}
+
+void move_piece_quiet(board_t* board, square_t from, square_t to) {
+	board->piece_bb[board->playingfield[from]] ^= (SQUARE_BB[from] | SQUARE_BB[to]);
+	board->playingfield[to] = board->playingfield[from];
+	board->playingfield[from] = NO_PIECE;
+}
+
 ////////////////////////////////////////////////////////////////
 // MOVE FUNCTIONS
 
@@ -60,8 +75,13 @@ void free_move(move_t *move) {
 /* Execute move */
 int do_move(board_t *board, move_t *move) {
     /* FIRST: save old board state */
-    OLDSTATE[board->ply_no] = copy_board(board);
     HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
+
+    board->history[board->ply_no].castlerights = board->castle_rights;
+    board->history[board->ply_no].captured = board->playingfield[move->to];
+    board->history[board->ply_no].epsq = NO_SQUARE;
+    board->history[board->ply_no].fifty_move_counter = board->fifty_move_counter;
+    board->history[board->ply_no].full_move_counter = board->full_move_counter;
 
     bitboard_t from_mask = 1ULL << move->from;
     bitboard_t from_clear_mask = ~from_mask;
@@ -145,6 +165,8 @@ int do_move(board_t *board, move_t *move) {
         } else {
             board->ep_field = move->from - 8;
         }
+
+        board->history[board->ply_no].epsq = board->ep_field; 
 
         board->ply_no++;
         board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
@@ -304,10 +326,12 @@ int do_move(board_t *board, move_t *move) {
 
         /* special handling of removance of captured piece */
         if (board->player == WHITE) {
-            board->piece_bb[B_PAWN] &= ~(1ULL << (move->to - 8));
+            board->history[board->ply_no].captured = B_PAWN;
+            board->piece_bb[B_PAWN] &= ~SQUARE_BB[move->to - 8];
             board->playingfield[move->to-8] = NO_PIECE;
         } else {
-            board->piece_bb[W_PAWN] &= ~(1ULL << (move->to + 8));
+            board->history[board->ply_no].captured = W_PAWN;
+            board->piece_bb[W_PAWN] &= ~SQUARE_BB[move->to + 8];
             board->playingfield[move->to+8] = NO_PIECE;
         }
 
@@ -332,4 +356,109 @@ void undo_move(board_t *board) {
     /* and recover old board state from board state saved for that exact ply */
     board_t *old_board = OLDSTATE[board->ply_no];
     recover_board(board, old_board);
+}
+
+/* Undos a move */
+void undo_move_fast(board_t *board, move_t* move) {
+    /* reduce ply number */
+    board->ply_no--;
+    board->castle_rights = board->history[board->ply_no].castlerights;
+    board->ep_field = board->history[board->ply_no].epsq;
+    board->ep_possible = (board->history[board->ply_no].epsq == NO_SQUARE) ? FALSE : TRUE;
+    board->fifty_move_counter = board->history[board->ply_no].fifty_move_counter;
+    board->full_move_counter = board->history[board->ply_no].full_move_counter;
+
+    moveflags_t type = move->flags;
+    square_t sq;
+
+	switch (type) {
+	case QUIET:
+		move_piece_quiet(board, move->to, move->from);
+		break;
+	case DOUBLEP:
+		move_piece_quiet(board, move->to, move->from);
+		break;
+	case KCASTLE:
+		if (board->player == BLACK) {
+			move_piece_quiet(board, g1, e1);
+			move_piece_quiet(board, f1, h1);
+		} else {
+			move_piece_quiet(board, g8, e8);
+			move_piece_quiet(board, f8, h8);
+		}
+		break;
+	case QCASTLE:
+		if (board->player == BLACK) {
+			move_piece_quiet(board, c1, e1);
+			move_piece_quiet(board, d1, a1);
+		} else {
+			move_piece_quiet(board, c8, e8);
+			move_piece_quiet(board, d8, a8);
+		}
+		break;
+	case EPCAPTURE:
+		move_piece(board, move->to, move->from);
+        if(board->player == WHITE){
+            // then black made epcapture
+            sq = move->to + 8;
+            board->playingfield[sq] = W_PAWN;
+            board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
+        } else{
+            // then white made epcapture
+            sq = move->to - 8;
+            board->playingfield[sq] = B_PAWN;
+            board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
+        }
+		break;
+	case KPROM:
+	case BPROM:
+	case RPROM:
+	case QPROM:
+        board->piece_bb[board->playingfield[move->to]] &= ~SQUARE_BB[move->to];
+		board->playingfield[move->to] = NO_PIECE;
+        if(board->player == WHITE){
+            // then black promoted
+            sq = move->from;
+            board->playingfield[sq] = B_PAWN;
+            board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
+        } else{
+            // then white promoted
+            sq = move->from;
+            board->playingfield[sq] = W_PAWN;
+            board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
+        }
+		break;
+	case KCPROM:
+	case BCPROM:
+	case RCPROM:
+	case QCPROM:
+		board->piece_bb[board->playingfield[move->to]] &= ~SQUARE_BB[move->to];
+		board->playingfield[move->to] = NO_PIECE;
+        if(board->player == WHITE){
+            // then black promoted
+            sq = move->from;
+            board->playingfield[sq] = B_PAWN;
+            board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
+        } else{
+            // then white promoted
+            sq = move->from;
+            board->playingfield[sq] = W_PAWN;
+            board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
+        }
+        sq = move->to;
+        board->playingfield[sq] = board->history[board->ply_no].captured;
+        board->piece_bb[board->history[board->ply_no].captured] |= SQUARE_BB[sq];
+
+		break;
+	case CAPTURE:
+		move_piece(board, move->to, move->from);
+        sq = move->to;
+        board->playingfield[sq] = board->history[board->ply_no].captured;
+        board->piece_bb[board->history[board->ply_no].captured] |= SQUARE_BB[sq];
+		break;
+	}
+
+	board->player = (board->player == BLACK) ? WHITE : BLACK;
+
+    update_white_black_all_boards(board);
 }

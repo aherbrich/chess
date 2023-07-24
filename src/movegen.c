@@ -15,6 +15,26 @@ bitboard_t KING_ATTACK[64];
 bitboard_t ROOK_ATTACK_MASK[64];
 bitboard_t BISHOP_ATTACK_MASK[64];
 
+const bitboard_t SQUARE_BB[65] = {
+	0x1, 0x2, 0x4, 0x8,
+	0x10, 0x20, 0x40, 0x80,
+	0x100, 0x200, 0x400, 0x800,
+	0x1000, 0x2000, 0x4000, 0x8000,
+	0x10000, 0x20000, 0x40000, 0x80000,
+	0x100000, 0x200000, 0x400000, 0x800000,
+	0x1000000, 0x2000000, 0x4000000, 0x8000000,
+	0x10000000, 0x20000000, 0x40000000, 0x80000000,
+	0x100000000, 0x200000000, 0x400000000, 0x800000000,
+	0x1000000000, 0x2000000000, 0x4000000000, 0x8000000000,
+	0x10000000000, 0x20000000000, 0x40000000000, 0x80000000000,
+	0x100000000000, 0x200000000000, 0x400000000000, 0x800000000000,
+	0x1000000000000, 0x2000000000000, 0x4000000000000, 0x8000000000000,
+	0x10000000000000, 0x20000000000000, 0x40000000000000, 0x80000000000000,
+	0x100000000000000, 0x200000000000000, 0x400000000000000, 0x800000000000000,
+	0x1000000000000000, 0x2000000000000000, 0x4000000000000000, 0x8000000000000000,
+	0x0
+};
+
 /* Checks if piece would capture on a given TO-field and returns the piece type
  */
 int is_capture(bitboard_t to, board_t *board) {
@@ -654,12 +674,12 @@ void filter_illegal_moves(board_t *board, maxpq_t *movelst) {
     while ((move = pop_max(movelst))) {
         /* We play a move and filter out those that turn out to be illegal */
         if (!do_move(board, move)) {
-            undo_move(board);
+            undo_move_fast(board, move);
             free_move(move);
             continue;
         }
         insert(&legalmoves, move);
-        undo_move(board);
+        undo_move_fast(board, move);
     }
 
     memcpy((*movelst).array, legalmoves.array, sizeof((*movelst).array));

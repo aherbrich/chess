@@ -46,20 +46,6 @@
 #define RANK7 6
 #define RANK8 7
 
-#define QUIET 0
-#define DOUBLEP 1
-#define KCASTLE 2
-#define QCASTLE 3
-#define CAPTURE 4
-#define EPCAPTURE 5
-#define KPROM 8
-#define BPROM 9
-#define RPROM 10
-#define QPROM 11
-#define KCPROM 12
-#define BCPROM 13
-#define RCPROM 14
-#define QCPROM 15
 
 #define EMPTY 0
 #define PAWN 1
@@ -82,7 +68,22 @@
 #define DRAW 0
 #define WINBLACK -1
 
-typedef enum piece_t_ {
+typedef enum _moveflags_t {
+    QUIET = 0, DOUBLEP, KCASTLE, QCASTLE, CAPTURE, EPCAPTURE,
+    KPROM=8, BPROM, RPROM, QPROM, KCPROM, BCPROM, RCPROM, QCPROM
+} moveflags_t;
+typedef enum _square_t {
+	a1=0, b1, c1, d1, e1, f1, g1, h1,
+	a2, b2, c2, d2, e2, f2, g2, h2,
+	a3, b3, c3, d3, e3, f3, g3, h3,
+	a4, b4, c4, d4, e4, f4, g4, h4,
+	a5, b5, c5, d5, e5, f5, g5, h5,
+	a6, b6, c6, d6, e6, f6, g6, h6,
+	a7, b7, c7, d7, e7, f7, g7, h7,
+	a8, b8, c8, d8, e8, f8, g8, h8,
+	NO_SQUARE
+} square_t;
+typedef enum _piece_t {
 	B_PAWN=0, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING,
 	W_PAWN=8, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
     NO_PIECE
@@ -95,6 +96,14 @@ typedef uint8_t player_t;
 typedef uint8_t idx_t;
 typedef uint8_t flag_t;
 
+typedef struct _undoinfo_t {
+    flag_t castlerights;
+    piece_t captured;
+    square_t epsq;
+
+    uint16_t full_move_counter;
+    uint8_t fifty_move_counter;
+} undoinfo_t;
 typedef struct _board_t {
     piece_t playingfield[64];
     bitboard_t piece_bb[NR_PIECES];
@@ -103,9 +112,12 @@ typedef struct _board_t {
     bitboard_t all;
 
     player_t player;
+
+    undoinfo_t history[2048];
     flag_t castle_rights;
     flag_t ep_possible;
     idx_t ep_field;
+
     uint16_t ply_no;
     uint16_t full_move_counter;
     uint8_t fifty_move_counter;
@@ -194,6 +206,8 @@ extern bitboard_t KING_ATTACK[64];
 extern bitboard_t ROOK_ATTACK_MASK[64];
 extern bitboard_t BISHOP_ATTACK_MASK[64];
 
+extern const bitboard_t SQUARE_BB[65];
+
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
 uint64_t random_uint64();
@@ -248,6 +262,7 @@ move_t* copy_move(move_t* move);
 void free_move(move_t* move);
 int do_move(board_t* board, move_t* move);
 void undo_move(board_t* board);
+void undo_move_fast(board_t *board, move_t* move);
 int is_same_move(move_t* move1, move_t* move2);
 
 ///////////////////////////////////////////////////////////////
