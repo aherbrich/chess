@@ -1,6 +1,16 @@
 #include "../include/chess.h"
 #include "../include/zobrist.h"
 
+void remove_piece(board_t* board, square_t sq){
+    board->piece_bb[board->playingfield[sq]] &= ~SQUARE_BB[sq];
+	board->playingfield[sq] = NO_PIECE;
+}
+
+void put_piece(board_t* board, piece_t pc, square_t sq){
+    board->piece_bb[pc] |= SQUARE_BB[sq];
+    board->playingfield[sq] = pc;
+}
+
 
 void move_piece(board_t* board, square_t from, square_t to) {
 	bitboard_t mask = SQUARE_BB[from] | SQUARE_BB[to];
@@ -74,24 +84,20 @@ void free_move(move_t *move) {
 
 /* Execute move */
 int do_move(board_t *board, move_t *move) {
-    /* FIRST: save old board state */
     HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
 
+    /* FIRST: save old board state */
     board->history[board->ply_no].castlerights = board->castle_rights;
     board->history[board->ply_no].captured = board->playingfield[move->to];
     board->history[board->ply_no].epsq = NO_SQUARE;
     board->history[board->ply_no].fifty_move_counter = board->fifty_move_counter;
     board->history[board->ply_no].full_move_counter = board->full_move_counter;
 
-    bitboard_t from_mask = 1ULL << move->from;
-    bitboard_t from_clear_mask = ~from_mask;
-    bitboard_t to_mask = 1ULL << move->to;
-    bitboard_t to_clear_mask = ~to_mask;
 
     /* SECONDLY: adjust counters */
     /* if move is a capture or a pawn move, reset counter */
-    if ((move->flags & 0b0100) || (from_mask & board->piece_bb[W_PAWN]) ||
-        (from_mask & board->piece_bb[B_PAWN])) {
+    if ((move->flags & 0b0100) || (SQUARE_BB[move->from] & board->piece_bb[W_PAWN]) ||
+        (SQUARE_BB[move->from] & board->piece_bb[B_PAWN])) {
         board->fifty_move_counter = 0;
 
     } else {
@@ -130,35 +136,23 @@ int do_move(board_t *board, move_t *move) {
         if (move->to == 56) board->castle_rights &= ~(LONGSIDEB);
     }
 
-    /* LASTLY: move execution
-     * change the bitboard of moving piece
-     * if moving piece is a... */
-
-    bitboard_t mask = from_mask | to_mask;
-    board->piece_bb[board->playingfield[move->from]] ^= mask;
-    board->piece_bb[board->playingfield[move->to]] &= ~mask;
-    board->playingfield[move->to] = board->playingfield[move->from];
-    board->playingfield[move->from] = NO_PIECE;
 
     /*
      * EXIT EARLY STATEMENTS BEGIN
      */
 
-    /* if move is quiet or simple capture */
-    if (move->flags == QUIET || move->flags == CAPTURE) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
+    moveflags_t type = move->flags;
 
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
+    board->ep_possible = FALSE;
+    board->ep_field = -1;
 
-    /* if move is double pawn push */
-    if (move->flags == DOUBLEP) {
-        /* enpassant capture is possible next round */
+	switch (type) {
+	case QUIET:
+		move_piece_quiet(board, move->from, move->to);
+		break;
+	case DOUBLEP:
+		move_piece_quiet(board, move->from, move->to);
+			
         board->ep_possible = TRUE;
         if (board->player == WHITE) {
             board->ep_field = move->from + 8;
@@ -167,186 +161,137 @@ int do_move(board_t *board, move_t *move) {
         }
 
         board->history[board->ply_no].epsq = board->ep_field; 
-
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is kingside castle */
-    if (move->flags == KCASTLE) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        if (board->player == WHITE) {
-            mask = (1ULL << 7) | (1ULL << 5);
-            board->piece_bb[W_ROOK] ^= mask;
-            board->playingfield[5] = W_ROOK;
-            board->playingfield[7] = NO_PIECE;
-
+		break;
+	case KCASTLE:
+		if (board->player == WHITE) {
+			move_piece_quiet(board, e1, g1);
+			move_piece_quiet(board, h1, f1);
             board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
-        } else {
-            mask = (1ULL << 63) | (1ULL << 61);
-            board->piece_bb[B_ROOK] ^= mask;
-            board->playingfield[61] = B_ROOK;
-            board->playingfield[63] = NO_PIECE;
-
+		} else {
+			move_piece_quiet(board, e8, g8);
+			move_piece_quiet(board, h8, f8);
             board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
-        }
-
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is queenside castle */
-    if (move->flags == QCASTLE) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        if (board->player == WHITE) {
-            mask = (1ULL << 0) | (1ULL << 3);
-            board->piece_bb[W_ROOK] ^= mask;
-            board->playingfield[3] = W_ROOK;
-            board->playingfield[0] = NO_PIECE;
-
+		}			
+		break;
+	case QCASTLE:
+		if (board->player == WHITE) {
+			move_piece_quiet(board, e1, c1); 
+			move_piece_quiet(board, a1, d1);
             board->castle_rights &= ~(LONGSIDEW | SHORTSIDEW);
-        } else {
-            mask = (1ULL << 56) | (1ULL << 59);
-            board->piece_bb[B_ROOK] ^= mask;
-            board->playingfield[59] = B_ROOK;
-            board->playingfield[56] = NO_PIECE;
-
+		} else {
+			move_piece_quiet(board, e8, c8);
+			move_piece_quiet(board, a8, d8);
             board->castle_rights &= ~(LONGSIDEB | SHORTSIDEB);
-        }
+		}
+		break;
+	case EPCAPTURE:
+		move_piece_quiet(board, move->from, move->to);
 
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is a queen promotion move */
-    if (move->flags == QPROM || move->flags == QCPROM) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        /* remove pawn from to square and replace it by a queen */
-        if (board->player == WHITE) {
-            board->piece_bb[W_PAWN] &= to_clear_mask;
-            board->piece_bb[W_QUEEN] |= to_mask;
-            board->playingfield[move->to] = W_QUEEN;
-        } else {
-            board->piece_bb[B_PAWN] &= to_clear_mask;
-            board->piece_bb[B_QUEEN] |= to_mask;
-            board->playingfield[move->to] = B_QUEEN;
-        }
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is a rook promotion move */
-    if (move->flags == RPROM || move->flags == RCPROM) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        /* remove pawn from to square and replace it by a rook */
-        if (board->player == WHITE) {
-            board->piece_bb[W_PAWN] &= to_clear_mask;
-            board->piece_bb[W_ROOK] |= to_mask;
-            board->playingfield[move->to] = W_ROOK;
-        } else {
-            board->piece_bb[B_PAWN] &= to_clear_mask;
-            board->piece_bb[B_ROOK] |= to_mask;
-            board->playingfield[move->to] = B_ROOK;
-        }
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is a knight promotion move */
-    if (move->flags == KPROM || move->flags == KCPROM) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        /* remove pawn from to square and replace it by a knight */
-        if (board->player == WHITE) {
-            board->piece_bb[W_PAWN] &= to_clear_mask;
-            board->piece_bb[W_KNIGHT] |= to_mask;
-            board->playingfield[move->to] = W_KNIGHT;
-        } else {
-            board->piece_bb[B_PAWN] &= to_clear_mask;
-            board->piece_bb[B_KNIGHT] |= to_mask;
-            board->playingfield[move->to] = B_KNIGHT;
-        }
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is a bishop promotion move */
-    if (move->flags == BPROM || move->flags == BCPROM) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        /* remove pawn from to square and replace it by a bishop */
-        if (board->player == WHITE) {
-            board->piece_bb[W_PAWN] &= to_clear_mask;
-            board->piece_bb[W_BISHOP] |= to_mask;
-            board->playingfield[move->to] = W_BISHOP;
-        } else {
-            board->piece_bb[B_PAWN] &= to_clear_mask;
-            board->piece_bb[B_BISHOP] |= to_mask;
-            board->playingfield[move->to] = B_BISHOP;
-        }
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
-
-    /* if move is an ep capture */
-    if (move->flags == EPCAPTURE) {
-        board->ep_possible = FALSE;
-        board->ep_field = -1;
-
-        /* special handling of removance of captured piece */
         if (board->player == WHITE) {
             board->history[board->ply_no].captured = B_PAWN;
-            board->piece_bb[B_PAWN] &= ~SQUARE_BB[move->to - 8];
-            board->playingfield[move->to-8] = NO_PIECE;
+            remove_piece(board, move->to - 8);
         } else {
             board->history[board->ply_no].captured = W_PAWN;
-            board->piece_bb[W_PAWN] &= ~SQUARE_BB[move->to + 8];
-            board->playingfield[move->to+8] = NO_PIECE;
+            remove_piece(board, move->to + 8);
         }
+		break;
+	case KPROM:
+		remove_piece(board, move->from);
+        if (board->player == WHITE) {
+            put_piece(board, W_KNIGHT, move->to);
+        } else {
+            put_piece(board, B_KNIGHT, move->to);
+        }
+		break;
+	case BPROM:
+		remove_piece(board, move->from);
+        if (board->player == WHITE) {
+            put_piece(board, W_BISHOP, move->to);
+        } else {
+            put_piece(board, B_BISHOP, move->to);
+        }
+		break;
+	case RPROM:
+		remove_piece(board, move->from);
+        if (board->player == WHITE) {
+            put_piece(board, W_ROOK, move->to);
+        } else {
+            put_piece(board, B_ROOK, move->to);
+        }
+		break;
+	case QPROM:
+        remove_piece(board, move->from);
+        if (board->player == WHITE) {
+            put_piece(board, W_QUEEN, move->to);
+        } else {
+            put_piece(board, B_QUEEN, move->to);
+        }
+		break;
+	case KCPROM:
+        board->history[board->ply_no].captured = board->playingfield[move->to];
 
-        board->ply_no++;
-        board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
-        /* dont forget to update the white, black and all bitboard */
-        update_white_black_all_boards(board);
-        return !is_in_check_after_move(board);
-    }
+        remove_piece(board, move->from);
+        remove_piece(board, move->to);
 
-    fprintf(stderr,
+        if (board->player == WHITE) {
+            put_piece(board, W_KNIGHT, move->to);
+        } else {
+            put_piece(board, B_KNIGHT, move->to);
+        }
+		break;
+	case BCPROM:
+		board->history[board->ply_no].captured = board->playingfield[move->to];
+
+        remove_piece(board, move->from);
+        remove_piece(board, move->to);
+
+        if (board->player == WHITE) {
+            put_piece(board, W_BISHOP, move->to);
+        } else {
+            put_piece(board, B_BISHOP, move->to);
+        }
+		break;
+	case RCPROM:
+		board->history[board->ply_no].captured = board->playingfield[move->to];
+
+        remove_piece(board, move->from);
+        remove_piece(board, move->to);
+
+       if (board->player == WHITE) {
+            put_piece(board, W_ROOK, move->to);
+        } else {
+            put_piece(board, B_ROOK, move->to);
+        }
+		break;
+	case QCPROM:
+		board->history[board->ply_no].captured = board->playingfield[move->to];
+
+        remove_piece(board, move->from);
+        remove_piece(board, move->to);
+
+        if (board->player == WHITE) {
+            put_piece(board, W_QUEEN, move->to);
+        } else {
+            put_piece(board, B_QUEEN, move->to);
+        }
+		break;
+	case CAPTURE:
+		board->history[board->ply_no].captured = board->playingfield[move->to];
+		move_piece(board, move->from, move->to);
+		break;
+    default:
+        fprintf(stderr,
             "This should not happen, since all types of moves should have been "
             "checked exhaustively\n");
-    exit(1);
-    return 0;
+        exit(1);
+	}
+    
+
+    board->ply_no++;
+    board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
+    update_white_black_all_boards(board);
+    return !is_in_check_after_move(board);
+
 }
 
 /* Undos a move */
@@ -399,12 +344,10 @@ void undo_move_fast(board_t *board, move_t* move) {
 	case EPCAPTURE:
 		move_piece(board, move->to, move->from);
         if(board->player == WHITE){
-            // then black made epcapture
             sq = move->to + 8;
             board->playingfield[sq] = W_PAWN;
             board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
         } else{
-            // then white made epcapture
             sq = move->to - 8;
             board->playingfield[sq] = B_PAWN;
             board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
@@ -417,12 +360,10 @@ void undo_move_fast(board_t *board, move_t* move) {
         board->piece_bb[board->playingfield[move->to]] &= ~SQUARE_BB[move->to];
 		board->playingfield[move->to] = NO_PIECE;
         if(board->player == WHITE){
-            // then black promoted
             sq = move->from;
             board->playingfield[sq] = B_PAWN;
             board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
         } else{
-            // then white promoted
             sq = move->from;
             board->playingfield[sq] = W_PAWN;
             board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
@@ -435,12 +376,10 @@ void undo_move_fast(board_t *board, move_t* move) {
 		board->piece_bb[board->playingfield[move->to]] &= ~SQUARE_BB[move->to];
 		board->playingfield[move->to] = NO_PIECE;
         if(board->player == WHITE){
-            // then black promoted
             sq = move->from;
             board->playingfield[sq] = B_PAWN;
             board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
         } else{
-            // then white promoted
             sq = move->from;
             board->playingfield[sq] = W_PAWN;
             board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
