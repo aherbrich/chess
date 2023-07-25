@@ -288,23 +288,14 @@ int do_move(board_t *board, move_t *move) {
     
 
     board->ply_no++;
-    board->player = (board->player == WHITE) ? (BLACK) : (WHITE);
+    board->player = SWITCHSIDES(board->player);
     update_white_black_all_boards(board);
     return !is_in_check_after_move(board);
 
 }
 
 /* Undos a move */
-void undo_move(board_t *board) {
-    /* reduce ply number */
-    board->ply_no--;
-    /* and recover old board state from board state saved for that exact ply */
-    board_t *old_board = OLDSTATE[board->ply_no];
-    recover_board(board, old_board);
-}
-
-/* Undos a move */
-void undo_move_fast(board_t *board, move_t* move) {
+void undo_move(board_t *board, move_t* move) {
     /* reduce ply number */
     board->ply_no--;
     board->castle_rights = board->history[board->ply_no].castlerights;
@@ -344,60 +335,41 @@ void undo_move_fast(board_t *board, move_t* move) {
 	case EPCAPTURE:
 		move_piece(board, move->to, move->from);
         if(board->player == WHITE){
-            sq = move->to + 8;
-            board->playingfield[sq] = W_PAWN;
-            board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
+            put_piece(board, W_PAWN, move->to + 8);
         } else{
-            sq = move->to - 8;
-            board->playingfield[sq] = B_PAWN;
-            board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
+            put_piece(board, B_PAWN, move->to - 8);
         }
 		break;
 	case KPROM:
 	case BPROM:
 	case RPROM:
 	case QPROM:
-        board->piece_bb[board->playingfield[move->to]] &= ~SQUARE_BB[move->to];
-		board->playingfield[move->to] = NO_PIECE;
+        remove_piece(board, move->to);
         if(board->player == WHITE){
-            sq = move->from;
-            board->playingfield[sq] = B_PAWN;
-            board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
+            put_piece(board, B_PAWN, move->from);
         } else{
-            sq = move->from;
-            board->playingfield[sq] = W_PAWN;
-            board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
+            put_piece(board, W_PAWN, move->from);
         }
 		break;
 	case KCPROM:
 	case BCPROM:
 	case RCPROM:
 	case QCPROM:
-		board->piece_bb[board->playingfield[move->to]] &= ~SQUARE_BB[move->to];
-		board->playingfield[move->to] = NO_PIECE;
+        remove_piece(board, move->to);
         if(board->player == WHITE){
-            sq = move->from;
-            board->playingfield[sq] = B_PAWN;
-            board->piece_bb[B_PAWN] |= SQUARE_BB[sq];
+            put_piece(board, B_PAWN, move->from);
         } else{
-            sq = move->from;
-            board->playingfield[sq] = W_PAWN;
-            board->piece_bb[W_PAWN] |= SQUARE_BB[sq];
+            put_piece(board, W_PAWN, move->from);
         }
-        sq = move->to;
-        board->playingfield[sq] = board->history[board->ply_no].captured;
-        board->piece_bb[board->history[board->ply_no].captured] |= SQUARE_BB[sq];
-
+        put_piece(board, board->history[board->ply_no].captured, move->to);
 		break;
 	case CAPTURE:
 		move_piece(board, move->to, move->from);
-        sq = move->to;
-        board->playingfield[sq] = board->history[board->ply_no].captured;
-        board->piece_bb[board->history[board->ply_no].captured] |= SQUARE_BB[sq];
+        put_piece(board, board->history[board->ply_no].captured, move->to);
 		break;
 	}
 
-	board->player = (board->player == BLACK) ? WHITE : BLACK;
+	board->player = SWITCHSIDES(board->player);;
 
     update_white_black_all_boards(board);
 }

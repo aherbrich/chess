@@ -179,7 +179,7 @@ int quiet_search(board_t *board, int alpha, int beta,
 
         do_move(board, move);
         eval = -quiet_search(board, -beta, -alpha, search_data);
-        undo_move(board);
+        undo_move(board, move);
 
         // if eval is better than the best so far, update it
         if (eval > best_eval) {
@@ -300,7 +300,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     while ((move = pop_max(&movelst))) {
         // We play a move and filter out those that turn out to be illegal
         if (!do_move(searchdata->board, move)) {
-            undo_move(searchdata->board);
+            undo_move(searchdata->board, move);
             free_move(move);
             continue;
         }
@@ -309,7 +309,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
         // If the move was a legal move, we can continue the search
         int eval = -negamax(searchdata, depth - 1, -beta, -best_eval);
-        undo_move(searchdata->board);
+        undo_move(searchdata->board, move);
 
         if (eval > best_eval) {
             best_eval = eval;
