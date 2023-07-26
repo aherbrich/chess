@@ -57,6 +57,13 @@
 #define QUEEN 5
 #define KING 6
 
+#define BW_PAWN 0
+#define BW_KNIGHT 1
+#define BW_BISHOP 2
+#define BW_ROOK 3
+#define BW_QUEEN 4
+#define BW_KING 5
+
 #define INFINITY INT_MAX
 #define NEGINFINITY (-INFINITY)
 
@@ -90,6 +97,12 @@ typedef enum _piece_t {
 	W_PAWN=8, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
     NO_PIECE
 } piece_t;
+
+typedef enum _dir_t {
+    NORTH = 8, NORTH_EAST = 9, EAST = 1, SOUTH_EAST = -7,
+	SOUTH = -8, SOUTH_WEST = -9, WEST = -1, NORTH_WEST = 7,
+	NORTH_NORTH = 16, SOUTH_SOUTH = -16
+} dir_t;
 
 #define NR_PIECES 14
 
@@ -201,6 +214,9 @@ extern bitboard_t CLEAR_FILE[8];
 extern bitboard_t CLEAR_RANK[8];
 extern bitboard_t UNIBOARD;
 
+extern bitboard_t MASK_DIAGONAL[15];
+extern bitboard_t MASK_ANTI_DIAGONAL[15];
+
 extern bitboard_t ROOK_ATTACK[64][4096];
 extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64];
@@ -209,6 +225,8 @@ extern bitboard_t ROOK_ATTACK_MASK[64];
 extern bitboard_t BISHOP_ATTACK_MASK[64];
 
 extern const bitboard_t SQUARE_BB[65];
+extern bitboard_t SQUARES_BETWEEN_BB[64][64];
+extern bitboard_t LINE[64][64];
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
@@ -221,6 +239,12 @@ void initialize_attack_boards();
 void initialize_helper_boards();
 void initialize_oldstate_array();
 void initialize_chess_engine_only_necessary();
+
+int rank_of(square_t s);
+int file_of(square_t s);
+int diagonal_of(square_t s);
+int anti_diagonal_of(square_t s);
+bitboard_t sliding_attacks(square_t square, bitboard_t occ, bitboard_t mask);
 
 //////////////////////////////////////////////////////////////
 //  PRIORITY QUEUE FUNCTIONS
@@ -256,6 +280,7 @@ int is_in_check(board_t* board);
 int is_in_check_after_move(board_t* board);
 void generate_pseudo_moves(board_t* board, maxpq_t* movelst);
 void generate_moves(board_t* board, maxpq_t* movelst);
+void generate_legals(board_t* board, maxpq_t *movelst);
 
 /////////////////////////////////////////////////////////////
 //  MOVE & EXECUTION
