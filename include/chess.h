@@ -104,7 +104,7 @@ typedef enum _dir_t {
 	NORTH_NORTH = 16, SOUTH_SOUTH = -16
 } dir_t;
 
-#define NR_PIECES 14
+#define NR_PIECES 15
 
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
@@ -122,10 +122,7 @@ typedef struct _undoinfo_t {
 typedef struct _board_t {
     piece_t playingfield[64];
     bitboard_t piece_bb[NR_PIECES];
-    bitboard_t black;
-    bitboard_t white;
-    bitboard_t all;
-
+    
     player_t player;
 
     undoinfo_t history[2048];
@@ -264,7 +261,6 @@ board_t* copy_board(board_t* board);
 void clear_board(board_t* board);
 void free_board(board_t* board);
 void load_by_FEN(board_t* board, char* FEN);
-int is_same_board(board_t* board1, board_t* board2);
 
 /////////////////////////////////////////////////////////////
 //  MOVE GENERATION

@@ -2,21 +2,6 @@
 
 #include "../include/chess.h"
 
-/* Checks if two boards are the same */
-int is_same_board(board_t* board1, board_t* board2) {
-    if (board1->all != board2->all) return 0;
-    if (board1->white != board2->white) return 0;
-    if (board1->black != board2->black) return 0;
-
-    for(int i = 0; i < NR_PIECES; i++){
-        if(board1->piece_bb[i] !=  board2->piece_bb[i]) return 0;
-    }
-
-    // TODO: FLAGS
-    if (board1->player != board2->player) return 0;
-
-    return 1;
-}
 /* Clears the board */
 void clear_board(board_t* board) {
     /* clear the playing field */
@@ -27,10 +12,6 @@ void clear_board(board_t* board) {
     for(int i = 0; i < NR_PIECES; i++){
         board->piece_bb[i] = 0;
     }
-
-    board->black = 0;
-    board->white = 0;
-    board->all = 0;
 
     /* reset player, en passant field/possible, castle rights and ply number */
     board->player = WHITE;
@@ -58,12 +39,6 @@ board_t* copy_board(board_t* board) {
     for(int i = 0; i < NR_PIECES; i++){
         copy->piece_bb[i] = board->piece_bb[i];
     }
-
-    copy->black = board->black;
-    copy->white = board->white;
-    copy->all = board->all;
-
-    
 
     /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;

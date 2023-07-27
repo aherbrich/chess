@@ -112,32 +112,32 @@ bitboard_t LINE[64][64];
  */
 int is_capture(bitboard_t to, board_t *board) {
     bitboard_t to_mask = (1ULL << to);
-    if (board->player == WHITE) {
-        if (board->black & to_mask) {
-            if (board->piece_bb[B_PAWN] & to_mask) return PAWN;
-            if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT;
-            if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP;
-            if (board->piece_bb[B_ROOK] & to_mask) return ROOK;
-            if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN;
-            if (board->piece_bb[B_KING] & to_mask) return KING;
-        }
-        return EMPTY;
-    } else {
-        if (board->white & to_mask) {
-            if (board->piece_bb[W_PAWN] & to_mask) return PAWN;
-            if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT;
-            if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP;
-            if (board->piece_bb[W_ROOK] & to_mask) return ROOK;
-            if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN;
-            if (board->piece_bb[W_KING] & to_mask) return KING;
-        }
-        return EMPTY;
+    if(board->player == WHITE){
+        if (board->piece_bb[B_PAWN] & to_mask) return PAWN;
+        if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT;
+        if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP;
+        if (board->piece_bb[B_ROOK] & to_mask) return ROOK;
+        if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN;
+        if (board->piece_bb[B_KING] & to_mask) return KING;
+    } else{
+        if (board->piece_bb[W_PAWN] & to_mask) return PAWN;
+        if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT;
+        if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP;
+        if (board->piece_bb[W_ROOK] & to_mask) return ROOK;
+        if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN;
+        if (board->piece_bb[W_KING] & to_mask) return KING;
     }
+    return EMPTY;
 }
 
 /* Checks if a player is in check WHILE CURRENTLY AT TURN */
 /* WARNING: (Generally) Call BEFORE making a move  */
 int is_in_check(board_t *board) {
+	bitboard_t all = (board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] | board->piece_bb[W_BISHOP] | 
+                board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[W_KING]) | 
+                (board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] | board->piece_bb[B_BISHOP] | 
+                board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN] | board->piece_bb[B_KING]);
+
     if (board->player == WHITE) {
         if (!board->piece_bb[W_KING]) return TRUE;
         int king_sq = find_1st_bit(board->piece_bb[W_KING]);
@@ -150,12 +150,12 @@ int is_in_check(board_t *board) {
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
-        blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
+        blockers = ROOK_ATTACK_MASK[king_sq] & all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[B_ROOK];
         if (attackers) return TRUE;
 
-        blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
+        blockers = BISHOP_ATTACK_MASK[king_sq] & all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
         attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[B_BISHOP];
@@ -188,12 +188,12 @@ int is_in_check(board_t *board) {
         if (attackers) return TRUE;
 
         /* check by bishops, rooks, and queens */
-        blockers = ROOK_ATTACK_MASK[king_sq] & board->all;
+        blockers = ROOK_ATTACK_MASK[king_sq] & all;
         int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
         attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[W_ROOK];
         if (attackers) return TRUE;
 
-        blockers = BISHOP_ATTACK_MASK[king_sq] & board->all;
+        blockers = BISHOP_ATTACK_MASK[king_sq] & all;
         int k =
             transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
         attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[W_BISHOP];
