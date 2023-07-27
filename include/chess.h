@@ -270,7 +270,6 @@ void recover_board(board_t* board, board_t* old_board);
 void clear_board(board_t* board);
 void free_board(board_t* board);
 void load_by_FEN(board_t* board, char* FEN);
-void update_white_black_all_boards(board_t* board);
 int is_same_board(board_t* board1, board_t* board2);
 
 /////////////////////////////////////////////////////////////

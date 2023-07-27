@@ -895,8 +895,16 @@ void generate_legals(board_t* board, maxpq_t *movelst){
     player_t us = board->player;
     player_t them = SWITCHSIDES(us);
 
-	bitboard_t us_bb = (us == WHITE) ? board->white : board->black;
-	bitboard_t them_bb = (us == WHITE) ? board->black : board->white;
+	bitboard_t us_bb = (us == WHITE) ? 
+                (board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] | board->piece_bb[W_BISHOP] | 
+                board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[W_KING]) : 
+                (board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] | board->piece_bb[B_BISHOP] | 
+                board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN] | board->piece_bb[B_KING]);
+	bitboard_t them_bb = (us == WHITE) ? 
+                (board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] | board->piece_bb[B_BISHOP] | 
+                board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN] | board->piece_bb[B_KING]) : 
+                (board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] | board->piece_bb[W_BISHOP] | 
+                board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[W_KING]);
 	bitboard_t all = us_bb | them_bb;
 
 	square_t our_king_sq = (us == WHITE) ? find_1st_bit(board->piece_bb[W_KING]) : find_1st_bit(board->piece_bb[B_KING]);
@@ -909,17 +917,9 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 
     bitboard_t our_pawns_bb = (us == WHITE) ? board->piece_bb[W_PAWN] : board->piece_bb[B_PAWN];
     bitboard_t our_knights_bb = (us == WHITE) ? board->piece_bb[W_KNIGHT] : board->piece_bb[B_KNIGHT];
-    bitboard_t our_bishops_bb = (us == WHITE) ? board->piece_bb[W_BISHOP] : board->piece_bb[B_BISHOP];
-    bitboard_t our_rooks_bb = (us == WHITE) ? board->piece_bb[W_ROOK] : board->piece_bb[B_ROOK];
-    bitboard_t our_queens_bb = (us == WHITE) ? board->piece_bb[W_QUEEN] : board->piece_bb[B_QUEEN];
-    bitboard_t our_king_bb = (us == WHITE) ? board->piece_bb[W_KING] : board->piece_bb[B_KING];
 
     bitboard_t their_pawns_bb = (them == WHITE) ? board->piece_bb[W_PAWN] : board->piece_bb[B_PAWN];
     bitboard_t their_knights_bb = (them == WHITE) ? board->piece_bb[W_KNIGHT] : board->piece_bb[B_KNIGHT];
-    bitboard_t their_bishops_bb = (them == WHITE) ? board->piece_bb[W_BISHOP] : board->piece_bb[B_BISHOP];
-    bitboard_t their_rooks_bb = (them == WHITE) ? board->piece_bb[W_ROOK] : board->piece_bb[B_ROOK];
-    bitboard_t their_queens_bb = (them == WHITE) ? board->piece_bb[W_QUEEN] : board->piece_bb[B_QUEEN];
-    bitboard_t their_king_bb = (them == WHITE) ? board->piece_bb[W_KING] : board->piece_bb[B_KING];
 
     //General purpose bitboards for attacks, masks, etc.
 	bitboard_t b1, b2, b3;

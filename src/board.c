@@ -111,17 +111,6 @@ board_t* init_board() {
 /* Frees memory of board */
 void free_board(board_t* board) { free(board); }
 
-/* Updates the white, the black and the all bitboard */
-void update_white_black_all_boards(board_t* board) {
-    board->black = board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] |
-                   board->piece_bb[B_BISHOP] | board->piece_bb[B_ROOK] |
-                   board->piece_bb[B_QUEEN] | board->piece_bb[B_KING];
-    board->white = board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] |
-                   board->piece_bb[W_BISHOP] | board->piece_bb[W_ROOK] |
-                   board->piece_bb[W_QUEEN] | board->piece_bb[W_KING];
-    board->all = board->black | board->white;
-}
-
 /* Load a game position based on FEN */
 void load_by_FEN(board_t* board, char* FEN) {
     int row = 7;
@@ -226,8 +215,6 @@ void load_by_FEN(board_t* board, char* FEN) {
         }
         ptr++;
     }
-
-    update_white_black_all_boards(board);
 
     ptr++;
 

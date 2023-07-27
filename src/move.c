@@ -289,9 +289,8 @@ int do_move(board_t *board, move_t *move) {
 
     board->ply_no++;
     board->player = SWITCHSIDES(board->player);
-    update_white_black_all_boards(board);
-    return !is_in_check_after_move(board);
 
+    return 0;
 }
 
 /* Undos a move */
@@ -305,7 +304,6 @@ void undo_move(board_t *board, move_t* move) {
     board->full_move_counter = board->history[board->ply_no].full_move_counter;
 
     moveflags_t type = move->flags;
-    square_t sq;
 
 	switch (type) {
 	case QUIET:
@@ -369,7 +367,5 @@ void undo_move(board_t *board, move_t* move) {
 		break;
 	}
 
-	board->player = SWITCHSIDES(board->player);;
-
-    update_white_black_all_boards(board);
+	board->player = SWITCHSIDES(board->player);
 }
