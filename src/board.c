@@ -49,6 +49,10 @@ board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
 
     /* copy the playing field */
+    for(int i = 0; i < 64; i++){
+        copy->playingfield[i] = board->playingfield[i];
+    }
+
     for(int i = 0; i < NR_PIECES; i++){
         copy->piece_bb[i] = board->piece_bb[i];
     }
@@ -57,15 +61,23 @@ board_t* copy_board(board_t* board) {
     copy->white = board->white;
     copy->all = board->all;
 
-    for(int i = 0; i < 64; i++){
-        copy->playingfield[i] = board->playingfield[i];
-    }
+    
 
     /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;
+
+    for(int i = 0; i < 2048; i++){
+        copy->history[i].captured = board->history[i].captured;
+        copy->history[i].castlerights = board->history[i].castlerights;
+        copy->history[i].epsq = board->history[i].epsq;
+        copy->history[i].fifty_move_counter = board->history[i].fifty_move_counter;
+        copy->history[i].full_move_counter = board->history[i].full_move_counter;
+    }
+    
     copy->ep_field = board->ep_field;
     copy->ep_possible = board->ep_possible;
     copy->castle_rights = board->castle_rights;
+
     copy->ply_no = board->ply_no;
     copy->fifty_move_counter = board->fifty_move_counter;
     copy->full_move_counter = board->full_move_counter;

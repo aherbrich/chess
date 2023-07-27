@@ -145,7 +145,7 @@ int quiet_search(board_t *board, int alpha, int beta,
     // generate only pseudo legal moves
     maxpq_t movelst;
     initialize_maxpq(&movelst);
-    generate_pseudo_moves(board, &movelst);
+    generate_moves(board, &movelst);
     move_t *move;
 
     while ((move = pop_max(&movelst))) {
@@ -272,7 +272,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     maxpq_t movelst;
     move_t *move;
     initialize_maxpq(&movelst);
-    generate_pseudo_moves(searchdata->board, &movelst);
+    generate_moves(searchdata->board, &movelst);
 
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
@@ -298,12 +298,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     move_t *best_move = NULL;
 
     while ((move = pop_max(&movelst))) {
-        // We play a move and filter out those that turn out to be illegal
-        if (!do_move(searchdata->board, move)) {
-            undo_move(searchdata->board, move);
-            free_move(move);
-            continue;
-        }
+        do_move(searchdata->board, move);
 
         legal_moves++;
 
