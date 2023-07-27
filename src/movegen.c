@@ -656,31 +656,9 @@ void generate_pseudo_moves(board_t *board, maxpq_t *movelst) {
     }
 }
 
-/* Filters out illegal moves from pseudolegal movelist */
-void filter_illegal_moves(board_t *board, maxpq_t *movelst) {
-    maxpq_t legalmoves;
-    initialize_maxpq(&legalmoves);
-    move_t *move;
-
-    while ((move = pop_max(movelst))) {
-        /* We play a move and filter out those that turn out to be illegal */
-        if (!do_move(board, move)) {
-            undo_move(board, move);
-            free_move(move);
-            continue;
-        }
-        insert(&legalmoves, move);
-        undo_move(board, move);
-    }
-
-    memcpy((*movelst).array, legalmoves.array, sizeof((*movelst).array));
-    (*movelst).nr_elem = legalmoves.nr_elem;
-}
-
 /* Generates all legal moves for player at turn */
 void generate_moves(board_t *board, maxpq_t *movelst) {
-    generate_pseudo_moves(board, movelst);
-    filter_illegal_moves(board, movelst);
+    generate_legals(board, movelst);
 }
 
 int sparse_pop_count(bitboard_t x) {

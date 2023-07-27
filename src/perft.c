@@ -9,7 +9,7 @@ uint64_t perft(board_t* board, int depth) {
 
     maxpq_t movelst;
     initialize_maxpq(&movelst);
-    generate_legals(board, &movelst);
+    generate_moves(board, &movelst);
 
     move_t* move;
 
@@ -28,7 +28,7 @@ uint64_t perft(board_t* board, int depth) {
 int perft_divide(board_t* board, int depth) {
     maxpq_t movelst;
     initialize_maxpq(&movelst);
-    generate_legals(board, &movelst);
+    generate_moves(board, &movelst);
 
     move_t* move;
     uint64_t all_nodes_count = 0;
