@@ -113,19 +113,19 @@ bitboard_t LINE[64][64];
 int is_capture(bitboard_t to, board_t *board) {
     bitboard_t to_mask = (1ULL << to);
     if(board->player == WHITE){
-        if (board->piece_bb[B_PAWN] & to_mask) return PAWN;
-        if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT;
-        if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP;
-        if (board->piece_bb[B_ROOK] & to_mask) return ROOK;
-        if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN;
-        if (board->piece_bb[B_KING] & to_mask) return KING;
+        if (board->piece_bb[B_PAWN] & to_mask) return PAWN_ID;
+        if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT_ID;
+        if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP_ID;
+        if (board->piece_bb[B_ROOK] & to_mask) return ROOK_ID;
+        if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN_ID;
+        if (board->piece_bb[B_KING] & to_mask) return KING_ID;
     } else{
-        if (board->piece_bb[W_PAWN] & to_mask) return PAWN;
-        if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT;
-        if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP;
-        if (board->piece_bb[W_ROOK] & to_mask) return ROOK;
-        if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN;
-        if (board->piece_bb[W_KING] & to_mask) return KING;
+        if (board->piece_bb[W_PAWN] & to_mask) return PAWN_ID;
+        if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT_ID;
+        if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP_ID;
+        if (board->piece_bb[W_ROOK] & to_mask) return ROOK_ID;
+        if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN_ID;
+        if (board->piece_bb[W_KING] & to_mask) return KING_ID;
     }
     return EMPTY;
 }
@@ -296,8 +296,8 @@ dir_t relative_dir(player_t player, dir_t d) {
 	return (player == WHITE) ? (dir_t) d : (dir_t) -d;
 }
 
-dir_t relative_rank(player_t player, dir_t r) {
-	return (player == WHITE) ? (dir_t) r : (dir_t) (RANK8 - r);
+rank_t relative_rank(player_t player, rank_t r) {
+	return (player == WHITE) ? (rank_t) r : (rank_t) (RANK8 - r);
 }
 
 int oo_allowed(player_t player, flag_t cr){
@@ -333,7 +333,7 @@ void make_moves_doubleep(maxpq_t *movelst, square_t from, bitboard_t targets){
 void make_moves_capture(maxpq_t *movelst, board_t* board, square_t from, bitboard_t targets){
     while (targets) {
         int p = pop_1st_bit(&targets);
-        insert(movelst, generate_move(from, p, CAPTURE, board->piece_bb[p] * 100 + (KING - (board->piece_bb[from] & 0b111))));
+        insert(movelst, generate_move(from, p, CAPTURE, board->piece_bb[p] * 100 + (KING_ID - (board->piece_bb[from] & 0b111))));
     }
 }
 
@@ -458,7 +458,7 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		square_t checker_square = find_1st_bit(checkers);
 
 		switch (board->playingfield[checker_square] &0b111) {
-		case BW_PAWN:
+		case PAWN:
 			//If the checker is a pawn, we must check for e.p. moves that can capture it
 			//This evaluates to true if the checking piece is the one which just double pushed
 			if (checkers == shift(SQUARE_BB[board->history[board->ply_no].epsq], relative_dir(us, SOUTH))) {
@@ -468,13 +468,13 @@ void generate_legals(board_t* board, maxpq_t *movelst){
                 while (b1) insert(movelst, generate_move(pop_1st_bit(&b1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
 			}
 			//FALL THROUGH INTENTIONAL
-		case BW_KNIGHT:
+		case KNIGHT:
 			//If the checker is either a pawn or a knight, the only legal moves are to capture
 			//the checker. Only non-pinned pieces can capture it
 			b1 = attackers_from(board, checker_square, all, us) & not_pinned;
 			while (b1) {
                 int p = pop_1st_bit(&b1);
-                insert(movelst, generate_move(p , checker_square, CAPTURE, board->piece_bb[checker_square]*100 + (KING - (board->piece_bb[p] & 0b111))));
+                insert(movelst, generate_move(p , checker_square, CAPTURE, board->piece_bb[checker_square]*100 + (KING_ID - (board->piece_bb[p] & 0b111))));
             }
 			return;
 		default:
@@ -561,13 +561,13 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 			//...only include attacks that are aligned with our king, since pinned pieces
 			//are constrained to move in this direction only
             switch(board->playingfield[s] & 0b111){
-                case BW_BISHOP:
+                case BISHOP:
                     b2 = attack_bishop(s, all) & LINE[our_king_sq][s];
                     break;
-                case BW_ROOK:
+                case ROOK:
                     b2 = attack_rook(s, all) & LINE[our_king_sq][s];
                     break;
-                case BW_QUEEN:
+                case QUEEN:
                     b2 = (attack_bishop(s, all) | attack_rook(s, all)) & LINE[our_king_sq][s];
             }
             make_moves_quiet(movelst, s, b2 & quiet_mask);
@@ -663,12 +663,12 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 
 	while (b2) {
 		s = pop_1st_bit(&b2);
-        insert(movelst, generate_move(s-relative_dir(us, NORTH_WEST), s, CAPTURE, board->piece_bb[s]*100 + (KING - PAWN)));
+        insert(movelst, generate_move(s-relative_dir(us, NORTH_WEST), s, CAPTURE, board->piece_bb[s]*100 + (KING_ID - PAWN_ID)));
 	}
 
 	while (b3) {
 		s = pop_1st_bit(&b3);
-        insert(movelst, generate_move(s-relative_dir(us, NORTH_EAST), s, CAPTURE, board->piece_bb[s]*100 + (KING - PAWN)));
+        insert(movelst, generate_move(s-relative_dir(us, NORTH_EAST), s, CAPTURE, board->piece_bb[s]*100 + (KING_ID - PAWN_ID)));
 	}
 
     //b1 now contains non-pinned pawns which ARE on the last rank (about to promote)

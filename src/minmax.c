@@ -364,7 +364,7 @@ void search(searchdata_t *searchdata) {
     // Reset the history hash table from previous searches
     // Of course we keep the hashes of already played
     // positions untouched
-    for (int i = searchdata->board->ply_no; i < 2048; i++) {
+    for (int i = searchdata->board->ply_no; i < MAXPLIES; i++) {
         HISTORY_HASHES[i] = 0;
     }
 

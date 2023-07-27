@@ -30,52 +30,36 @@
 
 #define SWITCHSIDES(X) (X^WHITE)
 
-#define A 0
-#define B 1
-#define C 2
-#define D 3
-#define E 4
-#define F 5
-#define G 6
-#define H 7
-
-#define RANK1 0
-#define RANK2 1
-#define RANK3 2
-#define RANK4 3
-#define RANK5 4
-#define RANK6 5
-#define RANK7 6
-#define RANK8 7
-
-
-#define EMPTY 0
-#define PAWN 1
-#define KNIGHT 2
-#define BISHOP 3
-#define ROOK 4
-#define QUEEN 5
-#define KING 6
-
-#define BW_PAWN 0
-#define BW_KNIGHT 1
-#define BW_BISHOP 2
-#define BW_ROOK 3
-#define BW_QUEEN 4
-#define BW_KING 5
-
 #define INFINITY INT_MAX
 #define NEGINFINITY (-INFINITY)
 
-#define EXACT 0
-#define UPPERBOUND 1
-#define LOWERBOUND 2
+#define PRIORITY_QUEUE_SIZE 322 // 321 possible moves at most 
 
-#define PRIORITY_QUEUE_SIZE 512
+#define MAXPLIES 1024
+typedef enum _file_t {
+    A, B, C, D, E, F, G, H
+} file_t;
 
-#define WINWHITE 1
-#define DRAW 0
-#define WINBLACK -1
+typedef enum _rank_t {
+    RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8
+} rank_t;
+
+typedef enum _ordervalue_t {
+    EMPTY, PAWN_ID, KNIGHT_ID, BISHOP_ID, ROOK_ID, QUEEN_ID, KING_ID
+} ordervalue_t;
+
+typedef enum _piecetype_t {
+    PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+} piecetype_t;
+
+typedef enum _ttflag_t {
+    EXACT, UPPERBOUND, LOWERBOUND
+} ttflag_t;
+
+typedef enum _gameresult_t {
+    WINBLACK = -1, DRAW = 0, WINWHITE = 1
+} gameresult_t;
+
 
 typedef enum _moveflags_t {
     QUIET = 0, DOUBLEP, KCASTLE, QCASTLE, CAPTURE, EPCAPTURE,
@@ -125,7 +109,7 @@ typedef struct _board_t {
     
     player_t player;
 
-    undoinfo_t history[2048];
+    undoinfo_t history[MAXPLIES];
 
     uint16_t ply_no;
 } board_t;
@@ -196,8 +180,8 @@ extern int hash_bounds_adjusted;
 extern int pv_node_hit;
 
 //  MOVE EXECUTION
-extern board_t* OLDSTATE[2048];
-extern uint64_t HISTORY_HASHES[2048];
+extern board_t* OLDSTATE[MAXPLIES];
+extern uint64_t HISTORY_HASHES[MAXPLIES];
 
 //  MOVE GENERATION
 extern bitboard_t MASK_FILE[8];
@@ -232,8 +216,8 @@ void initialize_helper_boards();
 void initialize_oldstate_array();
 void initialize_chess_engine_only_necessary();
 
-int rank_of(square_t s);
-int file_of(square_t s);
+rank_t rank_of(square_t s);
+file_t file_of(square_t s);
 int diagonal_of(square_t s);
 int anti_diagonal_of(square_t s);
 bitboard_t sliding_attacks(square_t square, bitboard_t occ, bitboard_t mask);

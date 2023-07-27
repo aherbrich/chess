@@ -48,8 +48,8 @@ int pop_1st_bit(bitboard_t *bb) {
     return idx;
 }
 
-int rank_of(square_t s) { return s >> 3; }
-int file_of(square_t s) { return s & 0b111; }
+rank_t rank_of(square_t s) { return s >> 3; }
+file_t file_of(square_t s) { return s & 0b111; }
 int diagonal_of(square_t s) { return 7 + rank_of(s) - file_of(s); }
 int anti_diagonal_of(square_t s) { return rank_of(s) + file_of(s); }
 
@@ -170,14 +170,14 @@ void initialize_helper_boards() {
 
 /* Initializes old state array */
 void initialize_oldstate_array() {
-    for (int i = 0; i < 2048; i++) {
+    for (int i = 0; i < MAXPLIES; i++) {
         OLDSTATE[i] = 0;
     }
 }
 
 /* Initializes old state array */
 void initialize_history_hash_array() {
-    for (int i = 0; i < 2048; i++) {
+    for (int i = 0; i < MAXPLIES; i++) {
         HISTORY_HASHES[i] = 0;
     }
 }

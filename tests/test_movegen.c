@@ -10,8 +10,8 @@ typedef struct _perfttest_t {
     int results[16];
 } perfttest_t;
 
-board_t *OLDSTATE[2048];
-uint64_t HISTORY_HASHES[2048];
+board_t *OLDSTATE[MAXPLIES];
+uint64_t HISTORY_HASHES[MAXPLIES];
 uint64_t GLOBAL_COUNT = 0; 
 
 /* pads whitespaces left and right of given string until given width reached */
@@ -82,7 +82,7 @@ void print_perft_test_row_separator() {
 /* determines number of lines in a file */
 int count_lines_in_file() {
     FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/perft_suite_small.txt", "r");
+        "/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
     // FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
     int line_count = 0;
     int character;
@@ -106,7 +106,7 @@ perfttest_t **load_perft_test_suite(int nr_of_tests) {
 
     // open file
     FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/perft_suite_small.txt", "r");
+        "/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
     // FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
 
     char *line = NULL;

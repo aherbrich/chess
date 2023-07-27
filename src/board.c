@@ -16,7 +16,7 @@ void clear_board(board_t* board) {
     /* reset player, en passant field/possible, castle rights and ply number */
     board->player = WHITE;
 
-    for(int i = 0; i < 2048; i++){
+    for(int i = 0; i < MAXPLIES; i++){
         board->history[i].captured = NO_PIECE;
         board->history[i].castlerights = 0b1111;
         board->history[i].epsq = NO_SQUARE;
@@ -43,7 +43,7 @@ board_t* copy_board(board_t* board) {
     /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;
 
-    for(int i = 0; i < 2048; i++){
+    for(int i = 0; i < MAXPLIES; i++){
         copy->history[i].captured = board->history[i].captured;
         copy->history[i].castlerights = board->history[i].castlerights;
         copy->history[i].epsq = board->history[i].epsq;
