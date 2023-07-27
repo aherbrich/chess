@@ -129,13 +129,8 @@ typedef struct _board_t {
     player_t player;
 
     undoinfo_t history[2048];
-    flag_t castle_rights;
-    flag_t ep_possible;
-    idx_t ep_field;
 
     uint16_t ply_no;
-    uint16_t full_move_counter;
-    uint8_t fifty_move_counter;
 } board_t;
 
 typedef struct _move_t {
@@ -266,7 +261,6 @@ void heap_sort(maxpq_t* pq);
 //  BOARD FUNCTIONS
 board_t* init_board();
 board_t* copy_board(board_t* board);
-void recover_board(board_t* board, board_t* old_board);
 void clear_board(board_t* board);
 void free_board(board_t* board);
 void load_by_FEN(board_t* board, char* FEN);

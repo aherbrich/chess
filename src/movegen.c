@@ -461,11 +461,11 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		case BW_PAWN:
 			//If the checker is a pawn, we must check for e.p. moves that can capture it
 			//This evaluates to true if the checking piece is the one which just double pushed
-			if (checkers == shift(SQUARE_BB[board->ep_field], relative_dir(us, SOUTH))) {
+			if (checkers == shift(SQUARE_BB[board->history[board->ply_no].epsq], relative_dir(us, SOUTH))) {
 				//b1 contains our pawns that can capture the checker e.p.
-				b1 = attack_pawn_single(board->ep_field, them) & our_pawns_bb & not_pinned;
+				b1 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb & not_pinned;
                 
-                while (b1) insert(movelst, generate_move(pop_1st_bit(&b1), board->ep_field, EPCAPTURE, 0));
+                while (b1) insert(movelst, generate_move(pop_1st_bit(&b1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
 			}
 			//FALL THROUGH INTENTIONAL
 		case BW_KNIGHT:
@@ -496,9 +496,9 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		//...and we can play a quiet move to any square which is not occupied
 		quiet_mask = ~all;
 
-		if (board->ep_possible) {
+		if (board->history[board->ply_no].epsq != NO_SQUARE) {
 			//b1 contains our pawns that can perform an e.p. capture
-			b2 = attack_pawn_single(board->ep_field, them) & our_pawns_bb;
+			b2 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb;
 			b1 = b2 & not_pinned;
 			while (b1) {
 				s = pop_1st_bit(&b1);
@@ -520,17 +520,17 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 				Here, if white plays exd5 e.p., the black rook on a5 attacks the white king on h5 
 				*/
                 if (((sliding_attacks(our_king_sq, 
-                                        all ^ SQUARE_BB[s] ^ shift(SQUARE_BB[board->ep_field], relative_dir(us, SOUTH)), 
+                                        all ^ SQUARE_BB[s] ^ shift(SQUARE_BB[board->history[board->ply_no].epsq], relative_dir(us, SOUTH)), 
                                         MASK_RANK[rank_of(our_king_sq)]) 
                     & their_orth_sliders_bb) == 0)){
-                        insert(movelst, generate_move(s, board->ep_field, EPCAPTURE, 0));
+                        insert(movelst, generate_move(s, board->history[board->ply_no].epsq, EPCAPTURE, 0));
                 }
 			}
 			
 			//Pinned pawns can only capture e.p. if they are pinned diagonally and the e.p. square is in line with the king 
-			b1 = b2 & pinned & LINE[board->ep_field][our_king_sq];
+			b1 = b2 & pinned & LINE[board->history[board->ply_no].epsq][our_king_sq];
 			if (b1) {
-                insert(movelst, generate_move(find_1st_bit(b1), board->ep_field, EPCAPTURE, 0));
+                insert(movelst, generate_move(find_1st_bit(b1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
 			}
 		}
 
@@ -538,14 +538,14 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		//1. The king and the rook have both not moved
 		//2. No piece is attacking between the the rook and the king
 		//3. The king is not in check
-        if(!((all | danger) & oo_blockers_mask(us)) && (oo_allowed(us, board->castle_rights))){
+        if(!((all | danger) & oo_blockers_mask(us)) && (oo_allowed(us, board->history[board->ply_no].castlerights))){
             if(us == WHITE){
                 insert(movelst, generate_move(e1, g1, KCASTLE, 0));
             } else{
                 insert(movelst, generate_move(e8, g8, KCASTLE, 0));
             }
         }
-        if(!((all | (danger & ~ignore_ooo_danger_bfile(us))) & ooo_blockers_mask(us)) && (ooo_allowed(us, board->castle_rights))){
+        if(!((all | (danger & ~ignore_ooo_danger_bfile(us))) & ooo_blockers_mask(us)) && (ooo_allowed(us, board->history[board->ply_no].castlerights))){
             if(us == WHITE){
                 insert(movelst, generate_move(e1, c1, QCASTLE, 0));
             } else{

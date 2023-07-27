@@ -218,7 +218,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     }
 
     // Check for draw by repitition or fifty move rule
-    if ((searchdata->board->fifty_move_counter >= 100 &&
+    if ((searchdata->board->history[searchdata->board->ply_no].fifty_move_counter >= 100 &&
          !(is_in_check(searchdata->board))) ||
         draw_by_repition(searchdata->board)) {
         return 0;

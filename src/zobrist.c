@@ -84,23 +84,23 @@ uint64_t calculate_zobrist_hash(board_t *board) {
     }
 
     /* hash the flags */
-    if (board->ep_possible) {
-        hash ^= zobrist_table.flag_random64[board->ep_field % 8];
+    if (board->history[board->ply_no].epsq != NO_SQUARE) {
+        hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
     }
 
-    if ((board->castle_rights & LONGSIDEW)) {
+    if ((board->history[board->ply_no].castlerights & LONGSIDEW)) {
         hash ^= zobrist_table.flag_random64[8];
     }
 
-    if ((board->castle_rights & SHORTSIDEW)) {
+    if ((board->history[board->ply_no].castlerights & SHORTSIDEW)) {
         hash ^= zobrist_table.flag_random64[9];
     }
 
-    if ((board->castle_rights & LONGSIDEB)) {
+    if ((board->history[board->ply_no].castlerights & LONGSIDEB)) {
         hash ^= zobrist_table.flag_random64[10];
     }
 
-    if ((board->castle_rights & SHORTSIDEB)) {
+    if ((board->history[board->ply_no].castlerights & SHORTSIDEB)) {
         hash ^= zobrist_table.flag_random64[11];
     }
 

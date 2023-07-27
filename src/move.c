@@ -87,53 +87,54 @@ int do_move(board_t *board, move_t *move) {
     HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
 
     /* FIRST: save old board state */
-    board->history[board->ply_no].castlerights = board->castle_rights;
-    board->history[board->ply_no].captured = board->playingfield[move->to];
-    board->history[board->ply_no].epsq = NO_SQUARE;
-    board->history[board->ply_no].fifty_move_counter = board->fifty_move_counter;
-    board->history[board->ply_no].full_move_counter = board->full_move_counter;
-
+    board->ply_no++;
+    uint16_t ply = board->ply_no;
+    board->history[ply].captured = NO_PIECE;
+    board->history[ply].epsq = NO_SQUARE;
+    board->history[ply].castlerights = board->history[ply-1].castlerights;
+    board->history[ply].fifty_move_counter = board->history[ply-1].fifty_move_counter;
+    board->history[ply].full_move_counter = board->history[ply-1].full_move_counter;
 
     /* SECONDLY: adjust counters */
     /* if move is a capture or a pawn move, reset counter */
     if ((move->flags & 0b0100) || (SQUARE_BB[move->from] & board->piece_bb[W_PAWN]) ||
         (SQUARE_BB[move->from] & board->piece_bb[B_PAWN])) {
-        board->fifty_move_counter = 0;
+        board->history[ply].fifty_move_counter = 0;
 
     } else {
         /* else increase it */
-        board->fifty_move_counter++;
+        board->history[ply].fifty_move_counter++;
     }
 
     /* if black is making the move/ made his move, then increase the full move
      * counter */
     if (board->player == BLACK) {
-        board->full_move_counter++;
+        board->history[ply].full_move_counter++;
     }
 
 
     /* adjust castling rights */
     if(board->playingfield[move->from] == W_ROOK){
-        if (move->from == 0) board->castle_rights &= ~(LONGSIDEW);
-        if (move->from == 7) board->castle_rights &= ~(SHORTSIDEW);
+        if (move->from == 0) board->history[ply].castlerights &= ~(LONGSIDEW);
+        if (move->from == 7) board->history[ply].castlerights &= ~(SHORTSIDEW);
     }
     else if(board->playingfield[move->from] == B_ROOK){
-        if (move->from == 56) board->castle_rights &= ~(LONGSIDEB);
-        if (move->from == 63) board->castle_rights &= ~(SHORTSIDEB);
+        if (move->from == 56) board->history[ply].castlerights &= ~(LONGSIDEB);
+        if (move->from == 63) board->history[ply].castlerights &= ~(SHORTSIDEB);
     }
     else if(board->playingfield[move->from] == W_KING){
-        board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
+        board->history[ply].castlerights &= ~(SHORTSIDEW | LONGSIDEW);
     }
     else if(board->playingfield[move->from] == B_KING){
-        board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
+        board->history[ply].castlerights &= ~(SHORTSIDEB | LONGSIDEB);
     }
 
     if (move->flags & 0b0100) {
         /* first off, adjust castle rights if rooks were captured */
-        if (move->to == 7) board->castle_rights &= ~(SHORTSIDEW);
-        if (move->to == 0) board->castle_rights &= ~(LONGSIDEW);
-        if (move->to == 63) board->castle_rights &= ~(SHORTSIDEB);
-        if (move->to == 56) board->castle_rights &= ~(LONGSIDEB);
+        if (move->to == 7) board->history[ply].castlerights &= ~(SHORTSIDEW);
+        if (move->to == 0) board->history[ply].castlerights &= ~(LONGSIDEW);
+        if (move->to == 63) board->history[ply].castlerights &= ~(SHORTSIDEB);
+        if (move->to == 56) board->history[ply].castlerights &= ~(LONGSIDEB);
     }
 
 
@@ -143,8 +144,6 @@ int do_move(board_t *board, move_t *move) {
 
     moveflags_t type = move->flags;
 
-    board->ep_possible = FALSE;
-    board->ep_field = -1;
 
 	switch (type) {
 	case QUIET:
@@ -153,45 +152,42 @@ int do_move(board_t *board, move_t *move) {
 	case DOUBLEP:
 		move_piece_quiet(board, move->from, move->to);
 			
-        board->ep_possible = TRUE;
         if (board->player == WHITE) {
-            board->ep_field = move->from + 8;
+            board->history[ply].epsq = move->from + 8;
         } else {
-            board->ep_field = move->from - 8;
+            board->history[ply].epsq = move->from - 8;
         }
-
-        board->history[board->ply_no].epsq = board->ep_field; 
 		break;
 	case KCASTLE:
 		if (board->player == WHITE) {
 			move_piece_quiet(board, e1, g1);
 			move_piece_quiet(board, h1, f1);
-            board->castle_rights &= ~(SHORTSIDEW | LONGSIDEW);
+            board->history[ply].castlerights &= ~(SHORTSIDEW | LONGSIDEW);
 		} else {
 			move_piece_quiet(board, e8, g8);
 			move_piece_quiet(board, h8, f8);
-            board->castle_rights &= ~(SHORTSIDEB | LONGSIDEB);
+            board->history[ply].castlerights &= ~(SHORTSIDEB | LONGSIDEB);
 		}			
 		break;
 	case QCASTLE:
 		if (board->player == WHITE) {
 			move_piece_quiet(board, e1, c1); 
 			move_piece_quiet(board, a1, d1);
-            board->castle_rights &= ~(LONGSIDEW | SHORTSIDEW);
+            board->history[ply].castlerights &= ~(LONGSIDEW | SHORTSIDEW);
 		} else {
 			move_piece_quiet(board, e8, c8);
 			move_piece_quiet(board, a8, d8);
-            board->castle_rights &= ~(LONGSIDEB | SHORTSIDEB);
+            board->history[ply].castlerights &= ~(LONGSIDEB | SHORTSIDEB);
 		}
 		break;
 	case EPCAPTURE:
 		move_piece_quiet(board, move->from, move->to);
 
         if (board->player == WHITE) {
-            board->history[board->ply_no].captured = B_PAWN;
+            board->history[ply-1].captured = B_PAWN;
             remove_piece(board, move->to - 8);
         } else {
-            board->history[board->ply_no].captured = W_PAWN;
+            board->history[ply-1].captured = W_PAWN;
             remove_piece(board, move->to + 8);
         }
 		break;
@@ -228,7 +224,7 @@ int do_move(board_t *board, move_t *move) {
         }
 		break;
 	case KCPROM:
-        board->history[board->ply_no].captured = board->playingfield[move->to];
+        board->history[board->ply_no-1].captured = board->playingfield[move->to];
 
         remove_piece(board, move->from);
         remove_piece(board, move->to);
@@ -240,7 +236,7 @@ int do_move(board_t *board, move_t *move) {
         }
 		break;
 	case BCPROM:
-		board->history[board->ply_no].captured = board->playingfield[move->to];
+		board->history[board->ply_no-1].captured = board->playingfield[move->to];
 
         remove_piece(board, move->from);
         remove_piece(board, move->to);
@@ -252,7 +248,7 @@ int do_move(board_t *board, move_t *move) {
         }
 		break;
 	case RCPROM:
-		board->history[board->ply_no].captured = board->playingfield[move->to];
+		board->history[board->ply_no-1].captured = board->playingfield[move->to];
 
         remove_piece(board, move->from);
         remove_piece(board, move->to);
@@ -264,7 +260,7 @@ int do_move(board_t *board, move_t *move) {
         }
 		break;
 	case QCPROM:
-		board->history[board->ply_no].captured = board->playingfield[move->to];
+		board->history[board->ply_no-1].captured = board->playingfield[move->to];
 
         remove_piece(board, move->from);
         remove_piece(board, move->to);
@@ -276,7 +272,7 @@ int do_move(board_t *board, move_t *move) {
         }
 		break;
 	case CAPTURE:
-		board->history[board->ply_no].captured = board->playingfield[move->to];
+		board->history[board->ply_no-1].captured = board->playingfield[move->to];
 		move_piece(board, move->from, move->to);
 		break;
     default:
@@ -286,8 +282,6 @@ int do_move(board_t *board, move_t *move) {
         exit(1);
 	}
     
-
-    board->ply_no++;
     board->player = SWITCHSIDES(board->player);
 
     return 0;
@@ -297,11 +291,6 @@ int do_move(board_t *board, move_t *move) {
 void undo_move(board_t *board, move_t* move) {
     /* reduce ply number */
     board->ply_no--;
-    board->castle_rights = board->history[board->ply_no].castlerights;
-    board->ep_field = board->history[board->ply_no].epsq;
-    board->ep_possible = (board->history[board->ply_no].epsq == NO_SQUARE) ? FALSE : TRUE;
-    board->fifty_move_counter = board->history[board->ply_no].fifty_move_counter;
-    board->full_move_counter = board->history[board->ply_no].full_move_counter;
 
     moveflags_t type = move->flags;
 
@@ -367,5 +356,6 @@ void undo_move(board_t *board, move_t* move) {
 		break;
 	}
 
+    board->history[board->ply_no].captured = NO_PIECE;
 	board->player = SWITCHSIDES(board->player);
 }
