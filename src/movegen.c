@@ -133,88 +133,7 @@ int is_capture(bitboard_t to, board_t *board) {
 /* Checks if a player is in check WHILE CURRENTLY AT TURN */
 /* WARNING: (Generally) Call BEFORE making a move  */
 int is_in_check(board_t *board) {
-	bitboard_t all = (board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] | board->piece_bb[W_BISHOP] | 
-                board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[W_KING]) | 
-                (board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] | board->piece_bb[B_BISHOP] | 
-                board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN] | board->piece_bb[B_KING]);
-
-    if (board->player == WHITE) {
-        if (!board->piece_bb[W_KING]) return TRUE;
-        int king_sq = find_1st_bit(board->piece_bb[W_KING]);
-
-        bitboard_t attackers;
-        bitboard_t blockers;
-
-        /* check by knights */
-        attackers = KNIGHT_ATTACK[king_sq] & board->piece_bb[B_KNIGHT];
-        if (attackers) return TRUE;
-
-        /* check by bishops, rooks, and queens */
-        blockers = ROOK_ATTACK_MASK[king_sq] & all;
-        int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
-        attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[B_ROOK];
-        if (attackers) return TRUE;
-
-        blockers = BISHOP_ATTACK_MASK[king_sq] & all;
-        int k =
-            transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
-        attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[B_BISHOP];
-        if (attackers) return TRUE;
-
-        attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) &
-                    board->piece_bb[B_QUEEN];
-        if (attackers) return TRUE;
-
-        /* check by pawns */
-        attackers = (((board->piece_bb[W_KING] & CLEAR_FILE[A]) << 7) |
-                     ((board->piece_bb[W_KING] & CLEAR_FILE[H]) << 9)) &
-                    board->piece_bb[B_PAWN];
-        if (attackers) return TRUE;
-
-        /* 'check by king' */
-        attackers = KING_ATTACK[king_sq] & board->piece_bb[B_KING];
-        if (attackers) return TRUE;
-
-        return FALSE;
-    } else {
-        if (!board->piece_bb[B_KING]) return TRUE;
-        int king_sq = find_1st_bit(board->piece_bb[B_KING]);
-
-        bitboard_t attackers;
-        bitboard_t blockers;
-
-        /* check by knights */
-        attackers = KNIGHT_ATTACK[king_sq] & board->piece_bb[W_KNIGHT];
-        if (attackers) return TRUE;
-
-        /* check by bishops, rooks, and queens */
-        blockers = ROOK_ATTACK_MASK[king_sq] & all;
-        int j = transform(blockers, ROOK_MAGIC[king_sq], ROOK_BITS[king_sq]);
-        attackers = ROOK_ATTACK[king_sq][j] & board->piece_bb[W_ROOK];
-        if (attackers) return TRUE;
-
-        blockers = BISHOP_ATTACK_MASK[king_sq] & all;
-        int k =
-            transform(blockers, BISHOP_MAGIC[king_sq], BISHOP_BITS[king_sq]);
-        attackers = BISHOP_ATTACK[king_sq][k] & board->piece_bb[W_BISHOP];
-        if (attackers) return TRUE;
-
-        attackers = (BISHOP_ATTACK[king_sq][k] | ROOK_ATTACK[king_sq][j]) &
-                    board->piece_bb[W_QUEEN];
-        if (attackers) return TRUE;
-
-        /* check by pawns */
-        attackers = (((board->piece_bb[B_KING] & CLEAR_FILE[H]) >> 7) |
-                     ((board->piece_bb[B_KING] & CLEAR_FILE[A]) >> 9)) &
-                    board->piece_bb[W_PAWN];
-        if (attackers) return TRUE;
-
-        /* 'check by king' */
-        attackers = KING_ATTACK[king_sq] & board->piece_bb[W_KING];
-        if (attackers) return TRUE;
-
-        return FALSE;
-    }
+	return(board->checkers);
 }
 
 /* Generates all legal moves for player at turn */
@@ -427,41 +346,41 @@ void generate_legals(board_t* board, maxpq_t *movelst){
     //Checkers of each piece type are identified by:
 	//1. Projecting attacks FROM the king square
 	//2. Intersecting this bitboard with the enemy bitboard of that piece type
-	bitboard_t checkers = (KNIGHT_ATTACK[our_king_sq] & their_knights_bb) | (attack_pawn_single(our_king_sq, us) & their_pawns_bb);
+	board->checkers = (KNIGHT_ATTACK[our_king_sq] & their_knights_bb) | (attack_pawn_single(our_king_sq, us) & their_pawns_bb);
 
     //Here, we identify slider checkers and pinners simultaneously, and candidates for such pinners 
 	//and checkers are represented by the bitboard <candidates>
 	bitboard_t candidates = (attack_rook(our_king_sq, them_bb) & their_orth_sliders_bb) | (attack_bishop(our_king_sq, them_bb) & their_diag_sliders_bb);
 
-    bitboard_t pinned = 0;
+    board->pinned = 0;
 	while (candidates) {
 		s = pop_1st_bit(&candidates);
 		b1 = SQUARES_BETWEEN_BB[our_king_sq][s] & us_bb;
 		
 		//Do the squares in between the enemy slider and our king contain any of our pieces?
 		//If not, add the slider to the checker bitboard
-		if (b1 == 0) checkers ^= SQUARE_BB[s];
+		if (b1 == 0) board->checkers ^= SQUARE_BB[s];
 		//If there is only one of our pieces between them, add our piece to the pinned bitboard 
-		else if ((b1 & b1 - 1) == 0) pinned ^= b1;
+		else if ((b1 & b1 - 1) == 0) board->pinned ^= b1;
 	}
 
     //This makes it easier to mask pieces
-	bitboard_t not_pinned = ~pinned;
+	bitboard_t not_pinned = ~board->pinned;
 
-    switch (sparse_pop_count(checkers)) {
+    switch (sparse_pop_count(board->checkers)) {
 	case 2:
 		//If there is a double check, the only legal moves are king moves out of check
 		return;
 	case 1: {
 		//It's a single check!
 
-		square_t checker_square = find_1st_bit(checkers);
+		square_t checker_square = find_1st_bit(board->checkers);
 
 		switch (board->playingfield[checker_square] &0b111) {
 		case PAWN:
 			//If the checker is a pawn, we must check for e.p. moves that can capture it
 			//This evaluates to true if the checking piece is the one which just double pushed
-			if (checkers == shift(SQUARE_BB[board->history[board->ply_no].epsq], relative_dir(us, SOUTH))) {
+			if (board->checkers == shift(SQUARE_BB[board->history[board->ply_no].epsq], relative_dir(us, SOUTH))) {
 				//b1 contains our pawns that can capture the checker e.p.
 				b1 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb & not_pinned;
                 
@@ -479,7 +398,7 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 			return;
 		default:
 			//We must capture the checking piece
-			capture_mask = checkers;
+			capture_mask = board->checkers;
 			
 			//...or we can block it since it is guaranteed to be a slider
 			quiet_mask = SQUARES_BETWEEN_BB[our_king_sq][checker_square];
@@ -528,7 +447,7 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 			}
 			
 			//Pinned pawns can only capture e.p. if they are pinned diagonally and the e.p. square is in line with the king 
-			b1 = b2 & pinned & LINE[board->history[board->ply_no].epsq][our_king_sq];
+			b1 = b2 & board->pinned & LINE[board->history[board->ply_no].epsq][our_king_sq];
 			if (b1) {
                 insert(movelst, generate_move(find_1st_bit(b1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
 			}

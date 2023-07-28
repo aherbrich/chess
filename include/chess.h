@@ -106,6 +106,8 @@ typedef struct _undoinfo_t {
 typedef struct _board_t {
     piece_t playingfield[64];
     bitboard_t piece_bb[NR_PIECES];
+    bitboard_t checkers;
+    bitboard_t pinned;
     
     player_t player;
 
