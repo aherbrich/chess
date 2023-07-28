@@ -92,20 +92,27 @@ void free_move(move_t *move) {
 
 /* Execute move */
 int do_move(board_t *board, move_t *move) {
+    /* save current board hash in array */
     HISTORY_HASHES[board->ply_no] = board->hash;
-    /* FIRST: save old board state */
+    
+    /* increase board ply number */
     board->ply_no++;
     uint16_t ply = board->ply_no;
+
+    /* reset history fields for board at new ply */
     board->history[ply].captured = NO_PIECE;
     board->history[ply].epsq = NO_SQUARE;
     board->history[ply].castlerights = board->history[ply-1].castlerights;
     board->history[ply].fifty_move_counter = board->history[ply-1].fifty_move_counter;
     board->history[ply].full_move_counter = board->history[ply-1].full_move_counter;
 
+    /* adjustment of zobrist hash */
+    /* xor out the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply-1*/
     if(board->history[ply-1].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[ply-1].epsq % 8];
+    /* xor out the (old) castle rights */
     board->hash ^= zobrist_table.flag_random64[board->history[ply-1].castlerights+8];
-    /* SECONDLY: adjust counters */
-    /* if move is a capture or a pawn move, reset counter */
+
+    /* reset fifty-counter if move is a capture or a pawn move*/
     if ((move->flags & 0b0100) || (SQUARE_BB[move->from] & board->piece_bb[W_PAWN]) ||
         (SQUARE_BB[move->from] & board->piece_bb[B_PAWN])) {
         board->history[ply].fifty_move_counter = 0;
@@ -138,8 +145,8 @@ int do_move(board_t *board, move_t *move) {
         board->history[ply].castlerights &= ~(SHORTSIDEB | LONGSIDEB);
     }
 
+    /* adjust castle rights if rooks were (potentially) captured */
     if (move->flags & 0b0100) {
-        /* first off, adjust castle rights if rooks were captured */
         if (move->to == 7) board->history[ply].castlerights &= ~(SHORTSIDEW);
         if (move->to == 0) board->history[ply].castlerights &= ~(LONGSIDEW);
         if (move->to == 63) board->history[ply].castlerights &= ~(SHORTSIDEB);
@@ -147,13 +154,7 @@ int do_move(board_t *board, move_t *move) {
     }
 
 
-    /*
-     * EXIT EARLY STATEMENTS BEGIN
-     */
-
     moveflags_t type = move->flags;
-
-
 	switch (type) {
 	case QUIET:
 		move_piece_quiet(board, move->from, move->to);
@@ -165,6 +166,7 @@ int do_move(board_t *board, move_t *move) {
         } else {
             board->history[ply].epsq = move->from - 8;
         }
+        /* xor in the new ep square */
         board->hash ^= zobrist_table.flag_random64[board->history[ply].epsq % 8];
 		break;
 	case KCASTLE:
@@ -292,17 +294,22 @@ int do_move(board_t *board, move_t *move) {
 	}
     
     board->player = SWITCHSIDES(board->player);
+    /* xor out old player and xor in the new player */
     board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
+    /* xor in the new castle rights */
     board->hash ^= zobrist_table.flag_random64[board->history[ply].castlerights+8];
     return 0;
 }
 
 /* Undos a move */
 void undo_move(board_t *board, move_t* move) {
+    /* xor out old castle rights */
+    board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights+8];
     /* reduce ply number */
-    board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights+8];
     board->ply_no--;
+    /* xor in new castle rights */
     board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights+8];
+    /* xor out the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply+1*/
     if(board->history[board->ply_no].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
 
     moveflags_t type = move->flags;
@@ -312,6 +319,7 @@ void undo_move(board_t *board, move_t* move) {
 		move_piece_quiet(board, move->to, move->from);
 		break;
 	case DOUBLEP:
+    /* xor in new ep square */
         board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no+1].epsq % 8];
 		move_piece_quiet(board, move->to, move->from);
 		break;
@@ -370,7 +378,7 @@ void undo_move(board_t *board, move_t* move) {
 		break;
 	}
 
-    board->history[board->ply_no].captured = NO_PIECE;
 	board->player = SWITCHSIDES(board->player);
+    /* xor in the new castle rights */
     board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
 }

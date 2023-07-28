@@ -186,25 +186,25 @@ extern board_t* OLDSTATE[MAXPLIES];
 extern uint64_t HISTORY_HASHES[MAXPLIES];
 
 //  MOVE GENERATION
-extern bitboard_t MASK_FILE[8];
-extern bitboard_t MASK_RANK[8];
-extern bitboard_t CLEAR_FILE[8];
-extern bitboard_t CLEAR_RANK[8];
-extern bitboard_t UNIBOARD;
+extern const bitboard_t MASK_FILE[8];
+extern const bitboard_t MASK_RANK[8];
+extern const bitboard_t CLEAR_FILE[8];
+extern const bitboard_t CLEAR_RANK[8];
+extern const bitboard_t MASK_DIAGONAL[15];
+extern const bitboard_t MASK_ANTI_DIAGONAL[15];
+extern const bitboard_t UNIBOARD;
 
-extern bitboard_t MASK_DIAGONAL[15];
-extern bitboard_t MASK_ANTI_DIAGONAL[15];
+extern const bitboard_t SQUARE_BB[65];
+extern bitboard_t SQUARES_BETWEEN_BB[64][64];
+extern bitboard_t LINE[64][64];
 
+extern const bitboard_t PAWN_ATTACK[2][64];
 extern bitboard_t ROOK_ATTACK[64][4096];
 extern bitboard_t BISHOP_ATTACK[64][4096];
 extern bitboard_t KNIGHT_ATTACK[64];
 extern bitboard_t KING_ATTACK[64];
 extern bitboard_t ROOK_ATTACK_MASK[64];
 extern bitboard_t BISHOP_ATTACK_MASK[64];
-
-extern const bitboard_t SQUARE_BB[65];
-extern bitboard_t SQUARES_BETWEEN_BB[64][64];
-extern bitboard_t LINE[64][64];
 
 //////////////////////////////////////////////////////////////
 //  HELPER FUNCTIONS
