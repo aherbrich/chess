@@ -16,7 +16,7 @@ void initialize_zobrist_table() {
         }
     }
     /* Initialize random 64 bit number for every board flag */
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i < 26; i++) {
         zobrist_table.flag_random64[i] = random_uint64();
     }
 }
@@ -88,28 +88,14 @@ uint64_t calculate_zobrist_hash(board_t *board) {
         hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
     }
 
-    // if ((board->history[board->ply_no].castlerights & LONGSIDEW)) {
-    //     hash ^= zobrist_table.flag_random64[8];
-    // }
-
-    // if ((board->history[board->ply_no].castlerights & SHORTSIDEW)) {
-    //     hash ^= zobrist_table.flag_random64[9];
-    // }
-
-    // if ((board->history[board->ply_no].castlerights & LONGSIDEB)) {
-    //     hash ^= zobrist_table.flag_random64[10];
-    // }
-
-    // if ((board->history[board->ply_no].castlerights & SHORTSIDEB)) {
-    //     hash ^= zobrist_table.flag_random64[11];
-    // }
+    hash ^= zobrist_table.flag_random64[8+board->history[board->ply_no].castlerights];
 
     if (board->player == BLACK) {
-        hash ^= zobrist_table.flag_random64[12];
+        hash ^= zobrist_table.flag_random64[24];
     }
 
     if (board->player == WHITE) {
-        hash ^= zobrist_table.flag_random64[13];
+        hash ^= zobrist_table.flag_random64[25];
     }
     return hash;
 }

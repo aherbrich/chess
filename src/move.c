@@ -93,9 +93,6 @@ void free_move(move_t *move) {
 /* Execute move */
 int do_move(board_t *board, move_t *move) {
     HISTORY_HASHES[board->ply_no] = board->hash;
-    // if(board->hash != calculate_zobrist_hash(board)){
-    //     printf("%llu %llu\n", board->hash, calculate_zobrist_hash(board));
-    // }
     /* FIRST: save old board state */
     board->ply_no++;
     uint16_t ply = board->ply_no;
@@ -106,6 +103,7 @@ int do_move(board_t *board, move_t *move) {
     board->history[ply].full_move_counter = board->history[ply-1].full_move_counter;
 
     if(board->history[ply-1].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[ply-1].epsq % 8];
+    board->hash ^= zobrist_table.flag_random64[board->history[ply-1].castlerights+8];
     /* SECONDLY: adjust counters */
     /* if move is a capture or a pawn move, reset counter */
     if ((move->flags & 0b0100) || (SQUARE_BB[move->from] & board->piece_bb[W_PAWN]) ||
@@ -294,15 +292,17 @@ int do_move(board_t *board, move_t *move) {
 	}
     
     board->player = SWITCHSIDES(board->player);
-    board->hash ^= zobrist_table.flag_random64[12] ^ zobrist_table.flag_random64[13];
+    board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
+    board->hash ^= zobrist_table.flag_random64[board->history[ply].castlerights+8];
     return 0;
 }
 
 /* Undos a move */
 void undo_move(board_t *board, move_t* move) {
     /* reduce ply number */
+    board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights+8];
     board->ply_no--;
-
+    board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights+8];
     if(board->history[board->ply_no].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
 
     moveflags_t type = move->flags;
@@ -372,5 +372,5 @@ void undo_move(board_t *board, move_t* move) {
 
     board->history[board->ply_no].captured = NO_PIECE;
 	board->player = SWITCHSIDES(board->player);
-    board->hash ^= zobrist_table.flag_random64[12] ^ zobrist_table.flag_random64[13];
+    board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
 }
