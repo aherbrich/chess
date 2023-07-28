@@ -37,7 +37,7 @@ char *get_mate_or_cp_value(int score, int depth) {
 
 /* Determines a draw by threefold repitiion */
 int draw_by_repition(board_t *board) {
-    uint64_t current_board_hash = calculate_zobrist_hash(board);
+    uint64_t current_board_hash = board->hash; //calculate_zobrist_hash(board);
 
     int counter = 0;
     for (int i = 0; i < board->ply_no; i++) {
