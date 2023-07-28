@@ -2,6 +2,7 @@
 
 #include "../include/chess.h"
 #include "../include/prettyprint.h"
+#include "../include/zobrist.h"
 #include "sys/time.h"
 
 typedef struct _perfttest_t {
@@ -197,7 +198,7 @@ int run_specific_test(perfttest_t *test) {
 int main() {
     // intialize necessary structures
     initialize_chess_engine_only_necessary();
-
+    initialize_zobrist_table();
     // determine number of tests in file
     int nr_of_tests = count_lines_in_file();
 

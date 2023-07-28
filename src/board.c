@@ -1,5 +1,5 @@
 #include <string.h>
-
+#include "../include/zobrist.h"
 #include "../include/chess.h"
 
 /* Clears the board */
@@ -25,6 +25,8 @@ void clear_board(board_t* board) {
     }
 
     board->ply_no = 0;
+
+    board->hash = calculate_zobrist_hash(board);
 }
 
 /* Copies given board */
@@ -52,6 +54,8 @@ board_t* copy_board(board_t* board) {
     }
 
     copy->ply_no = board->ply_no;
+
+    copy->hash = board->hash;
 
     return copy;
 }
@@ -257,5 +261,6 @@ void load_by_FEN(board_t* board, char* FEN) {
     char* full_move = strtok_r(NULL, " ", &tmp);
     board->history[0].full_move_counter = (uint8_t)atoi(full_move);
 
+    board->hash = calculate_zobrist_hash(board);
     return;
 }

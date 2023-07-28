@@ -10,7 +10,7 @@
 // #define HTSIZE  18815231    // ~3.5GB
 
 typedef struct _zobrist_t {
-    uint64_t piece_random64[12][64];
+    uint64_t piece_random64[14][64];
     uint64_t flag_random64[14];
 } zobrist_t;
 

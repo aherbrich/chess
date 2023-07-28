@@ -2,6 +2,7 @@
 #include "../include/zobrist.h"
 
 void remove_piece(board_t* board, square_t sq){
+    board->hash ^= zobrist_table.piece_random64[board->playingfield[sq]][sq];
     board->piece_bb[board->playingfield[sq]] &= ~SQUARE_BB[sq];
 	board->playingfield[sq] = NO_PIECE;
 }
@@ -9,10 +10,15 @@ void remove_piece(board_t* board, square_t sq){
 void put_piece(board_t* board, piece_t pc, square_t sq){
     board->piece_bb[pc] |= SQUARE_BB[sq];
     board->playingfield[sq] = pc;
+    board->hash ^= zobrist_table.piece_random64[pc][sq];
 }
 
 
 void move_piece(board_t* board, square_t from, square_t to) {
+    if(board->playingfield[to] == NO_PIECE) exit(3);
+    board->hash ^= zobrist_table.piece_random64[board->playingfield[from]][from] ^ 
+                    zobrist_table.piece_random64[board->playingfield[from]][to] ^
+                    zobrist_table.piece_random64[board->playingfield[to]][to];
 	bitboard_t mask = SQUARE_BB[from] | SQUARE_BB[to];
 	board->piece_bb[board->playingfield[from]] ^= mask;
 	board->piece_bb[board->playingfield[to]] &= ~mask;
@@ -21,6 +27,8 @@ void move_piece(board_t* board, square_t from, square_t to) {
 }
 
 void move_piece_quiet(board_t* board, square_t from, square_t to) {
+    board->hash ^= zobrist_table.piece_random64[board->playingfield[from]][from] ^ 
+                    zobrist_table.piece_random64[board->playingfield[from]][to];
 	board->piece_bb[board->playingfield[from]] ^= (SQUARE_BB[from] | SQUARE_BB[to]);
 	board->playingfield[to] = board->playingfield[from];
 	board->playingfield[from] = NO_PIECE;
@@ -84,8 +92,10 @@ void free_move(move_t *move) {
 
 /* Execute move */
 int do_move(board_t *board, move_t *move) {
-    HISTORY_HASHES[board->ply_no] = calculate_zobrist_hash(board);
-
+    HISTORY_HASHES[board->ply_no] = board->hash;
+    // if(board->hash != calculate_zobrist_hash(board)){
+    //     printf("%llu %llu\n", board->hash, calculate_zobrist_hash(board));
+    // }
     /* FIRST: save old board state */
     board->ply_no++;
     uint16_t ply = board->ply_no;
@@ -95,6 +105,7 @@ int do_move(board_t *board, move_t *move) {
     board->history[ply].fifty_move_counter = board->history[ply-1].fifty_move_counter;
     board->history[ply].full_move_counter = board->history[ply-1].full_move_counter;
 
+    if(board->history[ply-1].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[ply-1].epsq % 8];
     /* SECONDLY: adjust counters */
     /* if move is a capture or a pawn move, reset counter */
     if ((move->flags & 0b0100) || (SQUARE_BB[move->from] & board->piece_bb[W_PAWN]) ||
@@ -151,12 +162,12 @@ int do_move(board_t *board, move_t *move) {
 		break;
 	case DOUBLEP:
 		move_piece_quiet(board, move->from, move->to);
-			
         if (board->player == WHITE) {
             board->history[ply].epsq = move->from + 8;
         } else {
             board->history[ply].epsq = move->from - 8;
         }
+        board->hash ^= zobrist_table.flag_random64[board->history[ply].epsq % 8];
 		break;
 	case KCASTLE:
 		if (board->player == WHITE) {
@@ -283,7 +294,7 @@ int do_move(board_t *board, move_t *move) {
 	}
     
     board->player = SWITCHSIDES(board->player);
-
+    board->hash ^= zobrist_table.flag_random64[12] ^ zobrist_table.flag_random64[13];
     return 0;
 }
 
@@ -292,6 +303,8 @@ void undo_move(board_t *board, move_t* move) {
     /* reduce ply number */
     board->ply_no--;
 
+    if(board->history[board->ply_no].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
+
     moveflags_t type = move->flags;
 
 	switch (type) {
@@ -299,6 +312,7 @@ void undo_move(board_t *board, move_t* move) {
 		move_piece_quiet(board, move->to, move->from);
 		break;
 	case DOUBLEP:
+        board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no+1].epsq % 8];
 		move_piece_quiet(board, move->to, move->from);
 		break;
 	case KCASTLE:
@@ -320,7 +334,7 @@ void undo_move(board_t *board, move_t* move) {
 		}
 		break;
 	case EPCAPTURE:
-		move_piece(board, move->to, move->from);
+		move_piece_quiet(board, move->to, move->from);
         if(board->player == WHITE){
             put_piece(board, W_PAWN, move->to + 8);
         } else{
@@ -351,11 +365,12 @@ void undo_move(board_t *board, move_t* move) {
         put_piece(board, board->history[board->ply_no].captured, move->to);
 		break;
 	case CAPTURE:
-		move_piece(board, move->to, move->from);
+		move_piece_quiet(board, move->to, move->from);
         put_piece(board, board->history[board->ply_no].captured, move->to);
 		break;
 	}
 
     board->history[board->ply_no].captured = NO_PIECE;
 	board->player = SWITCHSIDES(board->player);
+    board->hash ^= zobrist_table.flag_random64[12] ^ zobrist_table.flag_random64[13];
 }

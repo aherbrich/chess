@@ -112,6 +112,8 @@ typedef struct _board_t {
     undoinfo_t history[MAXPLIES];
 
     uint16_t ply_no;
+
+    uint64_t hash;
 } board_t;
 
 typedef struct _move_t {
