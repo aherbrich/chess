@@ -124,18 +124,6 @@ typedef struct _move_t {
     idx_t to;
     flag_t flags;
 } move_t;
-typedef struct _node_t {
-    move_t* move;
-    struct _node_t* next;
-    struct _node_t* prev;
-} node_t;
-
-typedef struct _list_t {
-    int len;
-    node_t* first;
-    node_t* last;
-} list_t;
-
 typedef struct _maxpq_t {
     int size;
     int nr_elem;
