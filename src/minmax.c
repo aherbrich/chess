@@ -131,6 +131,8 @@ int search_has_to_be_stopped(searchdata_t *search_data) {
 /* Quescience search */
 int quiet_search(board_t *board, int alpha, int beta,
                  searchdata_t *search_data) {
+
+    search_data->nodes_searched++;
     int eval = eval_board(board);
 
     if (eval >= beta) {
@@ -298,7 +300,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     while ((move = pop_max(&movelst))) {
         legal_moves++;
-        
+
         do_move(searchdata->board, move);
         int eval = -negamax(searchdata, depth - 1, -beta, -best_eval);
         undo_move(searchdata->board, move);

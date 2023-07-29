@@ -108,34 +108,6 @@ bitboard_t BISHOP_ATTACK_MASK[64];
 bitboard_t SQUARES_BETWEEN_BB[64][64];
 bitboard_t LINE[64][64];
 
-/* Checks if piece would capture on a given TO-field and returns the piece type
- */
-int is_capture(bitboard_t to, board_t *board) {
-    bitboard_t to_mask = (1ULL << to);
-    if(board->player == WHITE){
-        if (board->piece_bb[B_PAWN] & to_mask) return PAWN_ID;
-        if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT_ID;
-        if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP_ID;
-        if (board->piece_bb[B_ROOK] & to_mask) return ROOK_ID;
-        if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN_ID;
-        if (board->piece_bb[B_KING] & to_mask) return KING_ID;
-    } else{
-        if (board->piece_bb[W_PAWN] & to_mask) return PAWN_ID;
-        if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT_ID;
-        if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP_ID;
-        if (board->piece_bb[W_ROOK] & to_mask) return ROOK_ID;
-        if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN_ID;
-        if (board->piece_bb[W_KING] & to_mask) return KING_ID;
-    }
-    return EMPTY;
-}
-
-/* Checks if a player is in check WHILE CURRENTLY AT TURN */
-/* WARNING: (Generally) Call BEFORE making a move  */
-int is_in_check(board_t *board) {
-	return(board->checkers);
-}
-
 /* Generates all legal moves for player at turn */
 void generate_moves(board_t *board, maxpq_t *movelst) {
     generate_legals(board, movelst);

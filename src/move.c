@@ -37,6 +37,34 @@ void move_piece_quiet(board_t* board, square_t from, square_t to) {
 ////////////////////////////////////////////////////////////////
 // MOVE FUNCTIONS
 
+/* Checks if piece would capture on a given TO-field and returns the piece type
+ */
+int is_capture(bitboard_t to, board_t *board) {
+    bitboard_t to_mask = (1ULL << to);
+    if(board->player == WHITE){
+        if (board->piece_bb[B_PAWN] & to_mask) return PAWN_ID;
+        if (board->piece_bb[B_KNIGHT] & to_mask) return KNIGHT_ID;
+        if (board->piece_bb[B_BISHOP] & to_mask) return BISHOP_ID;
+        if (board->piece_bb[B_ROOK] & to_mask) return ROOK_ID;
+        if (board->piece_bb[B_QUEEN] & to_mask) return QUEEN_ID;
+        if (board->piece_bb[B_KING] & to_mask) return KING_ID;
+    } else{
+        if (board->piece_bb[W_PAWN] & to_mask) return PAWN_ID;
+        if (board->piece_bb[W_KNIGHT] & to_mask) return KNIGHT_ID;
+        if (board->piece_bb[W_BISHOP] & to_mask) return BISHOP_ID;
+        if (board->piece_bb[W_ROOK] & to_mask) return ROOK_ID;
+        if (board->piece_bb[W_QUEEN] & to_mask) return QUEEN_ID;
+        if (board->piece_bb[W_KING] & to_mask) return KING_ID;
+    }
+    return EMPTY;
+}
+
+/* Checks if a player is in check WHILE CURRENTLY AT TURN */
+/* WARNING: (Generally) Call BEFORE making a move  */
+int is_in_check(board_t *board) {
+	return(board->checkers);
+}
+
 /* Determines if two mves are the same */
 int is_same_move(move_t *move1, move_t *move2) {
     /* moves are considered same if their FROM & TO squares and FLAGS are the
