@@ -37,7 +37,7 @@ char *get_mate_or_cp_value(int score, int depth) {
 
 /* Determines a draw by threefold repitiion */
 int draw_by_repition(board_t *board) {
-    uint64_t current_board_hash = calculate_zobrist_hash(board);
+    uint64_t current_board_hash = board->hash; //calculate_zobrist_hash(board);
 
     int counter = 0;
     for (int i = 0; i < board->ply_no; i++) {
@@ -131,6 +131,8 @@ int search_has_to_be_stopped(searchdata_t *search_data) {
 /* Quescience search */
 int quiet_search(board_t *board, int alpha, int beta,
                  searchdata_t *search_data) {
+
+    search_data->nodes_searched++;
     int eval = eval_board(board);
 
     if (eval >= beta) {
@@ -142,10 +144,10 @@ int quiet_search(board_t *board, int alpha, int beta,
 
     int best_eval = eval;
 
-    // generate only pseudo legal moves
+    // generate legal moves
     maxpq_t movelst;
     initialize_maxpq(&movelst);
-    generate_pseudo_moves(board, &movelst);
+    generate_moves(board, &movelst);
     move_t *move;
 
     while ((move = pop_max(&movelst))) {
@@ -179,7 +181,7 @@ int quiet_search(board_t *board, int alpha, int beta,
 
         do_move(board, move);
         eval = -quiet_search(board, -beta, -alpha, search_data);
-        undo_move(board);
+        undo_move(board, move);
 
         // if eval is better than the best so far, update it
         if (eval > best_eval) {
@@ -218,7 +220,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     }
 
     // Check for draw by repitition or fifty move rule
-    if ((searchdata->board->fifty_move_counter >= 100 &&
+    if ((searchdata->board->history[searchdata->board->ply_no].fifty_move_counter >= 100 &&
          !(is_in_check(searchdata->board))) ||
         draw_by_repition(searchdata->board)) {
         return 0;
@@ -226,9 +228,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
-        // quiet_search(searchdata->board, alpha, beta, searchdata)
-        // return
-        return eval_board(searchdata->board);
+        return quiet_search(searchdata->board, alpha, beta, searchdata);
+        // return eval_board(searchdata->board);
     }
 
     // ================================================================ //
@@ -272,7 +273,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     maxpq_t movelst;
     move_t *move;
     initialize_maxpq(&movelst);
-    generate_pseudo_moves(searchdata->board, &movelst);
+    generate_moves(searchdata->board, &movelst);
 
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
@@ -298,18 +299,11 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     move_t *best_move = NULL;
 
     while ((move = pop_max(&movelst))) {
-        // We play a move and filter out those that turn out to be illegal
-        if (!do_move(searchdata->board, move)) {
-            undo_move(searchdata->board);
-            free_move(move);
-            continue;
-        }
-
         legal_moves++;
 
-        // If the move was a legal move, we can continue the search
+        do_move(searchdata->board, move);
         int eval = -negamax(searchdata, depth - 1, -beta, -best_eval);
-        undo_move(searchdata->board);
+        undo_move(searchdata->board, move);
 
         if (eval > best_eval) {
             best_eval = eval;
@@ -369,7 +363,7 @@ void search(searchdata_t *searchdata) {
     // Reset the history hash table from previous searches
     // Of course we keep the hashes of already played
     // positions untouched
-    for (int i = searchdata->board->ply_no; i < 2048; i++) {
+    for (int i = searchdata->board->ply_no; i < MAXPLIES; i++) {
         HISTORY_HASHES[i] = 0;
     }
 

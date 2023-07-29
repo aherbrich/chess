@@ -11,12 +11,12 @@ void initialize_zobrist_table() {
     /* Initialize random 64 bit number for each piece on each square of the
      * board */
     for (int i = 0; i < 64; i++) {
-        for (int piece = 0; piece < 12; piece++) {
+        for (int piece = 0; piece < 14; piece++) {
             zobrist_table.piece_random64[piece][i] = random_uint64();
         }
     }
     /* Initialize random 64 bit number for every board flag */
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i < 26; i++) {
         zobrist_table.flag_random64[i] = random_uint64();
     }
 }
@@ -29,12 +29,12 @@ uint64_t calculate_zobrist_hash(board_t *board) {
 
     /* hash the WHITE piece positions */
 
-    pawns = board->whitepawns;
-    knights = board->whiteknights;
-    bishops = board->whitebishops;
-    rooks = board->whiterooks;
-    queens = board->whitequeens;
-    king = board->whiteking;
+    pawns = board->piece_bb[B_PAWN];
+    knights = board->piece_bb[B_KNIGHT];
+    bishops = board->piece_bb[B_BISHOP];
+    rooks = board->piece_bb[B_ROOK];
+    queens = board->piece_bb[B_QUEEN];
+    king = board->piece_bb[B_KING];
 
     while (pawns) {
         hash ^= zobrist_table.piece_random64[0][pop_1st_bit(&pawns)];
@@ -57,61 +57,46 @@ uint64_t calculate_zobrist_hash(board_t *board) {
 
     /* hash the BLACK piece positions */
 
-    pawns = board->blackpawns;
-    knights = board->blackknights;
-    bishops = board->blackbishops;
-    rooks = board->blackrooks;
-    queens = board->blackqueens;
-    king = board->blackking;
+    pawns = board->piece_bb[W_PAWN];
+    knights = board->piece_bb[W_KNIGHT];
+    bishops = board->piece_bb[W_BISHOP];
+    rooks = board->piece_bb[W_ROOK];
+    queens = board->piece_bb[W_QUEEN];
+    king = board->piece_bb[W_KING];
 
     while (pawns) {
-        hash ^= zobrist_table.piece_random64[6][pop_1st_bit(&pawns)];
+        hash ^= zobrist_table.piece_random64[8][pop_1st_bit(&pawns)];
     }
     while (knights) {
-        hash ^= zobrist_table.piece_random64[7][pop_1st_bit(&knights)];
+        hash ^= zobrist_table.piece_random64[9][pop_1st_bit(&knights)];
     }
     while (bishops) {
-        hash ^= zobrist_table.piece_random64[8][pop_1st_bit(&bishops)];
+        hash ^= zobrist_table.piece_random64[10][pop_1st_bit(&bishops)];
     }
     while (rooks) {
-        hash ^= zobrist_table.piece_random64[9][pop_1st_bit(&rooks)];
+        hash ^= zobrist_table.piece_random64[11][pop_1st_bit(&rooks)];
     }
     while (queens) {
-        hash ^= zobrist_table.piece_random64[10][pop_1st_bit(&queens)];
+        hash ^= zobrist_table.piece_random64[12][pop_1st_bit(&queens)];
     }
     while (king) {
-        hash ^= zobrist_table.piece_random64[11][pop_1st_bit(&king)];
+        hash ^= zobrist_table.piece_random64[13][pop_1st_bit(&king)];
     }
 
     /* hash the flags */
-    if (board->ep_possible) {
-        hash ^= zobrist_table.flag_random64[board->ep_field % 8];
+    if (board->history[board->ply_no].epsq != NO_SQUARE) {
+        hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
     }
 
-    if ((board->castle_rights & LONGSIDEW)) {
-        hash ^= zobrist_table.flag_random64[8];
-    }
-
-    if ((board->castle_rights & SHORTSIDEW)) {
-        hash ^= zobrist_table.flag_random64[9];
-    }
-
-    if ((board->castle_rights & LONGSIDEB)) {
-        hash ^= zobrist_table.flag_random64[10];
-    }
-
-    if ((board->castle_rights & SHORTSIDEB)) {
-        hash ^= zobrist_table.flag_random64[11];
-    }
+    hash ^= zobrist_table.flag_random64[8+board->history[board->ply_no].castlerights];
 
     if (board->player == BLACK) {
-        hash ^= zobrist_table.flag_random64[12];
+        hash ^= zobrist_table.flag_random64[24];
     }
 
     if (board->player == WHITE) {
-        hash ^= zobrist_table.flag_random64[13];
+        hash ^= zobrist_table.flag_random64[25];
     }
-
     return hash;
 }
 
@@ -169,7 +154,7 @@ uint64_t get_memory_usage_hashtable_in_bytes() {
 /* Stores entry in the global hashtable */
 void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
                            move_t *move, int8_t depth) {
-    uint64_t hash = calculate_zobrist_hash(board);
+    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *new = NULL;
@@ -232,7 +217,7 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
 /* Gets the best move from the hashtable for the board position (or NULL, if
  * there isnt one) */
 move_t *get_best_move_from_hashtable(board_t *board) {
-    uint64_t hash = calculate_zobrist_hash(board);
+    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
@@ -253,7 +238,7 @@ move_t *get_best_move_from_hashtable(board_t *board) {
  * (otherwise 0) */
 int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value,
                         move_t **move, int8_t *depth) {
-    uint64_t hash = calculate_zobrist_hash(board);
+    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
@@ -277,7 +262,7 @@ int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value,
 
 /* Gets the eval from the hashtable for the board position */
 int get_eval_from_hashtable(board_t *board) {
-    uint64_t hash = calculate_zobrist_hash(board);
+    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];

@@ -2,6 +2,7 @@
 
 #include "../include/chess.h"
 #include "../include/prettyprint.h"
+#include "../include/zobrist.h"
 #include "sys/time.h"
 
 typedef struct _perfttest_t {
@@ -10,8 +11,8 @@ typedef struct _perfttest_t {
     int results[16];
 } perfttest_t;
 
-board_t *OLDSTATE[2048];
-uint64_t HISTORY_HASHES[2048];
+board_t *OLDSTATE[MAXPLIES];
+uint64_t HISTORY_HASHES[MAXPLIES];
 uint64_t GLOBAL_COUNT = 0; 
 
 /* pads whitespaces left and right of given string until given width reached */
@@ -197,7 +198,7 @@ int run_specific_test(perfttest_t *test) {
 int main() {
     // intialize necessary structures
     initialize_chess_engine_only_necessary();
-
+    initialize_zobrist_table();
     // determine number of tests in file
     int nr_of_tests = count_lines_in_file();
 

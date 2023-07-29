@@ -18,7 +18,7 @@ uint64_t perft(board_t* board, int depth) {
     while ((move = pop_max(&movelst)) != NULL) {
         do_move(board, move);
         num_positions += perft(board, depth - 1);
-        undo_move(board);
+        undo_move(board, move);
         free_move(move);
     }
     return num_positions;
@@ -35,16 +35,16 @@ int perft_divide(board_t* board, int depth) {
     while ((move = pop_max(&movelst))) {
         do_move(board, move);
         uint64_t num_positions = perft(board, depth - 1);
-        undo_move(board);
+        undo_move(board, move);
 
         print_LAN_move(move, board->player);
-        fprintf(stderr, ": %llu\n", num_positions);
+        printf(": %llu\n", num_positions);
         free_move(move);
 
         all_nodes_count += num_positions;
     }
 
-    fprintf(stderr, "\nNodes searched: %llu\n", all_nodes_count);
+    printf("\nNodes searched: %llu\n", all_nodes_count);
 
     return all_nodes_count;
 }

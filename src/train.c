@@ -9,8 +9,8 @@
 #include "../include/san.h"
 #include "../include/zobrist.h"
 
-board_t* OLDSTATE[2048];
-uint64_t HISTORY_HASHES[2048];
+board_t* OLDSTATE[MAXPLIES];
+uint64_t HISTORY_HASHES[MAXPLIES];
 
 int nodes_searched = 0;
 int hash_used = 0;
