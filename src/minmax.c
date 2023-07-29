@@ -142,7 +142,7 @@ int quiet_search(board_t *board, int alpha, int beta,
 
     int best_eval = eval;
 
-    // generate only pseudo legal moves
+    // generate legal moves
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
@@ -226,9 +226,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
-        // quiet_search(searchdata->board, alpha, beta, searchdata)
-        // return
-        return eval_board(searchdata->board);
+        return quiet_search(searchdata->board, alpha, beta, searchdata);
+        // return eval_board(searchdata->board);
     }
 
     // ================================================================ //
@@ -298,11 +297,9 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     move_t *best_move = NULL;
 
     while ((move = pop_max(&movelst))) {
-        do_move(searchdata->board, move);
-
         legal_moves++;
-
-        // If the move was a legal move, we can continue the search
+        
+        do_move(searchdata->board, move);
         int eval = -negamax(searchdata, depth - 1, -beta, -best_eval);
         undo_move(searchdata->board, move);
 

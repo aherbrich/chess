@@ -273,8 +273,6 @@ void free_search_data(searchdata_t* data);
 
 ///////////////////////////////////////////////////////////////
 //  SEARCH
-int alpha_beta_search(board_t* board, int depth, int alpha, int beta,
-                      searchdata_t* searchs_data);
 void search(searchdata_t* search_data);
 
 ///////////////////////////////////////////////////////////////
