@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../include/chess.h"
 #include "../include/prettyprint.h"
@@ -82,9 +84,12 @@ void print_perft_test_row_separator() {
 
 /* determines number of lines in a file */
 int count_lines_in_file() {
-    FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
-    // FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
+    char file_name[PATH_MAX];
+    getcwd(file_name, PATH_MAX);
+    strcat(file_name, "/data/perft_suite.txt");
+
+    FILE *fp = fopen(file_name, "r");
+
     int line_count = 0;
     int character;
     do {
@@ -105,10 +110,12 @@ perfttest_t **load_perft_test_suite(int nr_of_tests) {
         perfttests[i] = NULL;
     }
 
+    char file_name[PATH_MAX];
+    getcwd(file_name, PATH_MAX);
+    strcat(file_name, "/data/perft_suite.txt");
+
     // open file
-    FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/perft_suite.txt", "r");
-    // FILE *fp = fopen("/home/ubuntu/chess/data/perft_suite.txt", "r");
+    FILE *fp = fopen(file_name, "r");
 
     char *line = NULL;
     size_t len = 0;
