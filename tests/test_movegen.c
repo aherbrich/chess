@@ -69,6 +69,7 @@ void print_perft_test_row(char *fen, char *depth, char *expected, char *found,
     free(padded_fen);
     free(padded_depth);
     free(padded_expected);
+    free(padded_nps);
     free(padded_found);
     free(padded_passed);
 }
@@ -144,6 +145,7 @@ perfttest_t **load_perft_test_suite(int nr_of_tests) {
             idx++;
         }
     }
+    free(line);
     fclose(fp);
     return perfttests;
 }
@@ -227,6 +229,7 @@ int main() {
 
     printf("Average nps: %.2f Mn/s\n", ((GLOBAL_COUNT)/((global_end.tv_sec-global_start.tv_sec)*1000.0 + (global_end.tv_usec-global_start.tv_usec)/1000.0))/1000.0);
 
+    free(perfttests);
 
     // notify if testing was successful
     if (fail_counter) {

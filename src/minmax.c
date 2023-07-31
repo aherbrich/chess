@@ -247,6 +247,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
                                           &pv_value, &pv_move, &pv_depth);
 
     if (entry_found && pv_depth == depth && pv_flags == EXACT) {
+        free_move(pv_move);
         return pv_value;
     } else if (entry_found && pv_depth == depth && pv_flags == LOWERBOUND) {
         searchdata->hash_bounds_adjusted++;

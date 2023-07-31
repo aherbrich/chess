@@ -55,4 +55,5 @@ int main() {
     printf("\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
     free(board);
+    free_search_data(search_data);
 }
