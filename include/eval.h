@@ -10,6 +10,8 @@
 #define ROOKVALUE 500
 #define QUEENVALUE 900
 
+extern const int MATERIAL_VALUE[16];
+
 /* pawn position values */
 extern int PAWN_POSITION_VALUE[64];
 /* knight position values */

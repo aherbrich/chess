@@ -47,77 +47,8 @@ int KING_POSITION_VALUE[64] = {
     -20, -10, -20, -20, -20, -20, -20, -20, -10, 20,  20,  0,   0,
     0,   0,   20,  20,  20,  30,  10,  0,   0,   10,  30,  20};
 
-/* Very simple evaluation by material and positional value */
-int simple_eval(board_t *board, player_t color) {
-    int material = 0;
-    bitboard_t pawns, knights, bishops, rooks, queens, king;
-
-    if (color == WHITE) {
-        pawns = board->piece_bb[W_PAWN];
-        knights = board->piece_bb[W_KNIGHT];
-        bishops = board->piece_bb[W_BISHOP];
-        rooks = board->piece_bb[W_ROOK];
-        queens = board->piece_bb[W_QUEEN];
-        king = board->piece_bb[W_KING];
-    } else {
-        pawns = board->piece_bb[B_PAWN];
-        knights = board->piece_bb[B_KNIGHT];
-        bishops = board->piece_bb[B_BISHOP];
-        rooks = board->piece_bb[B_ROOK];
-        queens = board->piece_bb[B_QUEEN];
-        king = board->piece_bb[B_KING];
-    }
-
-    while (pawns) {
-        material += PAWNVALUE;
-        if (color == WHITE) {
-            material += PAWN_POSITION_VALUE[63 - pop_1st_bit(&pawns)];
-        } else {
-            material += PAWN_POSITION_VALUE[pop_1st_bit(&pawns)];
-        }
-    }
-    while (knights) {
-        material += KNIGHTVALUE;
-        if (color == WHITE) {
-            material += KNIGHT_POSITION_VALUE[63 - pop_1st_bit(&knights)];
-        } else {
-            material += KNIGHT_POSITION_VALUE[pop_1st_bit(&knights)];
-        }
-    }
-    while (bishops) {
-        material += BISHOPVALUE;
-        if (color == WHITE) {
-            material += BISHOP_POSITION_VALUE[63 - pop_1st_bit(&bishops)];
-        } else {
-            material += BISHOP_POSITION_VALUE[pop_1st_bit(&bishops)];
-        }
-    }
-    while (rooks) {
-        material += ROOKVALUE;
-        if (color == WHITE) {
-            material += ROOK_POSITION_VALUE[63 - pop_1st_bit(&rooks)];
-        } else {
-            material += ROOK_POSITION_VALUE[pop_1st_bit(&rooks)];
-        }
-    }
-    while (queens) {
-        material += QUEENVALUE;
-        if (color == WHITE) {
-            material += QUEEN_POSITION_VALUE[63 - pop_1st_bit(&queens)];
-        } else {
-            material += QUEEN_POSITION_VALUE[pop_1st_bit(&queens)];
-        }
-    }
-    while (king) {
-        if (color == WHITE) {
-            material += KING_POSITION_VALUE[63 - pop_1st_bit(&king)];
-        } else {
-            material += KING_POSITION_VALUE[pop_1st_bit(&king)];
-        }
-    }
-
-    return material;
-}
+const int MATERIAL_VALUE[16] = {-PAWNVALUE, -KNIGHTVALUE, -BISHOPVALUE, -ROOKVALUE, -QUEENVALUE, 0, 0, 0,
+                            PAWNVALUE, KNIGHTVALUE, BISHOPVALUE, ROOKVALUE, QUEENVALUE, 0, 0, 0};
 
 /* Evaluates a board (when game is over) */
 /* WARNING: Use only if game is over i.e. draw/check mate*/
@@ -138,10 +69,54 @@ int eval_end_of_game(board_t *board, int depth) {
 /* Evaluates a board (when game is not over) */
 /* WARNING: Use only if game is not over i.e. no draw/no checkmate*/
 int eval_board(board_t *board) {
-    int white_eval = simple_eval(board, WHITE);
-    int black_eval = simple_eval(board, BLACK);
+    int material = 0;
+    int positional = 0;
 
-    int eval = white_eval - black_eval;
+    for(int i = 0; i < 64; i++){
+        material += MATERIAL_VALUE[board->playingfield[i]];
+        switch(board->playingfield[i]){
+            case B_PAWN:
+                positional -= PAWN_POSITION_VALUE[i];
+                break;
+            case B_KNIGHT:
+                positional -= KNIGHT_POSITION_VALUE[i];
+                break;
+            case B_BISHOP:
+                positional -= BISHOP_POSITION_VALUE[i];
+                break;  
+            case B_ROOK:
+                positional -= ROOK_POSITION_VALUE[i];
+                break;
+            case B_QUEEN:
+                positional -= QUEEN_POSITION_VALUE[i];
+                break;
+            case B_KING:
+                positional -= KING_POSITION_VALUE[i];
+                break;
+            case W_PAWN:
+                positional += PAWN_POSITION_VALUE[63 - i];
+                break;
+            case W_KNIGHT:
+                positional += KNIGHT_POSITION_VALUE[63 - i];
+                break;
+            case W_BISHOP:
+                positional += BISHOP_POSITION_VALUE[63 - i];
+                break;
+            case W_ROOK:
+                positional += ROOK_POSITION_VALUE[63 - i];
+                break;
+            case W_QUEEN:
+                positional += QUEEN_POSITION_VALUE[63 - i];
+                break;
+            case W_KING:
+                positional += KING_POSITION_VALUE[63 - i];
+                break;
+            default:
+                break;
+        }
+    }
+
+    int eval = material + positional;
 
     /* due to negamax we want both players to maximize */
     if (board->player == BLACK) {
