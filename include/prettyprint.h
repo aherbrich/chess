@@ -8,6 +8,8 @@
 void print_board(board_t* board);
 void print_bitboard(bitboard_t board);
 void print_move(move_t* move);
+void print_move_ranking(board_t* board, move_t* move);
+void print_move_test(board_t* board, move_t* move);
 void print_LAN_move(move_t* move, player_t color_playing);
 char* get_LAN_move(move_t* move, player_t color_playing);
 void print_line(board_t* board, int depth);
