@@ -67,6 +67,8 @@ double positional_diff_pawn(board_t* board){
             case W_PAWN:
                 positional += PAWN_POSITION_VALUE[63 - i];
                 break;
+            default:
+                break;
         }
     }
     return ((double) positional) / 30.0;
@@ -81,6 +83,8 @@ double positional_diff_knight(board_t* board){
                 break;
             case W_KNIGHT:
                 positional += KNIGHT_POSITION_VALUE[63 - i];
+                break;
+            default:
                 break;
         }
     }
@@ -97,6 +101,8 @@ double positional_diff_bishop(board_t* board){
             case W_BISHOP:
                 positional += BISHOP_POSITION_VALUE[63 - i];
                 break;
+            default:
+                break;
         }
     }
     return ((double) positional) / 30.0;
@@ -111,6 +117,8 @@ double positional_diff_rook(board_t* board){
                 break;
             case W_ROOK:
                 positional += ROOK_POSITION_VALUE[63 - i];
+                break;
+            default:
                 break;
         }
     }
@@ -127,6 +135,8 @@ double positional_diff_queen(board_t* board){
             case W_QUEEN:
                 positional += QUEEN_POSITION_VALUE[63 - i];
                 break;
+            default:
+                break;
         }
     }
     return ((double) positional) / 30.0;
@@ -141,6 +151,8 @@ double positional_diff_king(board_t* board){
                 break;
             case W_KING:
                 positional += KING_POSITION_VALUE[63 - i];
+                break;
+            default:
                 break;
         }
     }
