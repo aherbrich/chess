@@ -9,6 +9,8 @@ char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "a2", "b2",
                      "c7", "d7", "e7", "f7", "g7", "h7", "a8", "b8", "c8", "d8",
                      "e8", "f8", "g8", "h8"};
 
+char PIECE[NR_PIECES] = {'p','n','b','r','q','k',' ',' ','P','N','B','R','Q','K', 'E'};
+
 /* Creates a string representing the board */
 char* create_board_string(board_t* board) {
     char* string = (char*)malloc(64);
@@ -255,4 +257,82 @@ void print_line(board_t* board, int depth) {
     free_board(board_copy);
 
     return;
+}
+
+void print_move_ranking(board_t* board, move_t* move){
+    char* start_field = FIELD[move->from];
+    char* end_field = FIELD[move->to];
+
+    /* if promotion move */
+    if (move->flags >= 8) {
+        flag_t prom_flag = move->flags & (0b11);
+        if (prom_flag == 0) {
+            if (board->player == WHITE) {
+                printf("(%c-%.2s %c-%.2s1N)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("(%c-%.2s %c-%.2s1n)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        } else if (prom_flag == 1) {
+            if (board->player == WHITE) {
+                printf("(%c-%.2s %c-%.2s1B)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("(%c-%.2s %c-%.2s1b)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        } else if (prom_flag == 2) {
+            if (board->player == WHITE) {
+                printf("(%c-%.2s %c-%.2s1R)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("(%c-%.2s %c-%.2s1r)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        } else {
+            if (board->player == WHITE) {
+                printf("(%c-%.2s %c-%.2s1Q)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("(%c-%.2s %c-%.2s1q)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        }
+    }
+    /* if not a promotion move */
+    else {
+        printf("(%c-%.2s %c-%.2s0E)", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+    }
+}
+
+void print_move_test(board_t* board, move_t* move){
+    char* start_field = FIELD[move->from];
+    char* end_field = FIELD[move->to];
+
+    /* if promotion move */
+    if (move->flags >= 8) {
+        flag_t prom_flag = move->flags & (0b11);
+        if (prom_flag == 0) {
+            if (board->player == WHITE) {
+                printf("%c-%.2s %c-%.2s1N", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("%c-%.2s %c-%.2s1n", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        } else if (prom_flag == 1) {
+            if (board->player == WHITE) {
+                printf("%c-%.2s %c-%.2s1B", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("%c-%.2s %c-%.2s1b", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        } else if (prom_flag == 2) {
+            if (board->player == WHITE) {
+                printf("%c-%.2s %c-%.2s1R", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("%c-%.2s %c-%.2s1r", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        } else {
+            if (board->player == WHITE) {
+                printf("%c-%.2s %c-%.2s1Q", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            } else {
+                printf("%c-%.2s %c-%.2s1q", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+            }
+        }
+    }
+    /* if not a promotion move */
+    else {
+        printf("%c-%.2s %c-%.2s0E", PIECE[board->playingfield[move->from]], start_field, PIECE[board->playingfield[move->to]], end_field);
+    }
 }
