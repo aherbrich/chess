@@ -130,9 +130,10 @@ int search_has_to_be_stopped(searchdata_t *search_data) {
 
 /* Quescience search */
 int quiet_search(board_t *board, int alpha, int beta,
-                 searchdata_t *search_data) {
-
-    search_data->nodes_searched++;
+                 searchdata_t *searchdata, int depth) {
+    
+    searchdata->nodes_searched++;
+    searchdata->max_seldepth = (searchdata->max_seldepth < depth) ? depth : searchdata->max_seldepth;
     int eval = eval_board(board);
 
     if (eval >= beta) {
@@ -154,7 +155,7 @@ int quiet_search(board_t *board, int alpha, int beta,
         // every so often check if we have to stop the search
         if (last_check > STOP_ACCURACY && !stop_immediately) {
             last_check = 0;
-            stop_immediately = search_has_to_be_stopped(search_data);
+            stop_immediately = search_has_to_be_stopped(searchdata);
         }
 
         // exit search cleanly if we have to stop
@@ -170,7 +171,6 @@ int quiet_search(board_t *board, int alpha, int beta,
             continue;
         }
 
-        search_data->nodes_searched++;
         last_check++;
 
         // delta pruning
@@ -180,7 +180,7 @@ int quiet_search(board_t *board, int alpha, int beta,
         }
 
         do_move(board, move);
-        eval = -quiet_search(board, -beta, -alpha, search_data);
+        eval = -quiet_search(board, -beta, -alpha, searchdata, depth+1);
         undo_move(board, move);
 
         // if eval is better than the best so far, update it
@@ -228,8 +228,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
-        return quiet_search(searchdata->board, alpha, beta, searchdata);
-        // return eval_board(searchdata->board);
+        return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
+        //return eval_board(searchdata->board);
     }
 
     // ================================================================ //
@@ -426,13 +426,14 @@ void search(searchdata_t *searchdata) {
         searchdata->best_eval = eval;
 
         int nodes = searchdata->nodes_searched;
+        int seldepth = searchdata->max_seldepth;
         int nps = (int)(nodes / delta_in_ms(searchdata));
         int time = delta_in_ms(searchdata);
         int hashfull = hashtable_full_permill();
         char *score = get_mate_or_cp_value(eval, depth);
 
-        printf("info score %s depth %d nodes %d time %d nps %d hasfull %d pv ",
-               score, depth, nodes, time, nps, hashfull);
+        printf("info score %s depth %d seldepth %d nodes %d time %d nps %d hasfull %d pv ",
+               score, depth, seldepth, nodes, time, nps, hashfull);
         print_line(searchdata->board, depth);
         printf("\n");
         if (eval >= 16000 || eval <= -16000) break;

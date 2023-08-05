@@ -203,6 +203,7 @@ uint64_t random_uint64_fewbits();
 idx_t pos_to_idx(int row, int col);
 int find_1st_bit(bitboard_t bb);
 int pop_1st_bit(bitboard_t* bitboard);
+int sparse_pop_count(bitboard_t x);
 void initialize_attack_boards();
 void initialize_helper_boards();
 void initialize_oldstate_array();
