@@ -250,7 +250,7 @@ void generate_legals(board_t* board, maxpq_t *movelst);
 move_t* generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value);
 move_t* copy_move(move_t* move);
 void free_move(move_t* move);
-int do_move(board_t* board, move_t* move);
+void do_move(board_t* board, move_t* move);
 void undo_move(board_t *board, move_t* move);
 int is_same_move(move_t* move1, move_t* move2);
 

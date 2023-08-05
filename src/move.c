@@ -1,6 +1,28 @@
 #include "../include/chess.h"
 #include "../include/zobrist.h"
 
+const int CASTLE_FLAG_FROM[64] = {
+    ~(LONGSIDEW), 15, 15, 15, ~(SHORTSIDEW | LONGSIDEW), 15, 15, ~(SHORTSIDEW),
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    ~(LONGSIDEB), 15, 15, 15, ~(SHORTSIDEB | LONGSIDEB), 15, 15, ~(SHORTSIDEB),
+};
+
+const int CASTLE_FLAG_TO[64] = {
+    ~(LONGSIDEW), 15, 15, 15, 15, 15, 15, ~(SHORTSIDEW),
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15,
+    ~(LONGSIDEB), 15, 15, 15, 15, 15, 15, ~(SHORTSIDEB),
+};
+
 void remove_piece(board_t* board, square_t sq){
     board->hash ^= zobrist_table.piece_random64[board->playingfield[sq]][sq];
     board->piece_bb[board->playingfield[sq]] &= ~SQUARE_BB[sq];
@@ -119,7 +141,7 @@ void free_move(move_t *move) {
 }
 
 /* Execute move */
-int do_move(board_t *board, move_t *move) {
+void do_move(board_t *board, move_t *move) {
     /* save current board hash in array */
     HISTORY_HASHES[board->ply_no] = board->hash;
     
@@ -156,30 +178,21 @@ int do_move(board_t *board, move_t *move) {
         board->history[ply].full_move_counter++;
     }
 
+    /* adjust castling rights if (potentially) king or rook moved from their start squares */
+    if (move->from == a1) board->history[ply].castlerights &= ~(LONGSIDEW);
+    else if (move->from == h1) board->history[ply].castlerights &= ~(SHORTSIDEW);
+    else if (move->from == a8) board->history[ply].castlerights &= ~(LONGSIDEB);
+    else if (move->from == h8) board->history[ply].castlerights &= ~(SHORTSIDEB);
+    else if(move->from == e1) board->history[ply].castlerights &= ~(SHORTSIDEW | LONGSIDEW);
+    else if(move->from == e8) board->history[ply].castlerights &= ~(SHORTSIDEB | LONGSIDEB);
 
-    /* adjust castling rights */
-    if(board->playingfield[move->from] == W_ROOK){
-        if (move->from == 0) board->history[ply].castlerights &= ~(LONGSIDEW);
-        if (move->from == 7) board->history[ply].castlerights &= ~(SHORTSIDEW);
-    }
-    else if(board->playingfield[move->from] == B_ROOK){
-        if (move->from == 56) board->history[ply].castlerights &= ~(LONGSIDEB);
-        if (move->from == 63) board->history[ply].castlerights &= ~(SHORTSIDEB);
-    }
-    else if(board->playingfield[move->from] == W_KING){
-        board->history[ply].castlerights &= ~(SHORTSIDEW | LONGSIDEW);
-    }
-    else if(board->playingfield[move->from] == B_KING){
-        board->history[ply].castlerights &= ~(SHORTSIDEB | LONGSIDEB);
-    }
+    
 
-    /* adjust castle rights if rooks were (potentially) captured */
-    if (move->flags & 0b0100) {
-        if (move->to == 7) board->history[ply].castlerights &= ~(SHORTSIDEW);
-        if (move->to == 0) board->history[ply].castlerights &= ~(LONGSIDEW);
-        if (move->to == 63) board->history[ply].castlerights &= ~(SHORTSIDEB);
-        if (move->to == 56) board->history[ply].castlerights &= ~(LONGSIDEB);
-    }
+    /* adjust castle rights if rooks were (potentially) captured on their start squares */
+    if (move->to == h1) board->history[ply].castlerights &= ~(SHORTSIDEW);
+    else if (move->to == a1) board->history[ply].castlerights &= ~(LONGSIDEW);
+    else if (move->to == h8) board->history[ply].castlerights &= ~(SHORTSIDEB);
+    else if (move->to == a8) board->history[ply].castlerights &= ~(LONGSIDEB);
 
 
     moveflags_t type = move->flags;
@@ -326,7 +339,6 @@ int do_move(board_t *board, move_t *move) {
     board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
     /* xor in the new castle rights */
     board->hash ^= zobrist_table.flag_random64[board->history[ply].castlerights+8];
-    return 0;
 }
 
 /* Undos a move */
