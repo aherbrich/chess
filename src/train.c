@@ -76,8 +76,8 @@ int main() {
 
     /* number of different boards = 1739062 */
 
-    int m = 23040;
-    int n = m * 10;
+    int m = 30+30*6;
+    int n = 500000; //m * 10;
 
     matrix_t* X = matrix_init(n, m);
     matrix_t* y = matrix_init(n, 1);
@@ -86,10 +86,13 @@ int main() {
     for (int i = 0; i < DATABASESIZE && count < n; i++) {
         databaseentry_t* tmp = database[i];
 
-        while (tmp && count < n) {
+        while (tmp && count < n) {   
             double expected_result =
                 (double)(tmp->white_won - tmp->black_won) / tmp->seen;
             matrix_set(y, expected_result, count, 0);
+            maxpq_t movelst;
+            initialize_maxpq(&movelst);
+            generate_moves(tmp->board, &movelst);
             calculate_feautures(tmp->board, X, count);
             count++;
             tmp = tmp->next;
@@ -98,8 +101,9 @@ int main() {
 
     fprintf(stderr, "\nUnique positions:%d\n", count);
 
-    matrix_t* XTX = matrix_mult_gram_threaded(X, 32);
-    matrix_regularize_inplace(XTX, 0.001);
+
+    matrix_t* XTX = matrix_mult_gram_threaded(X, 11);
+    matrix_regularize_inplace(XTX, 0.01);
     fprintf(stderr, "Solved XTX!\n");
 
     matrix_t* b = matrix_mult_first_arg_transposed(X, y);
@@ -108,21 +112,11 @@ int main() {
     matrix_free(y);
 
     fprintf(stderr, "Solving with cholesky!\n");
-    matrix_t* w = solve_cholesky_threaded(XTX, b, 32);
-
-    for (int test = 0; test < 12; test++) {
-        for (int time = 0; time < 30; time++) {
-            for (int row = 7; row >= 0; row--) {
-                for (int col = 0; col < 8; col++) {
-                    printf("%.2f  ",
-                           matrix_read(
-                               w, (row * 8 + col) + (time * 64) + (test * 1920),
-                               0));
-                }
-                printf("\n");
-            }
-            printf("\n\n");
-        }
-        printf("\n=============================\n");
+    matrix_t* w = solve_cholesky_threaded(XTX, b, 11);
+    
+    for(int i = 0; i < m; i++){
+        printf("%.3f,\n",
+                        matrix_read(
+                            w, i, 0));
     }
 }

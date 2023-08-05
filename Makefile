@@ -13,10 +13,11 @@ TEST_TARGET = $(notdir $(TEST_OBJ))
 DEBUG_TARGET = $(addprefix gdb_, $(TEST_TARGET))
 VALGRIND_TARGET = $(addprefix valgrind_, $(TEST_TARGET))
 
-CC = gcc
-CC_FLAGS = -Wall -Wextra -O3 -g
 
-.PHONY: all
+CC = gcc
+CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3 #-fno-exceptions -flto=full
+
+.PHONY: all	
 all: build build_tests $(BUILD_DIR)/gui/gui $(BUILD_DIR)/train/train  # Build everything but runs nothing
 
 

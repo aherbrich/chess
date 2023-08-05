@@ -284,7 +284,7 @@ void *main_interface_loop(void *args) {
     setbuf(stdout, NULL);
 
     /* print chess engine info */
-    printf("id name Engine v1.0\nid author Alexander Herbrich\n\n");
+    printf("id name Engine v2.0\nid author Alexander Herbrich\n\n");
     printf("uciok\n");
 
     while (1) {
@@ -306,7 +306,7 @@ void *main_interface_loop(void *args) {
 
         /* UCI command */
         if (!strcmp(token, "uci")) {
-            printf("id name HerPiece 1.0\nid author Alexander Herbrich\n\n");
+            printf("id name Engine v2.0\nid author Alexander Herbrich\n\n");
             printf("uciok\n");
         }
         /* ISREADY command */

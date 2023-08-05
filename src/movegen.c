@@ -113,17 +113,6 @@ void generate_moves(board_t *board, maxpq_t *movelst) {
     generate_legals(board, movelst);
 }
 
-/* Counts number of set bits in bitboard */
-int sparse_pop_count(bitboard_t x) {
-	int count = 0;
-	/* while 64-bit number != 0 */
-	while (x) {
-		count++;
-		/* set ls1b to zero and continue counting */
-		x &= x - 1;
-	}
-	return count;
-}
 
 /* Shifts a bitboard in given direction */
 bitboard_t shift(bitboard_t bb, int direction){
