@@ -91,9 +91,11 @@ println(other_moves[1], " (Losers) ==> ", post_other_moves[1])
 
 println("\n\nThree Move example\n=================")
 move_made = Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))
-other_moves = [Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)), Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))]
+other_moves = [
+    Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+    Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+]
 (post_move_made, post_other_moves) = ranking_update(move_made, other_moves, β)
 println(move_made, " (Winner) ==> ", post_move_made)
 println(other_moves[1], " (Loser 1) ==> ", post_other_moves[1])
 println(other_moves[2], " (Loser 2) ==> ", post_other_moves[2])
-
