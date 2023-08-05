@@ -81,11 +81,14 @@ int is_capture(bitboard_t to, board_t *board) {
     return EMPTY;
 }
 
-/* Checks if a player is in check WHILE CURRENTLY AT TURN */
-/* WARNING: (Generally) Call BEFORE making a move  */
+/* Checks if a player is in check WHEN AT TURN */
+/* WARNING: Only call AFTER move generation (and BEFORE making move)
+(since we determine if we are in check in move generation anyway,
+but would switch players if we made move early) */
 int is_in_check(board_t *board) {
 	return(board->checkers);
 }
+
 
 /* Determines if two mves are the same */
 int is_same_move(move_t *move1, move_t *move2) {

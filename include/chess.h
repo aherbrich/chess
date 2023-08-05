@@ -243,6 +243,7 @@ void load_by_FEN(board_t* board, char* FEN);
 //  MOVE GENERATION
 int is_capture(bitboard_t to, board_t* board);
 int is_in_check(board_t* board);
+int is_in_check_opponent(board_t* board);
 void generate_moves(board_t* board, maxpq_t* movelst);
 void generate_legals(board_t* board, maxpq_t *movelst);
 
