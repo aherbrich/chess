@@ -5,7 +5,7 @@
 
 using Plots
 
-# include("ranking.jl")
+include("ranking.jl")
 
 # reads /tmp/moves.dat file line by line
 function read_moves(filename)
@@ -159,4 +159,54 @@ function plot_coverage(d, n)
         legend = false,
         ylim = (0,1),
     )
+end
+
+# trains a model from the given data set
+function train_model(filename; n = 1000, β = 25.0 / 6.0, μ = 25.0, σ = 25.0 / 3.0)
+    d_all_moves = Dict{String,Gaussian1D}()
+    lines_read = 0
+
+    open(filename) do f
+        reg = r"\(([pnbrqkPNBRQKE]-[a-h][1-8]\ [pnbrqkPNBRQKE]-[a-h][1-8][01][nbrqNBRQE])\)"
+        for line in eachline(f)
+            prior_beliefs = Vector{Gaussian1D}()
+            for m in eachmatch(reg, line)
+                # extract the current beliefs
+                if (haskey(d_all_moves, m.captures[1]))
+                    push!(prior_beliefs, d_all_moves[m.captures[1]])
+                else
+                    push!(prior_beliefs, Gaussian1Dμσ2(μ, σ * σ))
+                end
+            end
+
+            # run the ranking update
+            (P, posterior_beliefs) = ranking_update(prior_beliefs, β)
+
+            println("P = $P")
+
+            # write back the posterior beliefs
+            i = 1
+            for m in eachmatch(reg, line)
+                d_all_moves[m.captures[1]] = posterior_beliefs[i]
+                i += 1
+            end
+
+            # update lines_read
+            lines_read += 1
+            if (lines_read == n)
+                break
+            end
+        end
+    end
+
+    return d_all_moves
+end
+
+# output the moves with the highest belief
+function sort_moves_by_belief(d, moves)
+    d2 = Dict{String,Gaussian1D}()
+    for m in moves
+        d2[m] = d[m]
+    end
+    return (sort(collect(d2), by = x -> mean(x[2]), rev = true))
 end

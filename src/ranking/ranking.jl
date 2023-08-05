@@ -6,7 +6,7 @@
 include("factors.jl")
 
 # Computes the TrueSkills for a two-player game
-function ranking_update(move_made::Gaussian1D, other_moves::Vector{Gaussian1D}, β)
+function ranking_update(move_beliefs::Vector{Gaussian1D}, β)
     bag = DistributionBag(Gaussian1D(0, 0))
     factorList = Vector{Factor}()
 
@@ -16,86 +16,84 @@ function ranking_update(move_made::Gaussian1D, other_moves::Vector{Gaussian1D}, 
         return (f)
     end
 
-    # Urgency and latent urgency variables for the winning move
-    u1 = add!(bag)
-    x1 = add!(bag)
-
-    # Urgency and latent urgency variables as well as pairwise difference for the other move
-    us = Vector{Int}(undef, length(other_moves))
-    xs = Vector{Int}(undef, length(other_moves))
-    ds = Vector{Int}(undef, length(other_moves))
-    for i in eachindex(other_moves)
-        us[i] = add!(bag)
-        xs[i] = add!(bag)
-        ds[i] = add!(bag)
+    # Urgency and latent urgency variables as well as pairwise difference for all moves
+    urgency = Vector{Int}(undef, length(move_beliefs))
+    latent_urgency = Vector{Int}(undef, length(move_beliefs))
+    diff = Vector{Int}(undef, length(move_beliefs)-1)
+    for i in eachindex(move_beliefs)
+        urgency[i] = add!(bag)
+        latent_urgency[i] = add!(bag)
+        if (i < length(move_beliefs))
+            diff[i] = add!(bag)
+        end
     end
 
-    # Gaussian prior for the urgency of the winning move and the other moves
-    priorU1 = addFactor(GaussianFactor(move_made, u1, bag))
-    priorUs = Vector{Factor}(undef, length(other_moves))
-    for i in eachindex(other_moves)
-        priorUs[i] = addFactor(GaussianFactor(other_moves[i], us[i], bag))
+    # Gaussian prior for the urgency of all moves
+    priorF = Vector{Factor}(undef, length(move_beliefs))
+    for i in eachindex(move_beliefs)
+        priorF[i] = addFactor(GaussianFactor(move_beliefs[i], urgency[i], bag))
     end
 
     # Gaussian noise for the latent urgencies of the winning move and the other moves
-    likelU1 = addFactor(GaussianMeanFactor(β * β, x1, u1, bag))
-    likelUs = Vector{Factor}(undef, length(other_moves))
-    diffUs = Vector{Factor}(undef, length(other_moves))
-    compUs = Vector{Factor}(undef, length(other_moves))
-    for i in eachindex(other_moves)
-        likelUs[i] = addFactor(GaussianMeanFactor(β * β, xs[i], us[i], bag))
-        diffUs[i] = addFactor(WeightedSumFactor(1, -1, x1, xs[i], ds[i], bag))
-        compUs[i] = addFactor(GreaterThanFactor(0, ds[i], bag))
+    likelF = Vector{Factor}(undef, length(move_beliefs))
+    diffF = Vector{Factor}(undef, length(move_beliefs)-1)
+    compareF = Vector{Factor}(undef, length(move_beliefs)-1)
+    for i in eachindex(move_beliefs)
+        likelF[i] = addFactor(GaussianMeanFactor(β * β, latent_urgency[i], urgency[i], bag))
+        if (i < length(move_beliefs))
+            diffF[i] = addFactor(WeightedSumFactor(1, -1, latent_urgency[1], latent_urgency[i+1], diff[i], bag))
+            compareF[i] = addFactor(GreaterThanFactor(0, diff[i], bag))
+        end
     end
 
     # run the message passing schedule
-    priorU1.update!(1)
-    likelU1.update!(1)
-    for i in eachindex(other_moves)
-        priorUs[i].update!(1)
-        likelUs[i].update!(1)
+    for i in eachindex(move_beliefs)
+        priorF[i].update!(1)
+        likelF[i].update!(1)
     end
 
     Δ = 1e4
     while (Δ > 1e-6)
         Δ = 0
-        for i in eachindex(other_moves)
-            Δ = max(Δ, diffUs[i].update!(3))
-            Δ = max(Δ, compUs[i].update!(1))
-            Δ = max(Δ, diffUs[i].update!(1))
-            Δ = max(Δ, diffUs[i].update!(2))
+        for i in eachindex(move_beliefs)
+            if (i < length(move_beliefs))
+                Δ = max(Δ, diffF[i].update!(3))
+                Δ = max(Δ, compareF[i].update!(1))
+                Δ = max(Δ, diffF[i].update!(1))
+                Δ = max(Δ, diffF[i].update!(2))
+            end
         end
     end
 
     # finally, send the messages back to the prior 
-    likelU1.update!(2)
-    for i in eachindex(other_moves)
-        likelUs[i].update!(2)
+    for i in eachindex(move_beliefs)
+        likelF[i].update!(2)
     end
 
     # and now compute the log normalization constant
-    println("Z = ", exp(logNormalization(factorList, bag)))
+    # println("Z = ", exp(logNormalization(factorList, bag)))
 
-    return (bag[u1], map(i -> bag[i], us))
+    return (exp(logNormalization(factorList, bag)), map(i -> bag[i], urgency))
 end
 
+function test()
+    β = 25.0 / 6.0
 
-β = 25.0 / 6.0
+    println("\n\nTwo Move example\n=================")
+    prior_beliefs = [
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)), 
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))]
+    posterior_beliefs = ranking_update(prior_beliefs, β)
+    println(prior_beliefs[1], " (Winner) ==> ", posterior_beliefs[1])
+    println(prior_beliefs[2], " (Loser) ==> ", posterior_beliefs[2])
 
-println("\n\nTwo Move example\n=================")
-move_made = Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))
-other_moves = [Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))]
-(post_move_made, post_other_moves) = ranking_update(move_made, other_moves, β)
-println(move_made, " (Winner) ==> ", post_move_made)
-println(other_moves[1], " (Losers) ==> ", post_other_moves[1])
-
-println("\n\nThree Move example\n=================")
-move_made = Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))
-other_moves = [
-    Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
-    Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
-]
-(post_move_made, post_other_moves) = ranking_update(move_made, other_moves, β)
-println(move_made, " (Winner) ==> ", post_move_made)
-println(other_moves[1], " (Loser 1) ==> ", post_other_moves[1])
-println(other_moves[2], " (Loser 2) ==> ", post_other_moves[2])
+    println("\n\nThree Move example\n=================")
+    prior_beliefs = [
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))]
+    posterior_beliefs = ranking_update(prior_beliefs, β)
+    println(prior_beliefs[1], " (Winner) ==> ", posterior_beliefs[1])
+    println(prior_beliefs[2], " (Loser 1) ==> ", posterior_beliefs[2])
+    println(prior_beliefs[3], " (Loser 2) ==> ", posterior_beliefs[3])
+end
