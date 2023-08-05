@@ -62,6 +62,68 @@ void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {
     free(chessgames);
 }
 
+
+/*  Playes all games in given chess game list and
+    prints all moves played */
+void load_moves_into_database(chessgame_t** chessgames, int nr_of_games) {
+    /* play games */
+    for (int i = 0; i < nr_of_games; i++) {
+        chessgame_t* chessgame = chessgames[i];
+        /* (0) intialize board */
+        board_t* board = init_board();
+        load_by_FEN(board,
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        /* (1) read move */
+        char* token = strtok(chessgame->movelist, " ");
+
+        do {
+            /* (2) parse move */
+            move_t* move = str_to_move(board, token);
+
+            /* (3) play move */
+            if (move) {
+
+                /* print made move */
+                print_move_ranking(board, move);
+                printf("{");
+                /* find and print all other moves */
+                maxpq_t movelst;
+                initialize_maxpq(&movelst);
+                generate_moves(board, &movelst);
+                move_t* other_move;
+                while ((other_move = pop_max(&movelst)) != NULL) {
+                    if(is_same_move(move, other_move)){
+                        free_move(other_move);
+                        continue;
+                    }
+                    print_move_ranking(board, other_move);
+                    free_move(other_move);
+                }
+                printf("}");
+                /* execute made move */
+                do_move(board, move);
+                free_move(move);
+                printf("\n");
+            } else {
+                print_board(board);
+                fprintf(stderr, "%sInvalid move: %s%s\n", Color_PURPLE, token,
+                        Color_END);
+                exit(-1);
+            }
+            /* (4) repeat until all moves played */
+        } while ((token = strtok(NULL, " ")));
+
+        free_board(board);
+    }
+
+    /* free chess games */
+    for (int i = 0; i < nr_of_games; i++) {
+        free(chessgames[i]->movelist);
+    }
+    free(chessgames);
+}
+
 int main() {
     /* parse chess game file */
     int nr_of_games = count_number_of_games();
@@ -72,51 +134,8 @@ int main() {
     initialize_zobrist_table();
     initialize_database();
 
-    load_games_into_database(chessgames, nr_of_games);
-
+    load_moves_into_database(chessgames, nr_of_games);
     /* number of different boards = 1739062 */
-
-    int m = 30+30*6;
-    int n = 500000; //m * 10;
-
-    matrix_t* X = matrix_init(n, m);
-    matrix_t* y = matrix_init(n, 1);
-
-    int count = 0;
-    for (int i = 0; i < DATABASESIZE && count < n; i++) {
-        databaseentry_t* tmp = database[i];
-
-        while (tmp && count < n) {   
-            double expected_result =
-                (double)(tmp->white_won - tmp->black_won) / tmp->seen;
-            matrix_set(y, expected_result, count, 0);
-            maxpq_t movelst;
-            initialize_maxpq(&movelst);
-            generate_moves(tmp->board, &movelst);
-            calculate_feautures(tmp->board, X, count);
-            count++;
-            tmp = tmp->next;
-        }
-    }
-
-    fprintf(stderr, "\nUnique positions:%d\n", count);
-
-
-    matrix_t* XTX = matrix_mult_gram_threaded(X, 11);
-    matrix_regularize_inplace(XTX, 0.01);
-    fprintf(stderr, "Solved XTX!\n");
-
-    matrix_t* b = matrix_mult_first_arg_transposed(X, y);
-
-    matrix_free(X);
-    matrix_free(y);
-
-    fprintf(stderr, "Solving with cholesky!\n");
-    matrix_t* w = solve_cholesky_threaded(XTX, b, 11);
-    
-    for(int i = 0; i < m; i++){
-        printf("%.3f,\n",
-                        matrix_read(
-                            w, i, 0));
-    }
 }
+
+
