@@ -1,5 +1,6 @@
 #include "../include/chess.h"
 #include "../include/magic.h"
+#include "../include/zobrist.h"
 
 const int DEBRUIJN64[64] = {
 	0, 47,  1, 56, 48, 27,  2, 60,
@@ -200,4 +201,5 @@ void initialize_chess_engine_only_necessary() {
     initialize_history_hash_array();
     initialize_attack_boards();
     initialize_helper_boards();
+    initialize_zobrist_table();
 }

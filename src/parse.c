@@ -39,6 +39,19 @@ int count_number_of_games() {
     return game_count;
 }
 
+int count_moves_made(chessgame_t** chessgames, int nr_of_games) {
+    int total_count = 0;
+    for (int i = 0; i < nr_of_games; i++) {
+        chessgame_t* chessgame = chessgames[i];
+        char* token = strtok(chessgame->movelist, " ");
+        do {
+            total_count++;
+        } while ((token = strtok(NULL, " ")));
+    }
+
+    return total_count;
+}
+
 /* Parses PGN chess game file */
 /* i.e stores games in accesible way in memory */
 chessgame_t **parse_chessgames_file(int nr_of_games) {
