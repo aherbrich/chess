@@ -1,59 +1,62 @@
+#include <stdio.h>
+#include <math.h>
+
 #include "../include/gaussian.h"
 
 /* initializes a 1D Gaussian in natural parameters */
-gaussian1D_t init_gaussian1D(double tau, double rho) {
-    gaussian1D_t gaussian1D;
+gaussian_t init_gaussian1D(double tau, double rho) {
+    gaussian_t gaussian1D;
     gaussian1D.tau = tau;
     gaussian1D.rho = rho;
     return gaussian1D;
 }
 
 /* initializes a standard Normal */
-gaussian1D_t init_gaussian1D_standard_normal() {
+gaussian_t init_gaussian1D_standard_normal() {
     return init_gaussian1D(0, 1);
 }
 
 /* initializes a 1D Gaussian in mean & variance parameters */
-gaussian1D_t init_gaussian1D_from_mean_and_variance(double mean, double var) {
-    gaussian1D_t gaussian1D;
+gaussian_t init_gaussian1D_from_mean_and_variance(double mean, double var) {
+    gaussian_t gaussian1D;
     gaussian1D.tau = mean / var;
     gaussian1D.rho = 1.0 / var;
     return gaussian1D;
 }
 
 /* returns the mean of the 1D Gaussian */
-double mean(gaussian1D_t gaussian1D) {
+double mean(gaussian_t gaussian1D) {
     return gaussian1D.tau / gaussian1D.rho;
 }
 
 /* returns the variance of the 1D Gaussian */
-double variance(gaussian1D_t gaussian1D) {
+double variance(gaussian_t gaussian1D) {
     return 1.0 / gaussian1D.rho;
 }
 
-/* returns the absolute difference between two 1D Gaussians */
-double absdiff(gaussian1D_t g1, gaussian1D_t g2) {
+/* returns the absolute difference between two 1D Gaussian */
+double absdiff(gaussian_t g1, gaussian_t g2) {
     return fmax(fabs(g1.tau - g2.tau), sqrt(fabs(g1.rho - g2.rho)));
 }
 
-/* returns the product of two 1D Gaussians */
-gaussian1D_t gaussian1D_mult(gaussian1D_t g1, gaussian1D_t g2) {
-    gaussian1D_t gaussian1D;
+/* returns the product of two 1D Gaussian */
+gaussian_t gaussian1D_mult(gaussian_t g1, gaussian_t g2) {
+    gaussian_t gaussian1D;
     gaussian1D.tau = g1.tau + g2.tau;
     gaussian1D.rho = g1.rho + g2.rho;
     return gaussian1D;
 }
 
-/* returns the ratio of two 1D Gaussians */
-gaussian1D_t gaussian1D_div(gaussian1D_t g1, gaussian1D_t g2) {
-    gaussian1D_t gaussian1D;
+/* returns the ratio of two 1D Gaussian */
+gaussian_t gaussian1D_div(gaussian_t g1, gaussian_t g2) {
+    gaussian_t gaussian1D;
     gaussian1D.tau = g1.tau - g2.tau;
     gaussian1D.rho = g1.rho - g2.rho;
     return gaussian1D;
 }
 
-/* returns the log-normalization constant of the product of two 1D Gaussians */
-double log_norm_product(gaussian1D_t g1, gaussian1D_t g2) {
+/* returns the log-normalization constant of the product of two 1D Gaussian */
+double log_norm_product(gaussian_t g1, gaussian_t g2) {
     if (g1.rho == 0.0 || g2.rho == 0.0) {
         return 0.0;
     } else {
@@ -63,8 +66,8 @@ double log_norm_product(gaussian1D_t g1, gaussian1D_t g2) {
     }
 }
 
-/* returns the log-normalization constant of the ratio of two 1D Gaussians */
-double log_norm_ratio(gaussian1D_t g1, gaussian1D_t g2) {
+/* returns the log-normalization constant of the ratio of two 1D Gaussian */
+double log_norm_ratio(gaussian_t g1, gaussian_t g2) {
     if (g1.rho == 0.0 || g2.rho == 0.0) {
         return 0.0;
     } else {
@@ -80,7 +83,7 @@ double log_norm_ratio(gaussian1D_t g1, gaussian1D_t g2) {
 }
 
 /* prints the mean and variance of a 1D Gaussian */
-void print_gaussian1D(gaussian1D_t gaussian1D) {
+void print_gaussian1D(gaussian_t gaussian1D) {
     if (gaussian1D.rho == 0.0) {
         printf("μ = 0, σ = Inf\n");
     } else {
