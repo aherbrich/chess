@@ -647,3 +647,42 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 	}
 
 }
+
+/* Checks if the opponent player is in check after move */
+/* WARNING: Call only AFTER making a move as player A
+to check if player B is now in check */
+int is_in_check_opponent(board_t* board){
+    player_t us = board->player;
+    player_t them = SWITCHSIDES(us);
+
+	bitboard_t us_bb = (us == WHITE) ? 
+                (board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] | board->piece_bb[W_BISHOP] | 
+                board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[W_KING]) : 
+                (board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] | board->piece_bb[B_BISHOP] | 
+                board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN] | board->piece_bb[B_KING]);
+	bitboard_t them_bb = (us == WHITE) ? 
+                (board->piece_bb[B_PAWN] | board->piece_bb[B_KNIGHT] | board->piece_bb[B_BISHOP] | 
+                board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN] | board->piece_bb[B_KING]) : 
+                (board->piece_bb[W_PAWN] | board->piece_bb[W_KNIGHT] | board->piece_bb[W_BISHOP] | 
+                board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[W_KING]);
+	bitboard_t all_bb = us_bb | them_bb;
+
+	square_t our_king_sq = (us == WHITE) ? find_1st_bit(board->piece_bb[W_KING]) : find_1st_bit(board->piece_bb[B_KING]);
+
+	bitboard_t their_diag_sliders_bb = diagonal_sliders(board, them);
+	bitboard_t their_orth_sliders_bb = orthogonal_sliders(board, them);
+    bitboard_t their_pawns_bb = (them == WHITE) ? board->piece_bb[W_PAWN] : board->piece_bb[B_PAWN];
+    bitboard_t their_knights_bb = (them == WHITE) ? board->piece_bb[W_KNIGHT] : board->piece_bb[B_KNIGHT];
+
+    /* General purpose bitboards for attacks, masks, etc. */
+    bitboard_t checkers = 0ULL;
+	
+	checkers = 	(KNIGHT_ATTACK[our_king_sq] & their_knights_bb) | 
+				(attack_pawn_single(our_king_sq, us) & their_pawns_bb) | 
+				(attack_rook(our_king_sq, all_bb) & their_orth_sliders_bb) | 
+				(attack_bishop(our_king_sq, all_bb) & their_diag_sliders_bb);
+
+    if(checkers) return 1;
+
+    return 0;
+}
