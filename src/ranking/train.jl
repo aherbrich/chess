@@ -167,7 +167,7 @@ function train_model(filename; n = 1000, β = 25.0 / 6.0, μ = 25.0, σ = 25.0 /
     lines_read = 0
 
     open(filename) do f
-        reg = r"\(([pnbrqkPNBRQKE]-[a-h][1-8]\ [pnbrqkPNBRQKE]-[a-h][1-8][01][nbrqNBRQE])\)"
+        reg = r"\(([pnbrqkPNBRQKE]-[a-h][1-8]\ [pnbrqkPNBRQKE]-[a-h][1-8][nbrqNBRQE]\ [01])\)"
         for line in eachline(f)
             prior_beliefs = Vector{Gaussian1D}()
             for m in eachmatch(reg, line)
@@ -181,8 +181,6 @@ function train_model(filename; n = 1000, β = 25.0 / 6.0, μ = 25.0, σ = 25.0 /
 
             # run the ranking update
             (P, posterior_beliefs) = ranking_update(prior_beliefs, β)
-
-            println("P = $P")
 
             # write back the posterior beliefs
             i = 1
@@ -203,10 +201,17 @@ function train_model(filename; n = 1000, β = 25.0 / 6.0, μ = 25.0, σ = 25.0 /
 end
 
 # output the moves with the highest belief
-function sort_moves_by_belief(d, moves)
-    d2 = Dict{String,Gaussian1D}()
+function sort_moves_by_belief(d, moves, β)
+    tmp = Vector{Tuple{String,Gaussian1D}}()
     for m in moves
-        d2[m] = d[m]
+        push!(tmp, (m,d[m]))
     end
-    return (sort(collect(d2), by = x -> mean(x[2]), rev = true))
+    post_beliefs = move_probability(map(x -> x[2], tmp), β)
+
+    move_with_probs = Vector{Tuple{String,Float64}}(undef, length(tmp))
+    for i in eachindex(tmp)
+        move_with_probs[i] = (tmp[i][1], post_beliefs[i])
+    end
+    
+    return (sort(move_with_probs, by = x -> x[2], rev = true))
 end
