@@ -119,7 +119,7 @@ end
 Computes the log-normalization constant of a multiplication of `g1` and `g2`
 # Examples
 ```julia-repl
-julia> logNormProduct(Gaussian1D() * Gaussian1D())
+julia> logNormProduct(Gaussian1D(), Gaussian1D())
 -1.2655121234846454
 ```
 """
@@ -139,7 +139,7 @@ end
 Computes the log-normalization constant of a division of `g1` with `g2`
 # Examples
 ```julia-repl
-julia> logNormRatio(Gaussian1D(0,1) / Gaussian1D(0,0.5))
+julia> logNormRatio(Gaussian1D(0,1), Gaussian1D(0,0.5))
 1.612085713764618
 ```
 """
