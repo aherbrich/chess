@@ -1,13 +1,8 @@
 #ifndef __CHESS_H__
 #define __CHESS_H__
 
-#include <assert.h>
 #include <limits.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
-#include <time.h>
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"

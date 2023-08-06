@@ -1,7 +1,7 @@
-#include "../include/database.h"
+#include <stdio.h>
 
 #include "../include/chess.h"
-#include "../include/prettyprint.h"
+#include "../include/database.h"
 #include "../include/zobrist.h"
 
 databaseentry_t **database;

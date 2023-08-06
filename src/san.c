@@ -1,7 +1,7 @@
-#include "../include/san.h"
+#include <stdio.h>
 
+#include "../include/san.h"
 #include "../include/chess.h"
-#include "../include/prettyprint.h"
 
 /* Returns true if character is a file (i.e a-h) */
 int is_file(char character) { return (character >= 97 && character <= 104); }

@@ -22,7 +22,7 @@ CC = gcc
 CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3 #-fno-exceptions -flto=full
 
 .PHONY: all	
-all: build build_tests $(BUILD_DIR)/gui/gui $(BUILD_DIR)/train/train  # Build everything but runs nothing
+all: build build_tests $(BUILD_DIR)/gui/gui $(BUILD_DIR)/train/train $(BUILD_DIR)/train_ordering/train_ordering # Build everything but runs nothing
 
 
 .PHONY: gui

@@ -1,5 +1,4 @@
 #include "../include/chess.h"
-#include "../include/prettyprint.h"
 
 board_t* OLDSTATE[MAXPLIES];
 uint64_t HISTORY_HASHES[MAXPLIES];

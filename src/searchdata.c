@@ -1,3 +1,5 @@
+#include <sys/time.h>
+
 #include "../include/chess.h"
 
 /* Initializes search data structure */

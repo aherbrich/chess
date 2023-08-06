@@ -1,7 +1,7 @@
+#include <stdio.h>
+
 #include "../include/chess.h"
 #include "../include/magic.h"
-#include "string.h"
-#include "../include/prettyprint.h"
 
 const bitboard_t MASK_FILE[8] = {
 	0x101010101010101, 0x202020202020202, 0x404040404040404, 0x808080808080808,

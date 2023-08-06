@@ -1,9 +1,6 @@
 #ifndef __ORDERING_H__
 #define __ORDERING_H__
 
-#include <string.h>
-#include <stdio.h>
-
 #include "../include/chess.h"
 #include "../include/gaussian.h"
 

@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include "../include/chess.h"
 #include "../include/prettyprint.h"

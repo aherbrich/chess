@@ -1,9 +1,8 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "../include/chess.h"
 #include "../include/database.h"
-#include "../include/features.h"
-#include "../include/linalg.h"
 #include "../include/parse.h"
 #include "../include/prettyprint.h"
 #include "../include/san.h"

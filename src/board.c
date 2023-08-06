@@ -1,6 +1,7 @@
 #include <string.h>
-#include "../include/zobrist.h"
+
 #include "../include/chess.h"
+#include "../include/zobrist.h"
 
 /* Clears the board */
 void clear_board(board_t* board) {

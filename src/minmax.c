@@ -1,4 +1,5 @@
-#include <string.h>
+#include <sys/time.h>
+#include <stdio.h>
 
 #include "../include/chess.h"
 #include "../include/eval.h"

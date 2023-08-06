@@ -1,7 +1,7 @@
 #ifndef __FACTORS_H__
 #define __FACTORS_H__
 
-#include "gaussian.h"
+#include "../include/gaussian.h"
 
 typedef struct _gaussian_factor_info_t {
     gaussian_t g;

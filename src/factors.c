@@ -1,3 +1,6 @@
+#include <math.h>
+
+#include "../include/gaussian.h"
 #include "../include/factors.h"
 
 #include <math.h>

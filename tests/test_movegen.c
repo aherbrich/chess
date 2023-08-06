@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "sys/time.h"
 
 #include "../include/chess.h"
-#include "../include/prettyprint.h"
 #include "../include/zobrist.h"
-#include "sys/time.h"
 
 typedef struct _perfttest_t {
     char fen[256];

@@ -1,3 +1,6 @@
+#include <sys/time.h>
+#include <stdio.h>
+
 #include "../include/chess.h"
 #include "../include/prettyprint.h"
 #include "../include/zobrist.h"
