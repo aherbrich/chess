@@ -321,13 +321,13 @@ int ranking_graph_tests() {
     gaussian_t msg_from_s_to_urgency[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
     gaussian_t msg_from_h_to_diffs[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
 
-    gaussian_factor_info_t f[3] = { { init_gaussian1D_from_mean_and_variance(25,25./3 * 25./3), &urgency[0], &msg_from_f_to_urgency[0] },
-                                    { init_gaussian1D_from_mean_and_variance(25,25./3 * 25./3), &urgency[1], &msg_from_f_to_urgency[1] },
-                                    { init_gaussian1D_from_mean_and_variance(25,25./3 * 25./3), &urgency[2], &msg_from_f_to_urgency[2] } };
+    gaussian_factor_info_t f[3] = { { init_gaussian1D_from_mean_and_variance(0,1), &urgency[0], &msg_from_f_to_urgency[0] },
+                                    { init_gaussian1D_from_mean_and_variance(0,1), &urgency[1], &msg_from_f_to_urgency[1] },
+                                    { init_gaussian1D_from_mean_and_variance(0,1), &urgency[2], &msg_from_f_to_urgency[2] } };
 
-    gaussian_mean_factor_info_t g[3] = { { 25./6 * 25./6, &latent_urgency[0], &urgency[0], &msg_from_g_to_latent_urgency[0], &msg_from_g_to_urgency[0] },
-                                         { 25./6 * 25./6, &latent_urgency[1], &urgency[1], &msg_from_g_to_latent_urgency[1], &msg_from_g_to_urgency[1] },
-                                         { 25./6 * 25./6, &latent_urgency[2], &urgency[2], &msg_from_g_to_latent_urgency[2], &msg_from_g_to_urgency[2] } };
+    gaussian_mean_factor_info_t g[3] = { { 1./2 * 1./2, &latent_urgency[0], &urgency[0], &msg_from_g_to_latent_urgency[0], &msg_from_g_to_urgency[0] },
+                                         { 1./2 * 1./2, &latent_urgency[1], &urgency[1], &msg_from_g_to_latent_urgency[1], &msg_from_g_to_urgency[1] },
+                                         { 1./2 * 1./2, &latent_urgency[2], &urgency[2], &msg_from_g_to_latent_urgency[2], &msg_from_g_to_urgency[2] } };
 
     weighted_sum_factor_info_t s[2] = { { 1.0, -1.0, &latent_urgency[0], &latent_urgency[1], &diffs[0], &msg_from_s_to_top_urgency[0], &msg_from_s_to_urgency[0], &msg_from_s_to_diffs[0] },
                                         { 1.0, -1.0, &latent_urgency[0], &latent_urgency[2], &diffs[1], &msg_from_s_to_top_urgency[1], &msg_from_s_to_urgency[1], &msg_from_s_to_diffs[1] } };
@@ -369,6 +369,29 @@ int ranking_graph_tests() {
     return fail_counter;
 }
 
+
+/* runs the ranking graph tests */
+int ranking_graph_tests2() {
+    int fail_counter = 0;
+
+    // printf("Running ranking graph tests (again)...\n");
+
+    // gaussian_t urgency_ht[3] = { init_gaussian1D(0, 1), init_gaussian1D(0, 1), init_gaussian1D(0, 1) };
+
+    // initalize_ranking_updates();
+    // update(urgency_ht, (int[]){ 0, 1, 2 }, 3, 0.5 * 0.5);
+
+    // printf("\n\nThree Move example\n=================\n");
+    // printf("urgency[0] = %f +/- %f\n", mean(urgency_ht[0]), sqrt(variance(urgency_ht[0])));
+    // printf("urgency[1] = %f +/- %f\n", mean(urgency_ht[1]), sqrt(variance(urgency_ht[1])));
+    // printf("urgency[2] = %f +/- %f\n", mean(urgency_ht[2]), sqrt(variance(urgency_ht[2])));
+
+    return fail_counter;
+}
+
+
+
+
 /*
  * MAIN ENTRY POINT
  */
@@ -386,6 +409,7 @@ int main() {
     
     // tests the ranking graph
     fail_counter += ranking_graph_tests();
+    fail_counter += ranking_graph_tests2();
 
     // notify if testing was successful
     if (fail_counter) {

@@ -44,7 +44,7 @@ void initalize_ranking_updates() {
 
         if (i < MAX_MOVES - 1) {
             s[i].a1 = 1.0;
-            s[1].a2 = -1.0;
+            s[i].a2 = -1.0;
             s[i].s1_marginal = &latent_urgency[0];
             s[i].s2_marginal = &latent_urgency[i + 1];
             s[i].sum_marginal = &diffs[i];
@@ -171,8 +171,8 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
                 piece_t piece_prom = (move->flags & 0b1000) ? (move->flags & 0b11) : 4;
                 gaussian_indices[idx] = move_order_hash(board->playingfield[move->from],
                                                         move->from,
-                                                        board->playingfield[move->from],
-                                                        move->from,
+                                                        board->playingfield[move->to],
+                                                        move->to,
                                                         piece_prom);
                 idx++;
 
@@ -188,8 +188,8 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
                     piece_prom = (other_move->flags & 0b1000) ? (other_move->flags & 0b11) : 4;
                     gaussian_indices[idx] = move_order_hash(board->playingfield[other_move->from],
                                                             other_move->from,
-                                                            board->playingfield[other_move->from],
-                                                            other_move->from,
+                                                            board->playingfield[other_move->to],
+                                                            other_move->to,
                                                             piece_prom);
                     idx++;
                     free_move(other_move);
@@ -230,4 +230,27 @@ int main() {
     // printf("Moves made:\t%d\n", count_moves_made(chessgames, nr_of_games));
 
     train_model(chessgames, nr_of_games);
+
+    board_t* board = init_board();
+    load_by_FEN(board,
+                "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+
+    maxpq_t movelst;
+    initialize_maxpq(&movelst);
+    generate_moves(board, &movelst);
+    move_t* move;
+    while((move = pop_max(&movelst)) != NULL) {
+        piece_t piece_prom = (move->flags & 0b1000) ? (move->flags & 0b11) : 4;
+        int idx = move_order_hash(board->playingfield[move->from],
+                                    move->from,
+                                    board->playingfield[move->to],
+                                    move->to,
+                                    piece_prom);
+        printf("%d\t", idx);
+        print_LAN_move(move, board->player);
+        printf("\n");
+        print_gaussian1D(ht_gaussians[idx]);
+        free_move(move);
+    }
+    return 0;
 }
