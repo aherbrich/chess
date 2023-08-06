@@ -8,6 +8,7 @@ EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 GUI_SRC = src/gui.c
 TRAIN_SRC = src/train.c
+TRAIN_ORDERING_SRC = src/ordering.c
 
 TEST_DIR = tests
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -29,6 +30,9 @@ gui: build $(BUILD_DIR)/gui/gui
 
 .PHONY: train
 train: build $(BUILD_DIR)/train/train 
+
+.PHONY: train_ordering
+train_ordering: build $(BUILD_DIR)/train_ordering/train_ordering 
 
 .PHONY: run
 run: all_tests             # Run all tests (alias)
@@ -74,6 +78,10 @@ $(BUILD_DIR)/gui/gui: $(GUI_SRC) $(EXERCISE_OBJ)
 	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
 
 $(BUILD_DIR)/train/train: $(TRAIN_SRC) $(EXERCISE_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS)  -o $@  $^ -L./lib -llinalg
+
+$(BUILD_DIR)/train_ordering/train_ordering: $(TRAIN_ORDERING_SRC) $(EXERCISE_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS)  -o $@  $^ -L./lib -llinalg
 
