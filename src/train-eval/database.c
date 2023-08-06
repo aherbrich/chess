@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-#include "../include/types.h"
-#include "../include/parse.h"
-#include "../include/board.h"
-#include "../include/database.h"
-#include "../include/zobrist.h"
+#include "../../include/types.h"
+#include "../../include/parse.h"
+#include "../../include/board.h"
+#include "../../include/database.h"
+#include "../../include/zobrist.h"
 
 databaseentry_t **database;
 

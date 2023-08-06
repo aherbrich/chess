@@ -1,9 +1,10 @@
 BUILD_DIR = build
 
-EXERCISE_SRC = src/board.c src/helpers.c src/prettyprint.c src/movegen.c src/move.c src/magic.c \
-			   src/perft.c src/eval.c src/minmax.c src/searchdata.c src/zobrist.c src/pq.c \
-			   src/database.c src/parse.c src/san.c src/features.c \
-			   src/gaussian.c src/factors.c 
+EXERCISE_SRC = src/engine-core/board.c src/engine-core/helpers.c src/engine-core/prettyprint.c src/engine-core/movegen.c src/engine-core/magic.c \
+			   src/engine-core/perft.c src/engine-core/eval.c src/engine-core/minmax.c src/engine-core/searchdata.c src/engine-core/zobrist.c src/engine-core/pq.c \
+			   src/parsing/parse.c src/parsing/san.c \
+			   src/train-eval/database.c src/train-eval/features.c \
+			   src/train-ordering/gaussian.c src/train-ordering/factors.c 
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 GUI_SRC = src/gui.c

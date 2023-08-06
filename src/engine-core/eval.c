@@ -1,6 +1,6 @@
-#include "../include/types.h"
-#include "../include/move.h"
-#include "../include/eval.h"
+#include "../../include/types.h"
+#include "../../include/move.h"
+#include "../../include/eval.h"
 
 
 /* pawn position values */

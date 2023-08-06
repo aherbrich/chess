@@ -1,8 +1,8 @@
 #include <sys/time.h>
 
-#include "../include/types.h"
-#include "../include/board.h"
-#include "../include/search.h"
+#include "../../include/types.h"
+#include "../../include/board.h"
+#include "../../include/search.h"
 
 /* Initializes search data structure */
 searchdata_t *init_search_data(board_t *board) {

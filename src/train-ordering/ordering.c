@@ -4,13 +4,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../include/engine.h"
-#include "../include/factors.h"
-#include "../include/gaussian.h"
-#include "../include/ordering.h"
-#include "../include/parse.h"
-#include "../include/prettyprint.h"
-#include "../include/san.h"
+#include "../../include/engine.h"
+#include "../../include/factors.h"
+#include "../../include/gaussian.h"
+#include "../../include/ordering.h"
+#include "../../include/parse.h"
+#include "../../include/prettyprint.h"
+#include "../../include/san.h"
 
 #define MAX_MOVES 512
 

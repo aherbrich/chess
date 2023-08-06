@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../include/engine.h"
-#include "../include/prettyprint.h"
+#include "../../include/engine.h"
+#include "../../include/prettyprint.h"
 
 /* Runs perft test for a given board and depth */
 uint64_t perft(board_t* board, int depth) {

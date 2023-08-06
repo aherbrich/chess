@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include "../include/parse.h"
+#include "../../include/parse.h"
 
 /* Counts the number of games in a PGN chess game file */
 int count_number_of_games() {

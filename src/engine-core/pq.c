@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-#include "../include/types.h"
-#include "../include/move.h"
-#include "../include/pq.h"
-#include "../include/prettyprint.h"
+#include "../../include/types.h"
+#include "../../include/move.h"
+#include "../../include/pq.h"
+#include "../../include/prettyprint.h"
 
 /* Returns true if value (of move) at index i is truely lower than value at
  * index j in queue */

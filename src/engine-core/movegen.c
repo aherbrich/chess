@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-#include "../include/move.h"
-#include "../include/zobrist.h"
-#include "../include/helpers.h"
-#include "../include/pq.h"
+#include "../../include/move.h"
+#include "../../include/zobrist.h"
+#include "../../include/helpers.h"
+#include "../../include/pq.h"
 
 const bitboard_t MASK_FILE[8] = {
 	0x101010101010101, 0x202020202020202, 0x404040404040404, 0x808080808080808,

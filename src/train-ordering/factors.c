@@ -1,8 +1,8 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "../include/gaussian.h"
-#include "../include/factors.h"
+#include "../../include/gaussian.h"
+#include "../../include/factors.h"
 
 
 /* update function for the Gaussian factor */

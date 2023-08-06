@@ -1,12 +1,12 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../include/engine.h"
-#include "../include/database.h"
-#include "../include/parse.h"
-#include "../include/prettyprint.h"
-#include "../include/san.h"
-#include "../include/zobrist.h"
+#include "../../include/engine.h"
+#include "../../include/database.h"
+#include "../../include/parse.h"
+#include "../../include/prettyprint.h"
+#include "../../include/san.h"
+#include "../../include/zobrist.h"
 
 uint64_t HISTORY_HASHES[MAXPLIES];
 
