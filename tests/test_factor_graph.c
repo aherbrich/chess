@@ -82,22 +82,18 @@ int gaussian_factor_tests() {
     gaussian_factor_info_t factor = { init_gaussian1D_from_mean_and_variance(2,42), &s, &msg1_to_s };
     gaussian_factor_info_t factor2 = { init_gaussian1D_from_mean_and_variance(1,1), &s, &msg2_to_s };
 
-    double delta = gaussian_factor_update(&factor);
-    double delta_again = gaussian_factor_update(&factor);
-    double delta2 = gaussian_factor_update(&factor2);
-
-    if (delta != 0.1543033499620919) {
-        printf("%sFAIL%s: delta != 0.1543033499620919\n", Color_RED, Color_END);
+    if (gaussian_factor_update(&factor) != 0.1543033499620919) {
+        printf("%sFAIL%s: gaussian_factor_update(&factor) != 0.1543033499620919\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (delta_again != 0.0) {
-        printf("%sFAIL%s: delta_again != 0.0\n", Color_RED, Color_END);
+    if (gaussian_factor_update(&factor) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_update(&factor) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (delta2 != 1.0) {
-        printf("%sFAIL%s: delta2 != 1.0\n", Color_RED, Color_END);
+    if (gaussian_factor_update(&factor2) != 1.0) {
+        printf("%sFAIL%s: gaussian_factor_update(&factor2) != 1.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
@@ -108,6 +104,33 @@ int gaussian_factor_tests() {
 
     if (variance(s) != 0.9767441860465117) {
         printf("%sFAIL%s: variance(s) != 0.9767441860465117\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    s = init_gaussian1D(0, 0);
+
+    if (gaussian_factor_log_variable_norm(&factor) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&factor) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (gaussian_factor_log_variable_norm(&factor2) != -2.8111664980281983) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&factor2) != -2.8111664980281983\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (mean(s) != 1.0232558139534884) {
+        printf("%sFAIL%s: mean(s) != 1.0232558139534884\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (variance(s) != 0.9767441860465117) {
+        printf("%sFAIL%s: variance(s) != 0.9767441860465117\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (gaussian_factor_log_factor_norm(&factor) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_factor_norm(&factor) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
@@ -129,16 +152,13 @@ int gaussian_mean_factor_tests() {
     gaussian_factor_info_t f = { init_gaussian1D_from_mean_and_variance(3,1), &s1, &msg_f_to_s1 };
     gaussian_mean_factor_info_t g = { 0.5, &s2, &s1, &msg_g_to_s2, &msg_g_to_s1 };
 
-    double delta = gaussian_factor_update(&f);
-    double delta2 = gaussian_mean_factor_update_to_variable(&g);
-
-    if (delta != 3.0) {
-        printf("%sFAIL%s: delta != 3.0\n", Color_RED, Color_END);
+    if (gaussian_factor_update(&f) != 3.0) {
+        printf("%sFAIL%s: gaussian_factor_update(&f) != 3.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (delta2 != 2.0) {
-        printf("%sFAIL%s: delta2 != 2.0\n", Color_RED, Color_END);
+    if (gaussian_mean_factor_update_to_variable(&g) != 2.0) {
+        printf("%sFAIL%s: gaussian_mean_factor_update_to_variable(&g) != 2.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
@@ -162,10 +182,46 @@ int gaussian_mean_factor_tests() {
         fail_counter++;
     }
 
-    double delta3 = gaussian_mean_factor_update_to_mean(&g);
+    if (gaussian_mean_factor_update_to_mean(&g) != 0.0) {
+        printf("%sFAIL%s: gaussian_mean_factor_update_to_mean(&g) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
 
-    if (delta3 != 0.0) {
-        printf("%sFAIL%s: delta3 != 0.0\n", Color_RED, Color_END);
+    s1 = init_gaussian1D(0, 0);
+    s2 = init_gaussian1D(0, 0);
+
+    if (gaussian_factor_log_variable_norm(&f) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&f) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (gaussian_mean_factor_log_variable_norm(&g) != 0.0) {
+        printf("%sFAIL%s: gaussian_mean_factor_log_variable_norm(&g) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (mean(s1) != 3.0) {
+        printf("%sFAIL%s: mean(s1) != 3.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (mean(s2) != 3.0) {
+        printf("%sFAIL%s: mean(s2) != 3.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (variance(s1) != 1.0) {
+        printf("%sFAIL%s: variance(s1) != 1.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (variance(s2) != 1.5) {
+        printf("%sFAIL%s: variance(s2) != 1.5\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (gaussian_mean_factor_log_factor_norm(&g) != 0.0) {
+        printf("%sFAIL%s: gaussian_mean_factor_log_factor_norm(&g) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
@@ -264,6 +320,65 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
+    s1 = init_gaussian1D(0, 0);
+    s2 = init_gaussian1D(0, 0);
+    s3 = init_gaussian1D(0, 0);
+
+    if (gaussian_factor_log_variable_norm(&f1) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&f1) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (gaussian_factor_log_variable_norm(&f2) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&f2) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (gaussian_factor_log_variable_norm(&f3) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&f3) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (weighted_sum_factor_log_variable_norm(&g) != -5.196819356922758) {
+        printf("%sFAIL%s: weighted_sum_factor_log_variable_norm(&g) != -5.196819356922758\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(mean(s1)- 1.142857142857143) > 1e-6) {
+        printf("%sFAIL%s: mean(s1) != 1.142857142857143\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(variance(s1) - 0.8571428571428571) > 1e-6) {
+        printf("%sFAIL%s: variance(s1) != 0.8571428571428571\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(mean(s2)- 2.571428571428572) > 1e-6) {
+        printf("%sFAIL%s: mean(s2) != 2.571428571428572\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(variance(s2) - 1.7142857142857144) > 1e-6) {
+        printf("%sFAIL%s: variance(s2) != 1.7142857142857144\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(mean(s3)- 1.8571428571428574) > 1e-6) {
+        printf("%sFAIL%s: mean(s3) != 1.8571428571428574\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(variance(s3) - 0.35714285714285715) > 1e-6) {
+        printf("%sFAIL%s: variance(s3) != 0.35714285714285715\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (weighted_sum_factor_log_factor_norm(&g) != 3.926644358321802) {
+        printf("%sFAIL%s: weighted_sum_factor_log_factor_norm(&g) != 3.926644358321802\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
     return fail_counter;
 }
 
@@ -297,6 +412,33 @@ int greater_than_factor_tests() {
 
     if (fabs(variance(s) - 0.6296862857766055) > 1e-6) {
         printf("%sFAIL%s: variance(s) != 0.6296862857766055\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    s = init_gaussian1D(0, 0);
+
+    if (gaussian_factor_log_variable_norm(&f) != 0.0) {
+        printf("%sFAIL%s: gaussian_factor_log_variable_norm(&f) != 0.0\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (greater_than_factor_log_variable_norm(&g) != -1.5273215487580363) {
+        printf("%sFAIL%s: greater_than_factor_log_variable_norm(&g) != -1.5273215487580363\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(mean(s)- 1.2875999709391783) > 1e-6) {
+        printf("%sFAIL%s: mean(s) != 1.2875999709391783\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (fabs(variance(s) - 0.6296862857766055) > 1e-6) {
+        printf("%sFAIL%s: variance(s) != 0.6296862857766055\n", Color_RED, Color_END);
+        fail_counter++;
+    }
+
+    if (greater_than_factor_log_factor_norm(&g) != 1.3545677697345866) {
+        printf("%sFAIL%s: greater_than_factor_log_factor_norm(&g) != 1.3545677697345866\n", Color_RED, Color_END);
         fail_counter++;
     }
 
@@ -361,10 +503,45 @@ int ranking_graph_tests() {
     gaussian_mean_factor_update_to_mean(&g[1]);
     gaussian_mean_factor_update_to_mean(&g[2]);
 
+    /* compute the log-normalization constant */
+    urgency[0] = init_gaussian1D(0, 0);
+    urgency[1] = init_gaussian1D(0, 0);
+    urgency[2] = init_gaussian1D(0, 0);
+    latent_urgency[0] = init_gaussian1D(0, 0);
+    latent_urgency[1] = init_gaussian1D(0, 0);
+    latent_urgency[2] = init_gaussian1D(0, 0);
+    diffs[0] = init_gaussian1D(0, 0);
+    diffs[1] = init_gaussian1D(0, 0);
+
+    double logZ = 0.0;
+    logZ += gaussian_factor_log_variable_norm(&f[0]);
+    logZ += gaussian_factor_log_variable_norm(&f[1]);
+    logZ += gaussian_factor_log_variable_norm(&f[2]);
+    logZ += gaussian_mean_factor_log_variable_norm(&g[0]);
+    logZ += gaussian_mean_factor_log_variable_norm(&g[1]);
+    logZ += gaussian_mean_factor_log_variable_norm(&g[2]);
+    logZ += weighted_sum_factor_log_variable_norm(&s[0]);
+    logZ += weighted_sum_factor_log_variable_norm(&s[1]);
+    logZ += greater_than_factor_log_variable_norm(&h[0]);
+    logZ += greater_than_factor_log_variable_norm(&h[1]);
+    
+    logZ += gaussian_factor_log_factor_norm(&f[0]);
+    logZ += gaussian_factor_log_factor_norm(&f[1]);
+    logZ += gaussian_factor_log_factor_norm(&f[2]);
+    logZ += gaussian_mean_factor_log_factor_norm(&g[0]);
+    logZ += gaussian_mean_factor_log_factor_norm(&g[1]);
+    logZ += gaussian_mean_factor_log_factor_norm(&g[2]);
+    logZ += weighted_sum_factor_log_factor_norm(&s[0]);
+    logZ += weighted_sum_factor_log_factor_norm(&s[1]);
+    logZ += greater_than_factor_log_factor_norm(&h[0]);
+    logZ += greater_than_factor_log_factor_norm(&h[1]);
+    
+    /* output the computation results */
     printf("\n\nThree Move example\n=================\n");
     printf("urgency[0] = %f +/- %f\n", mean(urgency[0]), sqrt(variance(urgency[0])));
     printf("urgency[1] = %f +/- %f\n", mean(urgency[1]), sqrt(variance(urgency[1])));
     printf("urgency[2] = %f +/- %f\n", mean(urgency[2]), sqrt(variance(urgency[2])));
+    printf("P = %f\n", exp(logZ));
 
     return fail_counter;
 }
