@@ -3,8 +3,11 @@
 #include <unistd.h>
 #include "sys/time.h"
 
-#include "../include/chess.h"
+#include "../include/engine.h"
 #include "../include/zobrist.h"
+#include "../include/prettyprint.h"
+#include "../include/search.h"
+#include "../include/perft.h"
 
 typedef struct _perfttest_t {
     char fen[256];
@@ -12,7 +15,6 @@ typedef struct _perfttest_t {
     int results[16];
 } perfttest_t;
 
-board_t *OLDSTATE[MAXPLIES];
 uint64_t HISTORY_HASHES[MAXPLIES];
 uint64_t GLOBAL_COUNT = 0; 
 
@@ -205,7 +207,7 @@ int run_specific_test(perfttest_t *test) {
  */
 int main() {
     // intialize necessary structures
-    initialize_chess_engine_only_necessary();
+    initialize_chess_engine_necessary();
     initialize_zobrist_table();
     // determine number of tests in file
     int nr_of_tests = count_lines_in_file();

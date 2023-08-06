@@ -1,7 +1,7 @@
 #ifndef __SAN_H__
 #define __SAN_H__
 
-#include "../include/chess.h"
+#include "../include/types.h"
 
 #define AMBIG_BY_RANK -1
 #define AMBIG_BY_FILE 1

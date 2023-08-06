@@ -1,7 +1,7 @@
 #ifndef __ORDERING_H__
 #define __ORDERING_H__
 
-#include "../include/chess.h"
+#include "../include/engine.h"
 #include "../include/gaussian.h"
 
 #define HTSIZEGAUSSIAN 4608000

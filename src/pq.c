@@ -1,6 +1,8 @@
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../include/types.h"
+#include "../include/move.h"
+#include "../include/pq.h"
 #include "../include/prettyprint.h"
 
 /* Returns true if value (of move) at index i is truely lower than value at

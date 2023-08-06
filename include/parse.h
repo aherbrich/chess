@@ -1,7 +1,14 @@
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-#include "../include/chess.h"
+typedef enum _gameresult_t {
+    WINBLACK = -1, DRAW = 0, WINWHITE = 1
+} gameresult_t;
+
+typedef struct _chessgame_t {
+    char* movelist;
+    int winner;
+} chessgame_t;
 
 //////////////////////////////////////////////////////////////
 //  FUNCTIONS

@@ -1,6 +1,7 @@
 #include <string.h>
 
-#include "../include/chess.h"
+#include "../include/types.h"
+#include "../include/helpers.h"
 #include "../include/zobrist.h"
 
 /* Clears the board */

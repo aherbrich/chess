@@ -1,6 +1,8 @@
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../include/types.h"
+#include "../include/parse.h"
+#include "../include/board.h"
 #include "../include/database.h"
 #include "../include/zobrist.h"
 

@@ -1,6 +1,8 @@
 #include <sys/time.h>
 
-#include "../include/chess.h"
+#include "../include/types.h"
+#include "../include/board.h"
+#include "../include/search.h"
 
 /* Initializes search data structure */
 searchdata_t *init_search_data(board_t *board) {
@@ -23,7 +25,7 @@ searchdata_t *init_search_data(board_t *board) {
 
     gettimeofday(&(data->start), 0);
     data->best_move = NULL;         // best move (so far)
-    data->best_eval = NEGINFINITY;  // evaluation of board after best move made
+    data->best_eval = NEGINF;  // evaluation of board after best move made
     data->nodes_searched = 0;  // amount of nodes searched in iterative search
     data->hash_used = 0;  // amount of hash entries that lead to not needing to
                           // search the node again

@@ -1,4 +1,5 @@
-#include "../include/chess.h"
+#include "../include/types.h"
+#include "../include/move.h"
 #include "../include/eval.h"
 
 

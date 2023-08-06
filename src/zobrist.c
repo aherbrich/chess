@@ -1,5 +1,7 @@
 #include "../include/zobrist.h"
-#include "../include/chess.h"
+#include "../include/types.h"
+#include "../include/move.h"
+#include "../include/helpers.h"
 
 
 zobrist_t zobrist_table;

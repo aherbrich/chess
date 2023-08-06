@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../include/chess.h"
+#include "../include/engine.h"
 #include "../include/factors.h"
 #include "../include/gaussian.h"
 #include "../include/ordering.h"
@@ -195,7 +195,6 @@ void predict_move_probabilities(gaussian_t* urgency_beliefs, double* prob, int* 
 #define HTSIZEGAUSSIAN 4608000
 
 /* annoying externs which have to be in file */
-board_t* OLDSTATE[MAXPLIES];
 uint64_t HISTORY_HASHES[MAXPLIES];
 
 int nodes_searched = 0;
@@ -310,7 +309,7 @@ int main() {
     chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
 
     /* initialize chess engine */
-    initialize_chess_engine_only_necessary();
+    initialize_chess_engine_necessary();
     // printf("Moves made:\t%d\n", count_moves_made(chessgames, nr_of_games));
 
     train_model(chessgames, nr_of_games);

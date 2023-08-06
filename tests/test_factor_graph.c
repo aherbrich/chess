@@ -3,9 +3,9 @@
 
 #include "../include/gaussian.h"
 #include "../include/factors.h"
-#include "../include/chess.h"
+#include "../include/engine.h"
+#include "../include/prettyprint.h"
 
-board_t *OLDSTATE[MAXPLIES];
 uint64_t HISTORY_HASHES[MAXPLIES];
 
 /* runs the Gaussian tests */

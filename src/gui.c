@@ -3,13 +3,13 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../include/engine.h"
 #include "../include/prettyprint.h"
 #include "../include/zobrist.h"
+#include "../include/search.h"
 
 int MAX_LEN = 32768;
 
-board_t *OLDSTATE[MAXPLIES];
 uint64_t HISTORY_HASHES[MAXPLIES];
 
 int nodes_searched = 0;
@@ -352,7 +352,7 @@ void *main_interface_loop(void *args) {
 int main() {
     /* Initialize all necessary structures */
     board_t *board = init_board();
-    initialize_chess_engine_only_necessary();
+    initialize_chess_engine_necessary();
     initialize_zobrist_table();
     initialize_hashtable();
 

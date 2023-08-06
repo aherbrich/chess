@@ -1,7 +1,7 @@
 #ifndef __ZOBRIST_H__
 #define __ZOBRIST_H__
 
-#include "../include/chess.h"
+#include "../include/types.h"
 
 // prime number should help avoid hash collisions
 // #define HTSIZE  83471       // ~16MB

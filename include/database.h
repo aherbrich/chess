@@ -1,7 +1,7 @@
 #ifndef __DATABASE_H__
 #define __DATABASE_H__
 
-#include "../include/chess.h"
+#include "../include/types.h"
 
 #define DATABASESIZE 18815231
 

@@ -1,7 +1,8 @@
 #include <sys/time.h>
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../include/engine.h"
+#include "../include/search.h"
 #include "../include/eval.h"
 #include "../include/prettyprint.h"
 #include "../include/zobrist.h"
@@ -12,7 +13,7 @@
 #define WINDOWSIZE 50
 
 int last_check = 0;
-int stop_immediately = FALSE;
+int stop_immediately = 0;
 
 int delta_in_ms(searchdata_t *searchdata) {
     gettimeofday(&(searchdata->end), 0);
@@ -54,7 +55,7 @@ int draw_by_repition(board_t *board) {
  * by the caller (the gui)) */
 int calculate_time(searchdata_t *data) {
     int time_available = 0;
-    int atleast_one_time_found = FALSE;
+    int atleast_one_time_found = 0;
     int time_available_movetime = 0;
     int time_available_remainingtime = 0;
 
@@ -72,7 +73,7 @@ int calculate_time(searchdata_t *data) {
         if (time_available < 5) {
             time_available = 5;
         }
-        atleast_one_time_found = TRUE;
+        atleast_one_time_found = 1;
     }
     // if whites/blacks remaining time is given
     if ((data->board->player == WHITE && data->wtime != -1) ||
@@ -98,7 +99,7 @@ int calculate_time(searchdata_t *data) {
                 time_available = 5;
             }
         }
-        atleast_one_time_found = TRUE;
+        atleast_one_time_found = 1;
     }
 
     if (atleast_one_time_found) {
@@ -175,10 +176,10 @@ int quiet_search(board_t *board, int alpha, int beta,
         last_check++;
 
         // delta pruning
-        if (best_eval - 200 - is_capture(move->to, board) > eval) {
-            free_move(move);
-            continue;
-        }
+        // if (best_eval - 200 - is_capture(move->to, board) > eval) {
+        //     free_move(move);
+        //     continue;
+        // }
 
         do_move(board, move);
         eval = -quiet_search(board, -beta, -alpha, searchdata, depth+1);
@@ -297,7 +298,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     int legal_moves = 0;
     int tt_flag = UPPERBOUND;
-    int best_eval = NEGINFINITY;
+    int best_eval = NEGINF;
     move_t *best_move = NULL;
 
     while ((move = pop_max(&movelst))) {
@@ -371,7 +372,7 @@ void search(searchdata_t *searchdata) {
 
     // Reset the performance counters and calculate the time available for
     // search
-    searchdata->best_eval = NEGINFINITY;
+    searchdata->best_eval = NEGINF;
     searchdata->best_move = NULL;
     searchdata->nodes_searched = 0;
     searchdata->hash_used = 0;
@@ -379,7 +380,7 @@ void search(searchdata_t *searchdata) {
     searchdata->pv_node_hit = 0;
     searchdata->time_available = calculate_time(searchdata);
 
-    int alpha = NEGINFINITY, beta = INFINITY;
+    int alpha = NEGINF, beta = INF;
 
     // =================================================================== //
     // ITERATIVE DEEPINING: It has been noticed, that even if one is about //
@@ -393,7 +394,7 @@ void search(searchdata_t *searchdata) {
         int eval = negamax(searchdata, depth, alpha, beta);
 
         if (stop_immediately) {
-            stop_immediately = FALSE;
+            stop_immediately = 0;
             if (searchdata->best_move == NULL && depth == 1) {
                 searchdata->best_move =
                     get_best_move_from_hashtable(searchdata->board);
@@ -412,8 +413,8 @@ void search(searchdata_t *searchdata) {
         // side of the guess.                                               //
         // ================================================================ //
         if (eval <= alpha || eval >= beta) {
-            alpha = NEGINFINITY;
-            beta = INFINITY;
+            alpha = NEGINF;
+            beta = INF;
             depth--;
             continue;
         }

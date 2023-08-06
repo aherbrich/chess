@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-#include "../include/chess.h"
+#include "../include/engine.h"
+#include "../include/prettyprint.h"
 #include "../include/zobrist.h"
 
 char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "a2", "b2",
