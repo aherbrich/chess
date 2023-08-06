@@ -108,6 +108,89 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
     return;
 }
 
+/* computes the probability of all moves being the most urgent moves */
+void predict_move_probabilities(gaussian_t* urgency_beliefs, double* prob, int* hashes, int no_hashes, double beta_squared) {
+    assert(no_hashes <= MAX_MOVES);
+
+    for (int k = 0; k < no_hashes; ++k) {
+        /* initialize all messages and marginals with the constant function */
+        for (int i = 0; i < no_hashes; ++i) {
+            urgency[i] = init_gaussian1D(0, 0);
+            latent_urgency[i] = init_gaussian1D(0, 0);
+            diffs[i] = init_gaussian1D(0, 0);
+            msg_from_f_to_urgency[i] = init_gaussian1D(0, 0);
+            msg_from_g_to_latent_urgency[i] = init_gaussian1D(0, 0);
+            msg_from_g_to_urgency[i] = init_gaussian1D(0, 0);
+            msg_from_s_to_diffs[i] = init_gaussian1D(0, 0);
+            msg_from_s_to_top_urgency[i] = init_gaussian1D(0, 0);
+            msg_from_s_to_urgency[i] = init_gaussian1D(0, 0);
+            msg_from_h_to_diffs[i] = init_gaussian1D(0, 0);
+
+            if (i == 0)
+                f[i].g = urgency_beliefs[hashes[k]];
+            else if (i == k)
+                f[i].g = urgency_beliefs[hashes[0]];
+            else
+                f[i].g = urgency_beliefs[hashes[i]];
+            g[i].beta_squared = beta_squared;
+        }
+
+        /* run the schedule */
+        for (int i = 0; i < no_hashes; ++i) {
+            gaussian_factor_update(&f[i]);
+            gaussian_mean_factor_update_to_variable(&g[i]);
+        }
+
+        double delta = 1e4;
+        while (delta > 1e-4) {
+            delta = 0.0;
+
+            for (int i = 0; i < no_hashes - 1; ++i) {
+                delta = fmax(delta, weighted_sum_factor_update_to_sum(&s[i]));
+                delta = fmax(delta, greater_than_factor_update(&h[i]));
+                delta = fmax(delta, weighted_sum_factor_update_to_summand1(&s[i]));
+                delta = fmax(delta, weighted_sum_factor_update_to_summand2(&s[i]));
+            }
+        }
+
+        for (int i = 0; i < no_hashes; ++i) {
+            gaussian_mean_factor_update_to_mean(&g[i]);
+            urgency_beliefs[hashes[i]] = urgency[i];
+        }
+
+        /* reset all the marginals and compute the log-normalization constant */
+        for (int i = 0; i < no_hashes; ++i) {
+            urgency[i] = init_gaussian1D(0, 0);
+            latent_urgency[i] = init_gaussian1D(0, 0);
+            diffs[i] = init_gaussian1D(0, 0);
+        }
+
+        double logZ = 0.0;
+        for (int i = 0; i < no_hashes; ++i) {
+            logZ += gaussian_factor_log_variable_norm(&f[i]);
+            logZ += gaussian_mean_factor_log_variable_norm(&g[i]);
+            if (i < no_hashes - 1) {
+                logZ += weighted_sum_factor_log_variable_norm(&s[i]);
+                logZ += greater_than_factor_log_variable_norm(&h[i]);
+            }
+        }
+
+        for (int i = 0; i < no_hashes; ++i) {
+            logZ += gaussian_factor_log_factor_norm(&f[i]);
+            logZ += gaussian_mean_factor_log_factor_norm(&g[i]);
+            if (i < no_hashes - 1) {
+                logZ += weighted_sum_factor_log_factor_norm(&s[i]);
+                logZ += greater_than_factor_log_factor_norm(&h[i]);
+            }
+        }
+
+        prob[k] = exp(logZ);
+    }
+
+    return;
+}
+
+
 #define HTSIZEGAUSSIAN 4608000
 
 /* annoying externs which have to be in file */
