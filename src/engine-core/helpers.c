@@ -1,6 +1,4 @@
 #include "../../include/types.h"
-#include "../../include/move.h"
-#include "../../include/zobrist.h"
 
 const int DEBRUIJN64[64] = {
 	0, 47,  1, 56, 48, 27,  2, 60,

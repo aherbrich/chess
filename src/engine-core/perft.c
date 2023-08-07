@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-#include "../../include/engine.h"
+#include "../../include/types.h"
+#include "../../include/move.h"
 #include "../../include/prettyprint.h"
 
 /* Runs perft test for a given board and depth */

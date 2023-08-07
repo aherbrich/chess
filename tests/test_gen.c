@@ -1,6 +1,8 @@
 #include <stdio.h>
 
-#include "../include/engine.h"
+#include "../include/types.h"
+#include "../include/board.h"
+#include "../include/move.h"
 #include "../include/prettyprint.h"
 
 uint64_t HISTORY_HASHES[MAXPLIES];

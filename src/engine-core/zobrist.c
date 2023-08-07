@@ -1,7 +1,7 @@
-#include "../../include/zobrist.h"
 #include "../../include/types.h"
 #include "../../include/move.h"
 #include "../../include/helpers.h"
+#include "../../include/zobrist.h"
 
 
 zobrist_t zobrist_table;

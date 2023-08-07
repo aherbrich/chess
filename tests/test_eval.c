@@ -2,9 +2,6 @@
 #include <stdio.h>
 
 #include "../include/engine.h"
-#include "../include/search.h"
-#include "../include/prettyprint.h"
-#include "../include/zobrist.h"
 
 char STARTING_FEN[] =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";

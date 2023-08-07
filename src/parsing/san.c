@@ -1,7 +1,10 @@
 #include <stdio.h>
 
-#include "../../include/san.h"
-#include "../../include/engine.h"
+#include "../../include/types.h"
+#include "../../include/move.h"
+
+#define AMBIG_BY_RANK -1
+#define AMBIG_BY_FILE 1
 
 /* Returns true if character is a file (i.e a-h) */
 int is_file(char character) { return (character >= 97 && character <= 104); }

@@ -1,6 +1,9 @@
 #include <stdio.h>
 
-#include "../../include/engine.h"
+#include "../../include/types.h"
+#include "../../include/board.h"
+#include "../../include/helpers.h"
+#include "../../include/move.h"
 #include "../../include/prettyprint.h"
 #include "../../include/zobrist.h"
 

@@ -1,5 +1,7 @@
-#include "../include/engine.h"
-#include "../include/perft.h"
+#include "../include/types.h"
+#include "../include/board.h"
+#include "../include/move.h"
+#include "../include/perft.h"   
 
 uint64_t HISTORY_HASHES[MAXPLIES];
 

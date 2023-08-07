@@ -3,7 +3,6 @@
 
 #include "../include/gaussian.h"
 #include "../include/factors.h"
-#include "../include/engine.h"
 #include "../include/prettyprint.h"
 
 uint64_t HISTORY_HASHES[MAXPLIES];

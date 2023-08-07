@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include "sys/time.h"
 
-#include "../include/engine.h"
+#include "../include/types.h"
+#include "../include/board.h"
+#include "../include/move.h"
 #include "../include/zobrist.h"
+#include "../include/perft.h"   
 #include "../include/prettyprint.h"
-#include "../include/search.h"
-#include "../include/perft.h"
 
 typedef struct _perfttest_t {
     char fen[256];

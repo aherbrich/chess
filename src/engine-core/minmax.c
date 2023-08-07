@@ -1,11 +1,13 @@
 #include <sys/time.h>
 #include <stdio.h>
 
-#include "../../include/engine.h"
-#include "../../include/search.h"
-#include "../../include/eval.h"
-#include "../../include/prettyprint.h"
+
+#include "../../include/types.h"
+#include "../../include/move.h"
 #include "../../include/zobrist.h"
+#include "../../include/eval.h"
+#include "../../include/search.h"
+#include "../../include/prettyprint.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1
