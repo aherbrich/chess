@@ -8,8 +8,8 @@ EXERCISE_SRC = src/engine-core/board.c src/engine-core/helpers.c src/engine-core
 EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
 
 GUI_SRC = src/gui.c
-TRAIN_SRC = src/train.c
-TRAIN_ORDERING_SRC = src/ordering.c
+TRAIN_SRC = src/train-eval/train.c
+TRAIN_ORDERING_SRC = src/train-ordering/ordering.c
 
 TEST_DIR = tests
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -20,7 +20,7 @@ VALGRIND_TARGET = $(addprefix valgrind_, $(TEST_TARGET))
 
 
 CC = gcc
-CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3 #-fno-exceptions -flto=full
+CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3 -g #-fno-exceptions -flto=full
 
 .PHONY: all	
 all: build build_tests $(BUILD_DIR)/gui/gui $(BUILD_DIR)/train/train $(BUILD_DIR)/train_ordering/train_ordering # Build everything but runs nothing
