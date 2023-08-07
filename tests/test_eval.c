@@ -17,11 +17,6 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 
 uint64_t HISTORY_HASHES[MAXPLIES];
 
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_bounds_adjusted = 0;
-int pv_node_hit = 0;
-
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 int main() {

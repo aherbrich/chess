@@ -195,11 +195,6 @@ void predict_move_probabilities(gaussian_t* urgency_beliefs, double* prob, int* 
 /* annoying externs which have to be in file */
 uint64_t HISTORY_HASHES[MAXPLIES];
 
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_bounds_adjusted = 0;
-int pv_node_hit = 0;
-
 /* table of gaussians corresponding to moves */
 gaussian_t* ht_gaussians;
 

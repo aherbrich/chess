@@ -7,11 +7,6 @@
 
 uint64_t HISTORY_HASHES[MAXPLIES];
 
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_bounds_adjusted = 0;
-int pv_node_hit = 0;
-
 /*  Playes all games in given chess game list and
     stores all chess positions and corresponding winrates */
 void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {

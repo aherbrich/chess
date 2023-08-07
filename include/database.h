@@ -16,8 +16,6 @@ typedef struct _databaseentry_t {
     int draw;
 } databaseentry_t;
 
-extern databaseentry_t** database;
-
 //////////////////////////////////////////////////////////////
 //  FUNCTIONS
 void initialize_database();

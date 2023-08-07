@@ -13,11 +13,6 @@ typedef enum _ttflag_t {
     EXACT, UPPERBOUND, LOWERBOUND
 } ttflag_t;
 
-extern int nodes_searched;
-extern int hash_used;
-extern int hash_bounds_adjusted;
-extern int pv_node_hit;
-
 typedef struct _searchdata_t {
     board_t* board;      // pointer to the actual board
     int max_depth;       // maximum search depth in plies

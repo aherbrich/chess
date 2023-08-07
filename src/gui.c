@@ -9,11 +9,6 @@ int MAX_LEN = 32768;
 
 uint64_t HISTORY_HASHES[MAXPLIES];
 
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_bounds_adjusted = 0;
-int pv_node_hit = 0;
-
 pthread_t game_thread = 0;
 
 /* Converts a string to a move index */
