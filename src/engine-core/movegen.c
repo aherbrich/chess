@@ -436,16 +436,8 @@ void initialize_helper_boards() {
     initialize_line();
 }
 
-/* Initializes old state array */
-void initialize_history_hash_array() {
-    for (int i = 0; i < MAXPLIES; i++) {
-        HISTORY_HASHES[i] = 0;
-    }
-}
-
 /* Initializes all structures necessary for legal move generation */
 void initialize_chess_engine_necessary() {
-    initialize_history_hash_array();
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
@@ -1089,7 +1081,7 @@ void move_piece_quiet(board_t* board, square_t from, square_t to) {
 /* Execute move */
 void do_move(board_t *board, move_t *move) {
     /* save current board hash in array */
-    HISTORY_HASHES[board->ply_no] = board->hash;
+    board->history[board->ply_no].hash = board->hash;
     
     /* increase board ply number */
     board->ply_no++;

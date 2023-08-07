@@ -5,8 +5,6 @@
 #include "../include/factors.h"
 #include "../include/prettyprint.h"
 
-uint64_t HISTORY_HASHES[MAXPLIES];
-
 /* runs the Gaussian tests */
 int gaussian_tests() {
     int fail_counter = 0;

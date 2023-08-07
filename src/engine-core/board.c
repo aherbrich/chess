@@ -24,6 +24,7 @@ void clear_board(board_t* board) {
         board->history[i].epsq = NO_SQUARE;
         board->history[i].fifty_move_counter = 0;
         board->history[i].full_move_counter = 0;
+        board->history[i].hash = 0ULL;
     }
 
     board->ply_no = 0;
@@ -53,6 +54,7 @@ board_t* copy_board(board_t* board) {
         copy->history[i].epsq = board->history[i].epsq;
         copy->history[i].fifty_move_counter = board->history[i].fifty_move_counter;
         copy->history[i].full_move_counter = board->history[i].full_move_counter;
+        copy->history[i].hash = board->history[i].hash;
     }
 
     copy->ply_no = board->ply_no;
@@ -264,5 +266,6 @@ void load_by_FEN(board_t* board, char* FEN) {
     board->history[0].full_move_counter = (uint8_t)atoi(full_move);
 
     board->hash = calculate_zobrist_hash(board);
+    board->history[0].hash = board->hash;
     return;
 }

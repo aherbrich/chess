@@ -4,8 +4,6 @@
 #include "../include/types.h"
 #include "../include/pq.h"
 
-extern uint64_t HISTORY_HASHES[MAXPLIES];
-
 //  HELPER FUNCTIONS
 void initialize_chess_engine_necessary();
 

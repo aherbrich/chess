@@ -5,7 +5,6 @@
 #include "../../include/database.h"
 #include "../../include/parse.h"
 
-uint64_t HISTORY_HASHES[MAXPLIES];
 
 /*  Playes all games in given chess game list and
     stores all chess positions and corresponding winrates */

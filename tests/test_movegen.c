@@ -17,7 +17,6 @@ typedef struct _perfttest_t {
     int results[16];
 } perfttest_t;
 
-uint64_t HISTORY_HASHES[MAXPLIES];
 uint64_t GLOBAL_COUNT = 0; 
 
 /* pads whitespaces left and right of given string until given width reached */

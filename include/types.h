@@ -70,6 +70,8 @@ typedef struct _undoinfo_t {
 
     uint16_t full_move_counter;
     uint8_t fifty_move_counter;
+
+    uint64_t hash;
 } undoinfo_t;
 
 #define MAXPLIES 1024

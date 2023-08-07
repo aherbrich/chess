@@ -7,8 +7,6 @@
 
 int MAX_LEN = 32768;
 
-uint64_t HISTORY_HASHES[MAXPLIES];
-
 pthread_t game_thread = 0;
 
 /* Converts a string to a move index */

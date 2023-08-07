@@ -192,19 +192,17 @@ void predict_move_probabilities(gaussian_t* urgency_beliefs, double* prob, int* 
 
 #define HTSIZEGAUSSIAN 4608000
 
-/* annoying externs which have to be in file */
-uint64_t HISTORY_HASHES[MAXPLIES];
 
 /* table of gaussians corresponding to moves */
 gaussian_t* ht_gaussians;
 
 /* Initializes gaussian hashtable with standard normals */
 gaussian_t* initialize_ht_gaussians(double mean, double var) {
-    gaussian_t* ht_table = (gaussian_t*)malloc(sizeof(gaussian_t) * HTSIZEGAUSSIAN);
+    gaussian_t* ht_table_gaussian = (gaussian_t*)malloc(sizeof(gaussian_t) * HTSIZEGAUSSIAN);
     for (int i = 0; i < HTSIZEGAUSSIAN; i++) {
-        ht_table[i] = init_gaussian1D_from_mean_and_variance(mean, var);
+        ht_table_gaussian[i] = init_gaussian1D_from_mean_and_variance(mean, var);
     }
-    return ht_table;
+    return ht_table_gaussian;
 }
 
 /* Hash function from move to gaussian ht index */

@@ -3,7 +3,6 @@
 #include "../include/move.h"
 #include "../include/perft.h"   
 
-uint64_t HISTORY_HASHES[MAXPLIES];
 
 /*
  * MAIN ENTRY POINT

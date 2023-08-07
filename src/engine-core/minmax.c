@@ -41,11 +41,11 @@ char *get_mate_or_cp_value(int score, int depth) {
 
 /* Determines a draw by threefold repitiion */
 int draw_by_repition(board_t *board) {
-    uint64_t current_board_hash = board->hash; //calculate_zobrist_hash(board);
+    uint64_t current_board_hash = board->hash; 
 
     int counter = 0;
     for (int i = 0; i < board->ply_no; i++) {
-        if (HISTORY_HASHES[i] == current_board_hash) counter++;
+        if (board->history[i].hash == current_board_hash) counter++;
         if (counter == 2) {
             return 1;
         }
@@ -232,8 +232,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
-        return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
-        //return eval_board(searchdata->board);
+        // return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
+        return eval_board(searchdata->board);
     }
 
     // ================================================================ //
@@ -369,7 +369,7 @@ void search(searchdata_t *searchdata) {
     // Of course we keep the hashes of already played
     // positions untouched
     for (int i = searchdata->board->ply_no; i < MAXPLIES; i++) {
-        HISTORY_HASHES[i] = 0;
+        searchdata->board->history[i].hash = 0ULL;
     }
 
     // Reset the performance counters and calculate the time available for
