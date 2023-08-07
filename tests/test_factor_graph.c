@@ -126,11 +126,6 @@ int gaussian_factor_tests() {
         fail_counter++;
     }
 
-    if (gaussian_factor_log_factor_norm(&factor) != 0.0) {
-        printf("%sFAIL%s: gaussian_factor_log_factor_norm(&factor) != 0.0\n", Color_RED, Color_END);
-        fail_counter++;
-    }
-
     return fail_counter;
 }
 
@@ -522,9 +517,6 @@ int ranking_graph_tests() {
     logZ += greater_than_factor_log_variable_norm(&h[0]);
     logZ += greater_than_factor_log_variable_norm(&h[1]);
     
-    logZ += gaussian_factor_log_factor_norm(&f[0]);
-    logZ += gaussian_factor_log_factor_norm(&f[1]);
-    logZ += gaussian_factor_log_factor_norm(&f[2]);
     logZ += gaussian_mean_factor_log_factor_norm(&g[0]);
     logZ += gaussian_mean_factor_log_factor_norm(&g[1]);
     logZ += gaussian_mean_factor_log_factor_norm(&g[2]);

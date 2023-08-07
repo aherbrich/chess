@@ -20,11 +20,6 @@ double gaussian_factor_log_variable_norm(gaussian_factor_info_t* info) {
     return logZ;
 }
 
-/* log of factor normalization of Gaussian factor */
-double gaussian_factor_log_factor_norm(gaussian_factor_info_t* info) {
-    return 0.0;
-}
-
 /* update function for the Gaussian mean factor to the variable */
 double gaussian_mean_factor_update_to_variable(gaussian_mean_factor_info_t* info) {
     gaussian_t msg_back = gaussian1D_div(*info->mean_marginal, *info->mean_msg);

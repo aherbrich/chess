@@ -10,7 +10,6 @@ typedef struct _gaussian_factor_info_t {
 } gaussian_factor_info_t;
 double gaussian_factor_update(gaussian_factor_info_t* info);
 double gaussian_factor_log_variable_norm(gaussian_factor_info_t* info);
-double gaussian_factor_log_factor_norm(gaussian_factor_info_t* info);
 
 
 typedef struct _gaussian_mean_factor_info_t {

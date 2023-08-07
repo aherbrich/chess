@@ -4,11 +4,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../../include/engine.h"
-#include "../../include/factors.h"
-#include "../../include/gaussian.h"
-#include "../../include/ordering.h"
-#include "../../include/parse.h"
+#include "../include/engine.h"
+#include "../include/factors.h"
+#include "../include/gaussian.h"
+#include "../include/ordering.h"
+#include "../include/parse.h"
 
 #define MAX_MOVES 512
 
@@ -175,7 +175,6 @@ void predict_move_probabilities(gaussian_t* urgency_beliefs, double* prob, int* 
         }
 
         for (int i = 0; i < no_hashes; ++i) {
-            logZ += gaussian_factor_log_factor_norm(&f[i]);
             logZ += gaussian_mean_factor_log_factor_norm(&g[i]);
             if (i < no_hashes - 1) {
                 logZ += weighted_sum_factor_log_factor_norm(&s[i]);

@@ -1,48 +1,56 @@
 BUILD_DIR = build
-
-EXERCISE_SRC = src/engine-core/board.c src/engine-core/helpers.c src/engine-core/prettyprint.c src/engine-core/movegen.c src/engine-core/magic.c \
-			   src/engine-core/perft.c src/engine-core/eval.c src/engine-core/minmax.c src/engine-core/searchdata.c src/engine-core/zobrist.c src/engine-core/pq.c \
-			   src/parsing/parse.c src/parsing/san.c \
-			   src/train-eval/database.c src/train-eval/features.c \
-			   src/train-ordering/gaussian.c src/train-ordering/factors.c 
-EXERCISE_OBJ = $(addprefix $(BUILD_DIR)/, $(EXERCISE_SRC:%.c=%.o))
-
-GUI_SRC = src/gui.c
-TRAIN_SRC = src/train-eval/train.c
-TRAIN_ORDERING_SRC = src/train-ordering/ordering.c
-
+BIN_DIR = bin
 TEST_DIR = tests
-TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
-TEST_OBJ = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
-TEST_TARGET = $(notdir $(TEST_OBJ))
-DEBUG_TARGET = $(addprefix gdb_, $(TEST_TARGET))
-VALGRIND_TARGET = $(addprefix valgrind_, $(TEST_TARGET))
 
+ENGINE_CORE_SRC = $(wildcard src/engine-core/*.c)
+ENGINE_CORE_OBJ = $(addprefix $(BUILD_DIR)/, $(ENGINE_CORE_SRC:src/%.c=%.o))
+
+PARSING_SRC = $(wildcard src/parsing/*.c)
+PARSING_OBJ = $(addprefix $(BUILD_DIR)/, $(PARSING_SRC:src/%.c=%.o))
+
+ORDERING_SRC = $(wildcard src/train-ordering/*.c)
+ORDERING_OBJ = $(addprefix $(BUILD_DIR)/, $(ORDERING_SRC:src/%.c=%.o))
+
+EVAL_SRC = $(wildcard src/train-eval/*.c)
+EVAL_OBJ = $(addprefix $(BUILD_DIR)/, $(EVAL_SRC:src/%.c=%.o))
+
+UCI_ENGINE_SRC = src/gui.c
+TRAIN_ORDERING_SRC = src/ordering.c
+TRAIN_EVAL_SRC = src/train.c
+
+TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
+TEST_BIN = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
+TEST_TARGET = $(notdir $(TEST_BIN))
 
 CC = gcc
-CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3 -g #-fno-exceptions -flto=full
+CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3
 
-.PHONY: all	
-all: build build_tests $(BUILD_DIR)/gui/gui $(BUILD_DIR)/train/train $(BUILD_DIR)/train_ordering/train_ordering # Build everything but runs nothing
+.PHONY: all
+all: uci_engine train_ordering train_eval
 
+.PHONY: engine_core
+engine_core: $(ENGINE_CORE_OBJ)
 
-.PHONY: gui
-gui: build $(BUILD_DIR)/gui/gui 
+.PHONY: parser
+parser: $(PARSING_OBJ)
 
-.PHONY: train
-train: build $(BUILD_DIR)/train/train 
+.PHONY: ordering
+ordering: $(ORDERING_OBJ)
+
+.PHONY: eval
+eval: $(EVAL_OBJ)
+
+.PHONY: uci_engine
+uci_engine: engine_core $(BIN_DIR)/uci_engine
 
 .PHONY: train_ordering
-train_ordering: build $(BUILD_DIR)/train_ordering/train_ordering 
+train_ordering: engine_core parser ordering $(BIN_DIR)/train_ordering
 
-.PHONY: run
-run: all_tests             # Run all tests (alias)
-
-.PHONY: build
-build: $(EXERCISE_OBJ)     # Build the exercise
+.PHONY: train_eval
+train_eval: engine_core parser eval $(BIN_DIR)/train_eval
 
 .PHONY: build_tests
-build_tests: $(TEST_OBJ)   # Build the tests
+build_tests: $(TEST_BIN)   # Build the tests
 
 .PHONY: all_tests
 all_tests: $(TEST_TARGET)  # Run all tests
@@ -65,26 +73,38 @@ $(TEST_TARGET): %: $(BUILD_DIR)/tests/%
 	@./$< && echo -e "<<< $(BASH_COLOR_GREEN)OK$(BASH_COLOR_NONE)" \
 		|| echo -e "<<< $(BASH_COLOR_RED)FAILED$(BASH_COLOR_NONE)"
 
-$(EXERCISE_OBJ): $(BUILD_DIR)/%.o: %.c
+$(ENGINE_CORE_OBJ): $(BUILD_DIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
+
+$(PARSING_OBJ): $(BUILD_DIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
+
+$(ORDERING_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
+$(EVAL_OBJ): $(BUILD_DIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o $@ -c $<
 
-$(BUILD_DIR)/tests/test_%: tests/test_%.c $(EXERCISE_OBJ)
+$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o $@ $^
+
+$(BIN_DIR)/train_ordering: $(TRAIN_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o $@ $^
+
+$(BIN_DIR)/train_eval: $(TRAIN_EVAL_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(EVAL_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
 
-$(BUILD_DIR)/gui/gui: $(GUI_SRC) $(EXERCISE_OBJ)
+$(TEST_BIN): $(BUILD_DIR)/%: %.c $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
+	$(CC) $(CC_FLAGS) -o $@ $^
 
-$(BUILD_DIR)/train/train: $(TRAIN_SRC) $(EXERCISE_OBJ)
-	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS)  -o $@  $^ -L./lib -llinalg
-
-$(BUILD_DIR)/train_ordering/train_ordering: $(TRAIN_ORDERING_SRC) $(EXERCISE_OBJ)
-	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS)  -o $@  $^ -L./lib -llinalg
 
 .PHONY: clean
 clean:

@@ -1,9 +1,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../../include/engine.h"
-#include "../../include/database.h"
-#include "../../include/parse.h"
+#include "../include/engine.h"
+#include "../include/database.h"
+#include "../include/parse.h"
 
 
 /*  Playes all games in given chess game list and
