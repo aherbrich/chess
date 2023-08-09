@@ -69,6 +69,7 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
     /* free chess games */
     for (int i = 0; i < nr_of_games; i++) {
         free(chessgames[i]->movelist);
+        free(chessgames[i]);
     }
     free(chessgames);
 }
