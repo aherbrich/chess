@@ -16,6 +16,7 @@ EVAL_OBJ = $(addprefix $(BUILD_DIR)/, $(EVAL_SRC:src/%.c=%.o))
 
 UCI_ENGINE_SRC = src/gui.c
 TRAIN_ORDERING_SRC = src/train_ordering.c
+TEST_ORDERING_SRC = src/test_ordering.c
 TRAIN_EVAL_SRC = src/train.c
 
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -45,6 +46,9 @@ uci_engine: engine_core ordering $(BIN_DIR)/uci_engine
 
 .PHONY: train_ordering
 train_ordering: engine_core parser ordering $(BIN_DIR)/train_ordering
+
+.PHONY: test_ordering
+test_ordering: engine_core parser ordering $(BIN_DIR)/test_ordering
 
 .PHONY: train_eval
 train_eval: engine_core parser ordering eval $(BIN_DIR)/train_eval
@@ -94,6 +98,10 @@ $(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	$(CC) $(CC_FLAGS) -o $@ $^
 
 $(BIN_DIR)/train_ordering: $(TRAIN_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -o $@ $^
+
+$(BIN_DIR)/test_ordering: $(TEST_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^
 

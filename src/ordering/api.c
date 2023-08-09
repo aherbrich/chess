@@ -156,7 +156,7 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
     }
 
     double delta = 1e4;
-    while (delta > 1e-6) {
+    while (delta > 1e-3) {
         delta = 0.0;
 
         for (int i = 0; i < no_hashes - 1; ++i) {
