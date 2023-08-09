@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "../include/engine.h"
+#include  "../include/ordering.h"
 
 char STARTING_FEN[] =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
@@ -20,10 +21,12 @@ char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
 // MAIN ENTRY POINT
 int main() {
     board_t* board = init_board();
-    load_by_FEN(board, TEST4_FEN);
+    load_by_FEN(board, TEST7_FEN);
 
     initialize_chess_engine_necessary();
     initialize_hashtable();
+    load_ht_gaussians_from_binary_file("ht_gaussians.bin", ht_gaussians);
+
 
     searchdata_t* search_data = init_search_data(board);
 
@@ -49,4 +52,7 @@ int main() {
 
     free(board);
     free_search_data(search_data);
+    deletes_ht_gaussians(ht_gaussians);
+
+    return 0;
 }
