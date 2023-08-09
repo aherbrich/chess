@@ -1,9 +1,9 @@
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <assert.h>
+#include <unistd.h>
 
 #include "../../include/engine.h"
 #include "../../include/factors.h"
@@ -11,17 +11,25 @@
 #include "../../include/ordering.h"
 #include "../../include/parse.h"
 
+/* a unique cookie representing the file version */
+int file_version_cookie = 0x10;
 
-/* table of gaussians corresponding to moves */
-gaussian_t* ht_gaussians;
+/* global table of Gaussians corresponding to moves */
+gaussian_t* ht_gaussians = NULL;
 
-/* Initializes gaussian hashtable with standard normals */
-gaussian_t* initialize_ht_gaussians(double mean, double var) {
-    gaussian_t* ht_table_gaussian = (gaussian_t*)malloc(sizeof(gaussian_t) * HTSIZEGAUSSIAN);
-    for (int i = 0; i < HTSIZEGAUSSIAN; i++) {
-        ht_table_gaussian[i] = init_gaussian1D_from_mean_and_variance(mean, var);
+/* Initializes a Gaussian hashtable with standard Normals */
+gaussian_t* initialize_ht_gaussians() {
+    gaussian_t* ht = (gaussian_t*)malloc(sizeof(gaussian_t) * HT_GAUSSIAN_SIZE);
+    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+        ht[i] = init_gaussian1D_from_mean_and_variance(0, 1);
     }
-    return ht_table_gaussian;
+    return ht;
+}
+
+/* deletes the memory for a hashtable of Gaussians */
+void deletes_ht_gaussians(gaussian_t *ht) {
+    if (ht) free(ht);
+    return;
 }
 
 /* Hash function from move to gaussian ht index */
@@ -30,31 +38,46 @@ int calculate_order_hash(board_t* board, move_t* move) {
     square_t from = move->from;
     piece_t piece_captured = board->playingfield[move->to];
     square_t to = move->to;
-    piece_t piece_prom = (move->flags & 0b1000) ? (move->flags & 0b11) : 4;                                              
-                                                
+    piece_t piece_prom = (move->flags & 0b1000) ? (move->flags & 0b11) : 4;
+
     return piece_moved * 307200 + from * 4800 + piece_captured * 320 + to * 5 + piece_prom;
 }
 
-/* Loads precalculated gaussian into hashtable */
-gaussian_t* load_ht_gaussians_by_file() {
-    gaussian_t* ht_table_gaussians = (gaussian_t*)malloc(sizeof(gaussian_t) * HTSIZEGAUSSIAN);
-
-    char file_name[PATH_MAX];
-    getcwd(file_name, PATH_MAX);
-    printf("%s\n", file_name);
-    strcat(file_name, "/output.txt");
-
-    FILE *fp = fopen(file_name, "r");
-
-    double mean, var;
-
-    fscanf(fp, "%lf %lf", &mean, &var);
-    for(int i = 0; i < HTSIZEGAUSSIAN; i++){
-        ht_table_gaussians[i] = init_gaussian1D_from_mean_and_variance(mean, var);
-        fscanf(fp, "%lf %lf", &mean, &var);
+/* Writes a Gaussian hash-table to a file (only entries which are different from the prior) */
+void write_ht_gaussians_to_binary_file(const char* file_name, const gaussian_t *ht) {
+    FILE* fp = fopen(file_name, "wb");
+    if (fp != NULL) {
+        fwrite(&file_version_cookie, sizeof(int), 1, fp);
+        for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+            if (ht[i].tau != 0 || ht[i].rho != 1) {
+                fwrite(&i, sizeof(int), 1, fp);
+                fwrite(&ht[i], sizeof(gaussian_t), 1, fp);
+            }
+        }
     }
-        
-    return ht_table_gaussians;
+    fclose(fp);
+}
+
+/* Loads a Gaussian hash-table from a file (only entries which are different from the prior) */
+void load_ht_gaussians_from_binary_file(const char* file_name, gaussian_t *ht) {
+    FILE* fp = fopen(file_name, "rb");
+    if (fp != NULL) {
+        int cookie;
+        fread(&cookie, sizeof(int), 1, fp);
+
+        if (cookie != file_version_cookie) {
+            fprintf(stderr, "Error: file version mismatch\n");
+            exit(1);
+        }
+
+        int hash;
+        gaussian_t gaussian;
+        while (fread(&hash, sizeof(int), 1, fp) == 1) {
+            fread(&gaussian, sizeof(gaussian_t), 1, fp);
+            ht[hash] = gaussian;
+        }
+    }
+    fclose(fp);
 }
 
 /* statically allocate the factors to speed up execution */

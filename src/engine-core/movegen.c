@@ -443,7 +443,7 @@ void initialize_chess_engine_necessary() {
     initialize_helper_boards();
     initialize_zobrist_table();
     initalize_ranking_updates();
-    ht_gaussians = load_ht_gaussians_by_file();
+    ht_gaussians = initialize_ht_gaussians();
 }
 
 //////////////////////////////////////////////////////

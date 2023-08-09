@@ -8,11 +8,7 @@
 #include "../include/ordering.h"
 #include "../include/parse.h"
 
-
 void train_model(chessgame_t** chessgames, int nr_of_games) {
-    initalize_ranking_updates();
-    ht_gaussians = initialize_ht_gaussians(0.0, 1.0);
-
     /* play games */
     for (int i = 0; i < nr_of_games; i++) {
         chessgame_t* chessgame = chessgames[i];
@@ -84,17 +80,44 @@ int main() {
 
     /* initialize chess engine */
     initialize_chess_engine_necessary();
-    // printf("Moves made:\t%d\n", count_moves_made(chessgames, nr_of_games));
 
+    /* train the model */
     train_model(chessgames, nr_of_games);
 
+    /* write the mode to a binary file */
+    write_ht_gaussians_to_binary_file("ht_gaussians.bin", ht_gaussians);
+
+    /* write some output statistics about the model */
     int count = 0;
-    for(int i = 0; i < HTSIZEGAUSSIAN; i++){
-        printf("%.5f %.5f\n", mean(ht_gaussians[i]), variance(ht_gaussians[i]));
-        if(mean(ht_gaussians[i]) != 0.0 || variance(ht_gaussians[i]) != 1.0){
+    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+        if (mean(ht_gaussians[i]) != 0.0 || variance(ht_gaussians[i]) != 1.0) {
             count++;
         }
     }
     fprintf(stderr, "Unique moves: %d\n", count);
+
+    /* test that we have written the same model as we have in memory */
+    gaussian_t* ht_gaussians_test = initialize_ht_gaussians();
+    load_ht_gaussians_from_binary_file("ht_gaussians.bin", ht_gaussians_test);
+    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+        if (mean(ht_gaussians[i]) != mean(ht_gaussians_test[i]) ||
+            variance(ht_gaussians[i]) != variance(ht_gaussians_test[i])) {
+            fprintf(stderr, "Error: ht_gaussians[%d] is not the same\n", i);
+            fprintf(stderr, "mean(ht_gaussians[%d]) = %f\n", i,
+                    mean(ht_gaussians[i]));
+            fprintf(stderr, "mean(ht_gaussians_test[%d]) = %f\n", i,
+                    mean(ht_gaussians_test[i]));
+            fprintf(stderr, "variance(ht_gaussians[%d]) = %f\n", i,
+                    variance(ht_gaussians[i]));
+            fprintf(stderr, "variance(ht_gaussians_test[%d]) = %f\n", i,
+                    variance(ht_gaussians_test[i]));
+            exit(-1);
+        }
+    }
+
+    /* free the memory for the hash-table of Gaussians */
+    deletes_ht_gaussians(ht_gaussians);
+    deletes_ht_gaussians(ht_gaussians_test);
+
     return 0;
 }
