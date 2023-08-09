@@ -8,11 +8,16 @@
 #include "../../include/eval.h"
 #include "../../include/search.h"
 #include "../../include/prettyprint.h"
+#include "../../include/ordering.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1
 #define MAXDEPTH 100
 #define WINDOWSIZE 50
+
+int pv_move_searches = 0;
+int pv_move_hits_prob = 0;
+int pv_move_hits_mean = 0;
 
 int last_check = 0;
 int stop_immediately = 0;
@@ -280,6 +285,41 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     initialize_maxpq(&movelst);
     generate_moves(searchdata->board, &movelst);
 
+    // extract gaussian move order prediction
+    int hashes[movelst.nr_elem];
+    double means[movelst.nr_elem];
+    double probs[movelst.nr_elem];
+    
+    int idx_of_max_prob = 1;
+    int idx_of_max_mean = 1;
+
+    for (int i = 1; i <= movelst.nr_elem; i++) {
+        hashes[i-1] = calculate_order_hash(searchdata->board, movelst.array[i]);
+        means[i-1] = mean(ht_gaussians[hashes[i-1]]);
+        probs[i-1] = 0.0;
+    }
+
+    // predict_move_probabilities(ht_gaussians, probs, hashes, movelst.nr_elem, 0.5 * 0.5);
+
+    for (int i = 1; i <= movelst.nr_elem; i++) {
+        if(probs[i-1] >= probs[idx_of_max_prob-1]){
+            idx_of_max_prob = i;
+        }
+        if(means[i-1] >= means[idx_of_max_mean-1]){
+            idx_of_max_mean = i;
+        }
+    }
+
+    if(searchdata->nodes_searched % 300000 == 0){
+        printf("================================\n");
+        // printf("| Hits/Searched(Prob):\n| %d/%d\t(%f)\n", pv_move_hits_prob, pv_move_searches, (float) pv_move_hits_prob/(float) pv_move_searches);
+        // printf("|\n");
+        printf("| Hits/Searched(Mean):\n| %d/%d\t(%f)\n", pv_move_hits_mean, pv_move_searches, (float) pv_move_hits_mean/(float) pv_move_searches);
+        printf("================================\n\n\n");
+    }
+    
+    
+
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
     // move ordering technique is to try PV-Moves first. A PV-Move is part //
@@ -287,8 +327,11 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // previous iteration of an iterative deepening framework.             //
     // =================================================================== //
     if (entry_found) {
+        pv_move_searches++;
         for (int i = 1; i <= movelst.nr_elem; i++) {
             if (is_same_move(movelst.array[i], pv_move)) {
+                if(i == idx_of_max_prob) pv_move_hits_prob++;
+                if(i == idx_of_max_mean) pv_move_hits_mean++;
                 movelst.array[i]->value = 10000;
                 swap(&movelst, i, 1);
                 break;

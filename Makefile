@@ -8,14 +8,14 @@ ENGINE_CORE_OBJ = $(addprefix $(BUILD_DIR)/, $(ENGINE_CORE_SRC:src/%.c=%.o))
 PARSING_SRC = $(wildcard src/parsing/*.c)
 PARSING_OBJ = $(addprefix $(BUILD_DIR)/, $(PARSING_SRC:src/%.c=%.o))
 
-ORDERING_SRC = $(wildcard src/train-ordering/*.c)
+ORDERING_SRC = $(wildcard src/ordering/*.c)
 ORDERING_OBJ = $(addprefix $(BUILD_DIR)/, $(ORDERING_SRC:src/%.c=%.o))
 
 EVAL_SRC = $(wildcard src/train-eval/*.c)
 EVAL_OBJ = $(addprefix $(BUILD_DIR)/, $(EVAL_SRC:src/%.c=%.o))
 
 UCI_ENGINE_SRC = src/gui.c
-TRAIN_ORDERING_SRC = src/ordering.c
+TRAIN_ORDERING_SRC = src/train_ordering.c
 TRAIN_EVAL_SRC = src/train.c
 
 TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
@@ -41,13 +41,13 @@ ordering: $(ORDERING_OBJ)
 eval: $(EVAL_OBJ)
 
 .PHONY: uci_engine
-uci_engine: engine_core $(BIN_DIR)/uci_engine
+uci_engine: engine_core ordering $(BIN_DIR)/uci_engine
 
 .PHONY: train_ordering
 train_ordering: engine_core parser ordering $(BIN_DIR)/train_ordering
 
 .PHONY: train_eval
-train_eval: engine_core parser eval $(BIN_DIR)/train_eval
+train_eval: engine_core parser ordering eval $(BIN_DIR)/train_eval
 
 .PHONY: build_tests
 build_tests: $(TEST_BIN)   # Build the tests
@@ -89,7 +89,7 @@ $(EVAL_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
-$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ)
+$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^
 
@@ -97,7 +97,7 @@ $(BIN_DIR)/train_ordering: $(TRAIN_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OB
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^
 
-$(BIN_DIR)/train_eval: $(TRAIN_EVAL_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(EVAL_OBJ)
+$(BIN_DIR)/train_eval: $(TRAIN_EVAL_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(EVAL_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
 

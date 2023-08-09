@@ -4,6 +4,7 @@
 #include "../../include/zobrist.h"
 #include "../../include/helpers.h"
 #include "../../include/pq.h"
+#include "../../include/ordering.h"
 
 const bitboard_t MASK_FILE[8] = {
 	0x101010101010101, 0x202020202020202, 0x404040404040404, 0x808080808080808,
@@ -441,6 +442,8 @@ void initialize_chess_engine_necessary() {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
+    initalize_ranking_updates();
+    ht_gaussians = load_ht_gaussians_by_file();
 }
 
 //////////////////////////////////////////////////////
