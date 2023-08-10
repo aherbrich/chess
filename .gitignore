@@ -4,4 +4,4 @@
 output.txt
 build/**
 bin/**
-
+tmp/**

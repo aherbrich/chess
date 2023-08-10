@@ -1,6 +1,7 @@
 BUILD_DIR = build
 BIN_DIR = bin
 TEST_DIR = tests
+TMP_DIR = tmp
 
 ENGINE_CORE_SRC = $(wildcard src/engine-core/*.c)
 ENGINE_CORE_OBJ = $(addprefix $(BUILD_DIR)/, $(ENGINE_CORE_SRC:src/%.c=%.o))
@@ -117,4 +118,4 @@ $(TEST_BIN): $(BUILD_DIR)/%: %.c $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
-
+	rm -rf $(TMP_DIR)

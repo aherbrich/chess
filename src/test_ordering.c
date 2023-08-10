@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "../include/engine.h"
 #include "../include/factors.h"
@@ -72,9 +73,16 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
 }
 
 /* Test the trained model for k-fold cross validation */
-double test_model(chessgame_t** chessgames, int no_games){
+double test_model(chessgame_t** chessgames, int no_games, int id){
     int moves_played = 0;
     int moves_predicted_correctly = 0;
+
+    /* make directory tmp if it doesnt exist */
+    mkdir("tmp", 0777); 
+
+    char filename[100];
+    sprintf(filename, "tmp/output_test_%d.txt", id);
+    FILE* file = fopen(filename, "w");
 
     /* play games */
     for (int i = 0; i < no_games; i++) {
@@ -84,6 +92,7 @@ double test_model(chessgame_t** chessgames, int no_games){
                     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         char* token = strtok(chessgame->movelist, " ");
+        int move_nr = 0;
         do {
             move_t* move = str_to_move(board, token);
             if (move) {
@@ -138,10 +147,22 @@ double test_model(chessgame_t** chessgames, int no_games){
                         }
                     }
                 }
+
+                /* find position of MADE_MOVE in means array */
+                int idx_of_made_move = 0;
+                for(int k = 0; k < nr_of_moves; k++){
+                    if(move_indices[k] == 0){
+                        idx_of_made_move = k;
+                        break;
+                    }
+                }
                 
+                /* write position of MADE_MOVE into file */
+                fprintf(file, "%d %d\n", idx_of_made_move, move_nr);
+
                 /* check if MADE_MOVE has the highest mean */
                 moves_played++;
-                if(move_indices[0] == 0){
+                if(idx_of_made_move == 0){
                     moves_predicted_correctly++;
                 }
 
@@ -149,6 +170,7 @@ double test_model(chessgame_t** chessgames, int no_games){
                 do_move(board, move);
                 free_move(move);
                 /* and continue with next (opponent) MADE_MOVE */
+                move_nr++;
             } else {
                 print_board(board);
                 fprintf(stderr, "%sInvalid move: %s%s\n", Color_PURPLE, token,
@@ -160,6 +182,7 @@ double test_model(chessgame_t** chessgames, int no_games){
         free_board(board);
     }
 
+    fclose(file);
     /* return precision */
     return (float) moves_predicted_correctly / (float) moves_played;
 }
@@ -213,7 +236,7 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
         printf("Training on fold %d done!\n", i + 1);
 
         /* test model */
-        total_accuracy += test_model(test_set, test_set_size) * (float) test_set_size/ (float) no_games;
+        total_accuracy += test_model(test_set, test_set_size, i+1) * (float) test_set_size/ (float) no_games;
 
         printf("Testing on fold %d  done!\n", i + 1);
 
