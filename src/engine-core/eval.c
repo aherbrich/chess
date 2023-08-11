@@ -1,6 +1,7 @@
-#include "../include/eval.h"
+#include "../../include/types.h"
+#include "../../include/move.h"
+#include "../../include/eval.h"
 
-#include "../include/chess.h"
 
 /* pawn position values */
 int PAWN_POSITION_VALUE[64] = {

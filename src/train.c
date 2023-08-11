@@ -1,21 +1,10 @@
 #include <string.h>
+#include <stdio.h>
 
-#include "../include/chess.h"
+#include "../include/engine.h"
 #include "../include/database.h"
-#include "../include/features.h"
-#include "../include/linalg.h"
 #include "../include/parse.h"
-#include "../include/prettyprint.h"
-#include "../include/san.h"
-#include "../include/zobrist.h"
 
-board_t* OLDSTATE[MAXPLIES];
-uint64_t HISTORY_HASHES[MAXPLIES];
-
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_bounds_adjusted = 0;
-int pv_node_hit = 0;
 
 /*  Playes all games in given chess game list and
     stores all chess positions and corresponding winrates */
@@ -130,7 +119,7 @@ int main() {
     chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
 
     /* initialize chess engine */
-    initialize_chess_engine_only_necessary();
+    initialize_chess_engine_necessary();
     initialize_zobrist_table();
     initialize_database();
 

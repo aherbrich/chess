@@ -1,8 +1,8 @@
-#include "../include/chess.h"
-#include "../include/prettyprint.h"
+#include "../include/types.h"
+#include "../include/board.h"
+#include "../include/move.h"
+#include "../include/perft.h"   
 
-board_t* OLDSTATE[MAXPLIES];
-uint64_t HISTORY_HASHES[MAXPLIES];
 
 /*
  * MAIN ENTRY POINT
@@ -12,7 +12,7 @@ int main() {
     load_by_FEN(board,
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-    initialize_chess_engine_only_necessary();
+    initialize_chess_engine_necessary();
 
     perft_divide(board, 5);
 

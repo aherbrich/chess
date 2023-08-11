@@ -1,7 +1,7 @@
 #ifndef __FEATURES_H__
 #define __FEATURES_H__
 
-#include "../include/chess.h"
+#include "../include/types.h"
 #include "../include/linalg.h"
 
 //////////////////////////////////////////////////////////////

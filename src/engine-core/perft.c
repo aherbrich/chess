@@ -1,5 +1,8 @@
-#include "../include/chess.h"
-#include "../include/prettyprint.h"
+#include <stdio.h>
+
+#include "../../include/types.h"
+#include "../../include/move.h"
+#include "../../include/prettyprint.h"
 
 /* Runs perft test for a given board and depth */
 uint64_t perft(board_t* board, int depth) {
@@ -25,7 +28,7 @@ uint64_t perft(board_t* board, int depth) {
 }
 
 /* Runs perft divide test for a given board and depth */
-int perft_divide(board_t* board, int depth) {
+uint64_t perft_divide(board_t* board, int depth) {
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);

@@ -1,6 +1,6 @@
-#include "../include/chess.h"
-#include "../include/eval.h"
-#include "../include/linalg.h"
+#include "../../include/types.h"
+#include "../../include/eval.h"
+#include "../../include/linalg.h"
 
 double material_difference(board_t* board){
     int material = 0;

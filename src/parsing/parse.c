@@ -1,6 +1,10 @@
 #include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
 
-#include "../include/chess.h"
+#include "../../include/parse.h"
 
 /* Counts the number of games in a PGN chess game file */
 int count_number_of_games() {
@@ -8,14 +12,12 @@ int count_number_of_games() {
     int buffersize = 8192;
     char buffer[buffersize];
 
+    char file_name[PATH_MAX];
+    getcwd(file_name, PATH_MAX);
+    strcat(file_name, "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn");
+
     /* open file */
-    FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/"
-        "ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn",
-        "r");
-    // FILE *fp =
-    // fopen("/home/ubuntu/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn",
-    // "r");
+    FILE *fp = fopen(file_name, "r");
 
     /* read line by line */
     while (fgets(buffer, buffersize, fp) != NULL) {
@@ -40,6 +42,19 @@ int count_number_of_games() {
     return game_count;
 }
 
+int count_moves_made(chessgame_t** chessgames, int nr_of_games) {
+    int total_count = 0;
+    for (int i = 0; i < nr_of_games; i++) {
+        chessgame_t* chessgame = chessgames[i];
+        char* token = strtok(chessgame->movelist, " ");
+        do {
+            total_count++;
+        } while ((token = strtok(NULL, " ")));
+    }
+
+    return total_count;
+}
+
 /* Parses PGN chess game file */
 /* i.e stores games in accesible way in memory */
 chessgame_t **parse_chessgames_file(int nr_of_games) {
@@ -50,14 +65,12 @@ chessgame_t **parse_chessgames_file(int nr_of_games) {
         chessgames[i] = NULL;
     }
 
+    char file_name[PATH_MAX];
+    getcwd(file_name, PATH_MAX);
+    strcat(file_name, "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn");
+
     /* open file */
-    FILE *fp = fopen(
-        "/Users/aherbrich/src/myprojects/chess/data/"
-        "ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn",
-        "r");
-    // FILE *fp =
-    // fopen("/home/ubuntu/chess/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn",
-    // "r");
+    FILE *fp = fopen(file_name, "r");
 
     int buffersize = 8192;
     char buffer[buffersize];

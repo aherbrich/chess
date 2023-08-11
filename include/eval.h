@@ -2,7 +2,7 @@
 #ifndef __EVAL_H__
 #define __EVAL_H__
 
-#include "../include/chess.h"
+#include "../include/types.h"
 
 #define PAWNVALUE 100
 #define KNIGHTVALUE 320

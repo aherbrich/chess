@@ -1,7 +1,7 @@
 #ifndef __DATABASE_H__
 #define __DATABASE_H__
 
-#include "../include/chess.h"
+#include "../include/types.h"
 
 #define DATABASESIZE 18815231
 
@@ -15,8 +15,6 @@ typedef struct _databaseentry_t {
     int black_won;
     int draw;
 } databaseentry_t;
-
-extern databaseentry_t** database;
 
 //////////////////////////////////////////////////////////////
 //  FUNCTIONS

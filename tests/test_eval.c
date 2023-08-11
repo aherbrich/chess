@@ -1,6 +1,8 @@
-#include "../include/chess.h"
-#include "../include/prettyprint.h"
-#include "../include/zobrist.h"
+#include <sys/time.h>
+#include <stdio.h>
+
+#include "../include/engine.h"
+#include  "../include/ordering.h"
 
 char STARTING_FEN[] =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
@@ -13,25 +15,19 @@ char TEST5_FEN[] = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
 char TEST6_FEN[] =
     "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 char TEST7_FEN[] = "n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1";
-board_t* OLDSTATE[MAXPLIES];
-uint64_t HISTORY_HASHES[MAXPLIES];
 
-int nodes_searched = 0;
-int hash_used = 0;
-int hash_bounds_adjusted = 0;
-int pv_node_hit = 0;
 
 ////////////////////////////////////////////////////////////////
 // MAIN ENTRY POINT
 int main() {
     board_t* board = init_board();
-    load_by_FEN(board, TEST4_FEN);
+    load_by_FEN(board, TEST7_FEN);
 
-    initialize_oldstate_array();
-    initialize_helper_boards();
-    initialize_attack_boards();
-    initialize_zobrist_table();
+    initialize_chess_engine_necessary();
     initialize_hashtable();
+    load_ht_urgencies_from_binary_file("ht_gaussians.bin", ht_urgencies);
+
+
     searchdata_t* search_data = init_search_data(board);
 
     clock_t end;
@@ -56,4 +52,7 @@ int main() {
 
     free(board);
     free_search_data(search_data);
+    deletes_ht_urgencies(ht_urgencies);
+
+    return 0;
 }

@@ -1,17 +1,26 @@
-#include <string.h>
+#include <sys/time.h>
+#include <stdio.h>
 
-#include "../include/chess.h"
-#include "../include/eval.h"
-#include "../include/prettyprint.h"
-#include "../include/zobrist.h"
+
+#include "../../include/types.h"
+#include "../../include/move.h"
+#include "../../include/zobrist.h"
+#include "../../include/eval.h"
+#include "../../include/search.h"
+#include "../../include/prettyprint.h"
+#include "../../include/ordering.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1
 #define MAXDEPTH 100
 #define WINDOWSIZE 50
 
+int pv_move_searches = 0;
+int pv_move_hits_prob = 0;
+int pv_move_hits_mean = 0;
+
 int last_check = 0;
-int stop_immediately = FALSE;
+int stop_immediately = 0;
 
 int delta_in_ms(searchdata_t *searchdata) {
     gettimeofday(&(searchdata->end), 0);
@@ -37,11 +46,11 @@ char *get_mate_or_cp_value(int score, int depth) {
 
 /* Determines a draw by threefold repitiion */
 int draw_by_repition(board_t *board) {
-    uint64_t current_board_hash = board->hash; //calculate_zobrist_hash(board);
+    uint64_t current_board_hash = board->hash; 
 
     int counter = 0;
     for (int i = 0; i < board->ply_no; i++) {
-        if (HISTORY_HASHES[i] == current_board_hash) counter++;
+        if (board->history[i].hash == current_board_hash) counter++;
         if (counter == 2) {
             return 1;
         }
@@ -53,7 +62,7 @@ int draw_by_repition(board_t *board) {
  * by the caller (the gui)) */
 int calculate_time(searchdata_t *data) {
     int time_available = 0;
-    int atleast_one_time_found = FALSE;
+    int atleast_one_time_found = 0;
     int time_available_movetime = 0;
     int time_available_remainingtime = 0;
 
@@ -71,7 +80,7 @@ int calculate_time(searchdata_t *data) {
         if (time_available < 5) {
             time_available = 5;
         }
-        atleast_one_time_found = TRUE;
+        atleast_one_time_found = 1;
     }
     // if whites/blacks remaining time is given
     if ((data->board->player == WHITE && data->wtime != -1) ||
@@ -97,7 +106,7 @@ int calculate_time(searchdata_t *data) {
                 time_available = 5;
             }
         }
-        atleast_one_time_found = TRUE;
+        atleast_one_time_found = 1;
     }
 
     if (atleast_one_time_found) {
@@ -174,10 +183,10 @@ int quiet_search(board_t *board, int alpha, int beta,
         last_check++;
 
         // delta pruning
-        if (best_eval - 200 - is_capture(move->to, board) > eval) {
-            free_move(move);
-            continue;
-        }
+        // if (best_eval - 200 - is_capture(move->to, board) > eval) {
+        //     free_move(move);
+        //     continue;
+        // }
 
         do_move(board, move);
         eval = -quiet_search(board, -beta, -alpha, searchdata, depth+1);
@@ -228,8 +237,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
-        return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
-        //return eval_board(searchdata->board);
+        // return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
+        return eval_board(searchdata->board);
     }
 
     // ================================================================ //
@@ -276,6 +285,41 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     initialize_maxpq(&movelst);
     generate_moves(searchdata->board, &movelst);
 
+    // extract move order urgency prediction
+    int hashes[movelst.nr_elem];
+    double means[movelst.nr_elem];
+    double probs[movelst.nr_elem];
+    
+    int idx_of_max_prob = 1;
+    int idx_of_max_mean = 1;
+
+    for (int i = 1; i <= movelst.nr_elem; i++) {
+        hashes[i-1] = calculate_order_hash(searchdata->board, movelst.array[i]);
+        means[i-1] = mean(ht_urgencies[hashes[i-1]]);
+        probs[i-1] = 0.0;
+    }
+
+    // predict_move_probabilities(ht_urgencies, probs, hashes, movelst.nr_elem, 0.5 * 0.5);
+
+    for (int i = 1; i <= movelst.nr_elem; i++) {
+        if(probs[i-1] >= probs[idx_of_max_prob-1]){
+            idx_of_max_prob = i;
+        }
+        if(means[i-1] >= means[idx_of_max_mean-1]){
+            idx_of_max_mean = i;
+        }
+    }
+
+    if(searchdata->nodes_searched % 300000 == 0){
+        printf("================================\n");
+        // printf("| Hits/Searched(Prob):\n| %d/%d\t(%f)\n", pv_move_hits_prob, pv_move_searches, (float) pv_move_hits_prob/(float) pv_move_searches);
+        // printf("|\n");
+        printf("| Hits/Searched(Mean):\n| %d/%d\t(%f)\n", pv_move_hits_mean, pv_move_searches, (float) pv_move_hits_mean/(float) pv_move_searches);
+        printf("================================\n\n\n");
+    }
+    
+    
+
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
     // move ordering technique is to try PV-Moves first. A PV-Move is part //
@@ -283,8 +327,11 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // previous iteration of an iterative deepening framework.             //
     // =================================================================== //
     if (entry_found) {
+        pv_move_searches++;
         for (int i = 1; i <= movelst.nr_elem; i++) {
             if (is_same_move(movelst.array[i], pv_move)) {
+                if(i == idx_of_max_prob) pv_move_hits_prob++;
+                if(i == idx_of_max_mean) pv_move_hits_mean++;
                 movelst.array[i]->value = 10000;
                 swap(&movelst, i, 1);
                 break;
@@ -296,7 +343,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     int legal_moves = 0;
     int tt_flag = UPPERBOUND;
-    int best_eval = NEGINFINITY;
+    int best_eval = NEGINF;
     move_t *best_move = NULL;
 
     while ((move = pop_max(&movelst))) {
@@ -365,12 +412,12 @@ void search(searchdata_t *searchdata) {
     // Of course we keep the hashes of already played
     // positions untouched
     for (int i = searchdata->board->ply_no; i < MAXPLIES; i++) {
-        HISTORY_HASHES[i] = 0;
+        searchdata->board->history[i].hash = 0ULL;
     }
 
     // Reset the performance counters and calculate the time available for
     // search
-    searchdata->best_eval = NEGINFINITY;
+    searchdata->best_eval = NEGINF;
     searchdata->best_move = NULL;
     searchdata->nodes_searched = 0;
     searchdata->hash_used = 0;
@@ -378,7 +425,7 @@ void search(searchdata_t *searchdata) {
     searchdata->pv_node_hit = 0;
     searchdata->time_available = calculate_time(searchdata);
 
-    int alpha = NEGINFINITY, beta = INFINITY;
+    int alpha = NEGINF, beta = INF;
 
     // =================================================================== //
     // ITERATIVE DEEPINING: It has been noticed, that even if one is about //
@@ -392,7 +439,7 @@ void search(searchdata_t *searchdata) {
         int eval = negamax(searchdata, depth, alpha, beta);
 
         if (stop_immediately) {
-            stop_immediately = FALSE;
+            stop_immediately = 0;
             if (searchdata->best_move == NULL && depth == 1) {
                 searchdata->best_move =
                     get_best_move_from_hashtable(searchdata->board);
@@ -411,8 +458,8 @@ void search(searchdata_t *searchdata) {
         // side of the guess.                                               //
         // ================================================================ //
         if (eval <= alpha || eval >= beta) {
-            alpha = NEGINFINITY;
-            beta = INFINITY;
+            alpha = NEGINF;
+            beta = INF;
             depth--;
             continue;
         }
