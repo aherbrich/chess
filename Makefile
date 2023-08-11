@@ -24,7 +24,7 @@ TEST_SRC = $(wildcard $(TEST_DIR)/test_*.c)
 TEST_BIN = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
 TEST_TARGET = $(notdir $(TEST_BIN))
 
-CC = gcc
+CC = clang
 CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3
 
 .PHONY: all
@@ -80,11 +80,13 @@ $(TEST_TARGET): %: $(BUILD_DIR)/tests/%
 
 $(ENGINE_CORE_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
+	# $(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
+	$(CC) $(CC_FLAGS) -fno-exceptions -o $@ -c $<
 
 $(PARSING_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
+	# $(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
+	$(CC) $(CC_FLAGS) -fno-exceptions -o $@ -c $<
 
 $(ORDERING_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
@@ -96,23 +98,23 @@ $(EVAL_OBJ): $(BUILD_DIR)/%.o: src/%.c
 
 $(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^
+	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
 $(BIN_DIR)/train_ordering: $(TRAIN_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^
+	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
 $(BIN_DIR)/test_ordering: $(TEST_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^
+	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
 $(BIN_DIR)/train_eval: $(TRAIN_EVAL_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(EVAL_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg
+	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg -lm
 
 $(TEST_BIN): $(BUILD_DIR)/%: %.c $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^
+	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
 
 .PHONY: clean

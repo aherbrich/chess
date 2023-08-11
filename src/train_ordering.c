@@ -87,12 +87,7 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
         delete_ranking_update_graphs(ranking_updates);
     }
 
-    /* free chess games */
-    for (int i = 0; i < nr_of_games; i++) {
-        free(chessgames[i]->movelist);
-        free(chessgames[i]);
-    }
-    free(chessgames);
+    return;
 }
 
 int main(int argc, char** argv) {
@@ -137,6 +132,14 @@ int main(int argc, char** argv) {
 
     /* train the model */
     train_model(chessgames, nr_of_games, full_training, "snapshot");
+
+
+    /* free chess games read in for the sake of training */
+    for (int i = 0; i < nr_of_games; i++) {
+        free(chessgames[i]->movelist);
+        free(chessgames[i]);
+    }
+    free(chessgames);
 
     /* write the mode to a binary file */
     write_ht_urgencies_to_binary_file("ht_urgencies.bin", ht_urgencies);

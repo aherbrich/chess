@@ -2,6 +2,9 @@
 #define __TYPES_H__
 
 #include <stdlib.h>
+#ifdef __linux__
+#include <stdint.h>
+#endif
 
 #define WHITE 1
 #define BLACK 0
@@ -33,7 +36,7 @@ typedef enum _moveflags_t {
 } moveflags_t;
 
 typedef enum _square_t {
-	a1=0, b1, c1, d1, e1, f1, g1, h1,
+	a1=0, ll, c1, d1, e1, f1, g1, h1,
 	a2, b2, c2, d2, e2, f2, g2, h2,
 	a3, b3, c3, d3, e3, f3, g3, h3,
 	a4, b4, c4, d4, e4, f4, g4, h4,

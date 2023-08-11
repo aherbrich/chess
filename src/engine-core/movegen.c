@@ -687,7 +687,7 @@ void generate_legals(board_t* board, maxpq_t *movelst){
     bitboard_t their_knights_bb = (them == WHITE) ? board->piece_bb[W_KNIGHT] : board->piece_bb[B_KNIGHT];
 
     /* General purpose bitboards for attacks, masks, etc. */
-	bitboard_t b1, b2, b3;
+	bitboard_t bb1, bb2, bb3;
 	
 	/* Squares the king can not move to */
 	bitboard_t danger = 0ULL;
@@ -697,23 +697,23 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 	danger |= attack_pawn_multiple(their_pawns_bb, them) | KING_ATTACK[their_king_sq];
 
     /* Attacks by KNIGHTS */
-    b1 = their_knights_bb; 
-	while (b1) danger |=  KNIGHT_ATTACK[pop_1st_bit(&b1)];
+    bb1 = their_knights_bb; 
+	while (bb1) danger |=  KNIGHT_ATTACK[pop_1st_bit(&bb1)];
 
     /* Diagonal attacks by BISHOPS and QUEENS */
 	/* NOTICE: we xor out the king square to secure that squares x-rayed are also included in attack mask */
-    b1 = their_diag_sliders_bb;
-	while (b1) danger |= attack_bishop(pop_1st_bit(&b1), all ^ SQUARE_BB[our_king_sq]);
+    bb1 = their_diag_sliders_bb;
+	while (bb1) danger |= attack_bishop(pop_1st_bit(&bb1), all ^ SQUARE_BB[our_king_sq]);
 
     /* Orthogonal attacks by BISHOPS and QUEENS */
 	/* NOTICE: we xor out the king square to secure that squares x-rayed are also included in attack mask */
-    b1 = their_orth_sliders_bb;
-	while (b1) danger |= attack_rook(pop_1st_bit(&b1), all ^ SQUARE_BB[our_king_sq]);
+    bb1 = their_orth_sliders_bb;
+	while (bb1) danger |= attack_rook(pop_1st_bit(&bb1), all ^ SQUARE_BB[our_king_sq]);
 
 	/* King can move to surrounding squares, except attacked sqaures and squares which are blocked by own pieces */
-	b1 = KING_ATTACK[our_king_sq] & ~(us_bb | danger);
-    make_moves_quiet(movelst, our_king_sq, b1 & ~them_bb);
-    make_moves_capture(movelst, board, our_king_sq, b1 & them_bb);
+	bb1 = KING_ATTACK[our_king_sq] & ~(us_bb | danger);
+    make_moves_quiet(movelst, our_king_sq, bb1 & ~them_bb);
+    make_moves_capture(movelst, board, our_king_sq, bb1 & them_bb);
 
     /* The capture mask filters destination squares to those that contain an enemy piece that is checking the  
 	king and must be captured */
@@ -744,13 +744,13 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		/* Intersect the line between (potentially) checking piece and
 		 our king with the bitboard of our pieces */
 		s = pop_1st_bit(&candidates);
-		b1 = SQUARES_BETWEEN_BB[our_king_sq][s] & us_bb;
+		bb1 = SQUARES_BETWEEN_BB[our_king_sq][s] & us_bb;
 		
 		/* If we find no pieces on this line, the attacking piece is a checking piece*/
-		if (b1 == 0) board->checkers ^= SQUARE_BB[s];
+		if (bb1 == 0) board->checkers ^= SQUARE_BB[s];
 
 		/* Else if we find only one of our pieces on this line, it is a pinned piece */
-		else if ((b1 & b1 - 1) == 0) board->pinned ^= b1;
+		else if ((bb1 & (bb1 - 1)) == 0) board->pinned ^= bb1;
 	}
 
 	bitboard_t not_pinned = ~board->pinned;
@@ -770,17 +770,17 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 			/* This evaluates to true if the checking piece is the one which just double pushed */
 			if (board->checkers == shift(SQUARE_BB[board->history[board->ply_no].epsq], relative_dir(us, SOUTH))) {
 				/* We compute the bitboard of pawns which can ep capture the checking pawn */
-				b1 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb & not_pinned;
+				bb1 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb & not_pinned;
                 
-                while (b1) insert(movelst, generate_move(pop_1st_bit(&b1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
+                while (bb1) insert(movelst, generate_move(pop_1st_bit(&bb1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
 			}
 			/* INTENTIONAL FALL THROUGH */
 		case KNIGHT:
 			/* If the checker is either a pawn or a knight the only legal moves are to capture
 			the checker. Only non-pinned pieces can capture it */
-			b1 = attackers_from(board, checker_square, all, us) & not_pinned;
-			while (b1) {
-                int p = pop_1st_bit(&b1);
+			bb1 = attackers_from(board, checker_square, all, us) & not_pinned;
+			while (bb1) {
+                int p = pop_1st_bit(&bb1);
                 insert(movelst, generate_move(p , checker_square, CAPTURE, board->piece_bb[checker_square]*100 + (KING_ID - (board->piece_bb[p] & 0b111))));
             }
 			return;
@@ -809,10 +809,10 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		/* Special handling of possible ep captures */
 		if (board->history[board->ply_no].epsq != NO_SQUARE) {
 			/* Compute bitboard of pawns which could capture on ep square */
-			b2 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb;
-			b1 = b2 & not_pinned;
-			while (b1) {
-				s = pop_1st_bit(&b1);
+			bb2 = attack_pawn_single(board->history[board->ply_no].epsq, them) & our_pawns_bb;
+			bb1 = bb2 & not_pinned;
+			while (bb1) {
+				s = pop_1st_bit(&bb1);
 				
 				/* This piece of evil bit-fiddling magic prevents the infamous 'pseudo-pinned' e.p. case,
 				where the pawn is not directly pinned, but on moving the pawn and capturing the enemy pawn
@@ -849,9 +849,9 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 			
 			/* Pinned pawns can only ep capture if they are pinned diagonally
 			i.e. and the e.p. square is in line with the king */
-			b1 = b2 & board->pinned & LINE[board->history[board->ply_no].epsq][our_king_sq];
-			if (b1) {
-                insert(movelst, generate_move(find_1st_bit(b1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
+			bb1 = bb2 & board->pinned & LINE[board->history[board->ply_no].epsq][our_king_sq];
+			if (bb1) {
+                insert(movelst, generate_move(find_1st_bit(bb1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
 			}
 		}
 
@@ -879,52 +879,52 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 
 		/* Compute moves for PINNED pieces */
 		/* Pinned BISHOPS, ROOK, QUEEN */
-		b1 = ~(not_pinned | our_knights_bb | our_pawns_bb);
-		while (b1) {
-			s = pop_1st_bit(&b1);
+		bb1 = ~(not_pinned | our_knights_bb | our_pawns_bb);
+		while (bb1) {
+			s = pop_1st_bit(&bb1);
 			
 			/* Since, the pieces are pinned we only generate moves for which the moving piece
 			does not leave the line between king and checking piece */
             switch(board->playingfield[s] & 0b111){
                 case BISHOP:
-                    b2 = attack_bishop(s, all) & LINE[our_king_sq][s];
+                    bb2 = attack_bishop(s, all) & LINE[our_king_sq][s];
                     break;
                 case ROOK:
-                    b2 = attack_rook(s, all) & LINE[our_king_sq][s];
+                    bb2 = attack_rook(s, all) & LINE[our_king_sq][s];
                     break;
                 case QUEEN:
-                    b2 = (attack_bishop(s, all) | attack_rook(s, all)) & LINE[our_king_sq][s];
+                    bb2 = (attack_bishop(s, all) | attack_rook(s, all)) & LINE[our_king_sq][s];
             }
-            make_moves_quiet(movelst, s, b2 & quiet_mask);
-            make_moves_capture(movelst, board,  s, b2 & capture_mask);
+            make_moves_quiet(movelst, s, bb2 & quiet_mask);
+            make_moves_capture(movelst, board,  s, bb2 & capture_mask);
 		}
 
 		/* Pinned PAWN */
-		b1 = ~not_pinned & our_pawns_bb;
-		while (b1) {
-			s = pop_1st_bit(&b1);
+		bb1 = ~not_pinned & our_pawns_bb;
+		while (bb1) {
+			s = pop_1st_bit(&bb1);
 
 			if (rank_of(s) == relative_rank(us, RANK7)) {
 				/* Quiet promotions are impossible since the square in front of the pawn will
 				either be occupied by the king or the pinner, or doing so would leave our king
 				in check */
-				b2 = attack_pawn_single(s, us) & capture_mask & LINE[our_king_sq][s];
-                make_moves_promcaptures(movelst, s, b2);
+				bb2 = attack_pawn_single(s, us) & capture_mask & LINE[our_king_sq][s];
+                make_moves_promcaptures(movelst, s, bb2);
 			}
 			else {
 				/* Captures */
-                b2 = attack_pawn_single(s, us) & capture_mask & LINE[our_king_sq][s];
-                make_moves_capture(movelst, board, s, b2);
+                bb2 = attack_pawn_single(s, us) & capture_mask & LINE[our_king_sq][s];
+                make_moves_capture(movelst, board, s, bb2);
 				
 				/* Single pawn pushes */
-				b2 = shift(SQUARE_BB[s], relative_dir(us, NORTH)) & ~all & LINE[our_king_sq][s];
+				bb2 = shift(SQUARE_BB[s], relative_dir(us, NORTH)) & ~all & LINE[our_king_sq][s];
 				
 				/* Double pawn pushes */ 
 				/* only pawns on rank 3/6 are eligible */
-				b3 = shift(b2 & MASK_RANK[relative_rank(us, RANK3)], 
+				bb3 = shift(bb2 & MASK_RANK[relative_rank(us, RANK3)], 
                                 relative_dir(us, NORTH)) & ~all & LINE[our_king_sq][s];
-                make_moves_quiet(movelst, s, b2);
-                make_moves_doubleep(movelst, s, b3);
+                make_moves_quiet(movelst, s, bb2);
+                make_moves_doubleep(movelst, s, bb3);
 			}
 		}
 		
@@ -936,78 +936,78 @@ void generate_legals(board_t* board, maxpq_t *movelst){
     }
 
     /* Non-pinned KNIGHT moves */
-	b1 = our_knights_bb & not_pinned;
-	while (b1) {
-		s = pop_1st_bit(&b1);
-		b2 = KNIGHT_ATTACK[s];
-        make_moves_quiet(movelst, s, b2 & quiet_mask);
-        make_moves_capture(movelst, board, s, b2 & capture_mask);
+	bb1 = our_knights_bb & not_pinned;
+	while (bb1) {
+		s = pop_1st_bit(&bb1);
+		bb2 = KNIGHT_ATTACK[s];
+        make_moves_quiet(movelst, s, bb2 & quiet_mask);
+        make_moves_capture(movelst, board, s, bb2 & capture_mask);
 	}
 
     /* Non-pinned BISHOPS and QUEENS */
-	b1 = our_diag_sliders_bb & not_pinned;
-	while (b1) {
-		s = pop_1st_bit(&b1);
-		b2 = attack_bishop(s, all);
-        make_moves_quiet(movelst, s, b2 & quiet_mask);
-        make_moves_capture(movelst, board, s, b2 & capture_mask);
+	bb1 = our_diag_sliders_bb & not_pinned;
+	while (bb1) {
+		s = pop_1st_bit(&bb1);
+		bb2 = attack_bishop(s, all);
+        make_moves_quiet(movelst, s, bb2 & quiet_mask);
+        make_moves_capture(movelst, board, s, bb2 & capture_mask);
 	}
 
     /* Non-pinned ROOKS and QUEENS */
-	b1 = our_orth_sliders_bb & not_pinned;
-	while (b1) {
-		s = pop_1st_bit(&b1);
-		b2 = attack_rook(s, all);
-		make_moves_quiet(movelst, s, b2 & quiet_mask);
-        make_moves_capture(movelst, board, s, b2 & capture_mask);
+	bb1 = our_orth_sliders_bb & not_pinned;
+	while (bb1) {
+		s = pop_1st_bit(&bb1);
+		bb2 = attack_rook(s, all);
+		make_moves_quiet(movelst, s, bb2 & quiet_mask);
+        make_moves_capture(movelst, board, s, bb2 & capture_mask);
 	}
 
 
     /* Determine pawns which are NOT about to promote */
-	b1 = our_pawns_bb & not_pinned & ~MASK_RANK[relative_rank(us, RANK7)];
+	bb1 = our_pawns_bb & not_pinned & ~MASK_RANK[relative_rank(us, RANK7)];
 
     /* Single pawn pushes */
-	b2 = shift(b1, relative_dir(us, NORTH)) & ~all;
+	bb2 = shift(bb1, relative_dir(us, NORTH)) & ~all;
 	
 	/* Double pawn pushes */ 
 	/* only pawns on rank 3/6 are eligible */
-	b3 = shift(b2 & MASK_RANK[relative_rank(us, RANK3)], relative_dir(us, NORTH)) & quiet_mask;
+	bb3 = shift(bb2 & MASK_RANK[relative_rank(us, RANK3)], relative_dir(us, NORTH)) & quiet_mask;
 
-    /* We &(and) b2 with the quiet mask only later, as a non-check-blocking single push does NOT mean that the 
+    /* We &(and) bb2 with the quiet mask only later, as a non-check-blocking single push does NOT mean that the 
 	corresponding double push is not blocking check either. */
-	b2 &= quiet_mask;
+	bb2 &= quiet_mask;
 
-    while (b2) {
-		s = pop_1st_bit(&b2);
+    while (bb2) {
+		s = pop_1st_bit(&bb2);
         insert(movelst, generate_move(s-relative_dir(us, NORTH), s, QUIET, 0));
 	}
 
-	while (b3) {
-		s = pop_1st_bit(&b3);
+	while (bb3) {
+		s = pop_1st_bit(&bb3);
         insert(movelst, generate_move(s-relative_dir(us, NORTH_NORTH), s, DOUBLEP, 0));
 	}
 
     /* Pawn captures */
-	b2 = shift(b1, relative_dir(us, NORTH_WEST)) & capture_mask;
-	b3 = shift(b1, relative_dir(us, NORTH_EAST)) & capture_mask;
+	bb2 = shift(bb1, relative_dir(us, NORTH_WEST)) & capture_mask;
+	bb3 = shift(bb1, relative_dir(us, NORTH_EAST)) & capture_mask;
 
-	while (b2) {
-		s = pop_1st_bit(&b2);
+	while (bb2) {
+		s = pop_1st_bit(&bb2);
         insert(movelst, generate_move(s-relative_dir(us, NORTH_WEST), s, CAPTURE, board->piece_bb[s]*100 + (KING_ID - PAWN_ID)));
 	}
 
-	while (b3) {
-		s = pop_1st_bit(&b3);
+	while (bb3) {
+		s = pop_1st_bit(&bb3);
         insert(movelst, generate_move(s-relative_dir(us, NORTH_EAST), s, CAPTURE, board->piece_bb[s]*100 + (KING_ID - PAWN_ID)));
 	}
 
     /* Determine pawns which are about to promote */
-	b1 = our_pawns_bb & not_pinned & MASK_RANK[relative_rank(us, RANK7)];
-	if (b1) {
+	bb1 = our_pawns_bb & not_pinned & MASK_RANK[relative_rank(us, RANK7)];
+	if (bb1) {
 		/* Quiet promotions */
-		b2 = shift(b1, relative_dir(us, NORTH)) & quiet_mask;
-		while (b2) {
-			s = pop_1st_bit(&b2);
+		bb2 = shift(bb1, relative_dir(us, NORTH)) & quiet_mask;
+		while (bb2) {
+			s = pop_1st_bit(&bb2);
 			/* One move is added for each promotion piece */
             insert(movelst, generate_move(s-relative_dir(us, NORTH), s, KPROM, 2100));
             insert(movelst, generate_move(s-relative_dir(us, NORTH), s, BPROM, 2200));
@@ -1016,11 +1016,11 @@ void generate_legals(board_t* board, maxpq_t *movelst){
 		}
 
 		/* Capture promotions */
-		b2 = shift(b1, relative_dir(us, NORTH_WEST)) & capture_mask;
-		b3 = shift(b1, relative_dir(us, NORTH_EAST)) & capture_mask;
+		bb2 = shift(bb1, relative_dir(us, NORTH_WEST)) & capture_mask;
+		bb3 = shift(bb1, relative_dir(us, NORTH_EAST)) & capture_mask;
 
-		while (b2) {
-			s = pop_1st_bit(&b2);
+		while (bb2) {
+			s = pop_1st_bit(&bb2);
 			/* One move is added for each promotion piece */
             insert(movelst, generate_move(s-relative_dir(us, NORTH_WEST), s, KCPROM, 2500));
             insert(movelst, generate_move(s-relative_dir(us, NORTH_WEST), s, BCPROM, 2600));
@@ -1028,8 +1028,8 @@ void generate_legals(board_t* board, maxpq_t *movelst){
             insert(movelst, generate_move(s-relative_dir(us, NORTH_WEST), s, QCPROM, 2800));
 		}
 
-		while (b3) {
-			s = pop_1st_bit(&b3);
+		while (bb3) {
+			s = pop_1st_bit(&bb3);
 			/* One move is added for each promotion piece */
 			insert(movelst, generate_move(s-relative_dir(us, NORTH_EAST), s, KCPROM, 2500));
             insert(movelst, generate_move(s-relative_dir(us, NORTH_EAST), s, BCPROM, 2600));

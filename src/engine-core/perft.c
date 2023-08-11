@@ -41,13 +41,21 @@ uint64_t perft_divide(board_t* board, int depth) {
         undo_move(board, move);
 
         print_LAN_move(move, board->player);
+#ifdef __linux__        
+        printf(": %lu\n", num_positions);
+#else
         printf(": %llu\n", num_positions);
+#endif
         free_move(move);
 
         all_nodes_count += num_positions;
     }
 
+#ifdef __linux__
+    printf("\nNodes searched: %lu\n", all_nodes_count);
+#else
     printf("\nNodes searched: %llu\n", all_nodes_count);
+#endif
 
     return all_nodes_count;
 }
