@@ -167,6 +167,7 @@ int run_specific_test(perfttest_t *test) {
     int nr_of_moves;
     struct timeval start;
     struct timeval end;
+    int ret_value = 0;
 
     // run perft test for given depths and output results
     for (int i = 0; i < 16 && test->results[i] != -1; i++) {
@@ -192,6 +193,7 @@ int run_specific_test(perfttest_t *test) {
         if (test->results[i] == nr_of_moves) {
             print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
                                  "yes", Color_GREEN);
+            ret_value = 1;
         } else {
             print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
                                  "no", Color_RED);
@@ -200,7 +202,7 @@ int run_specific_test(perfttest_t *test) {
     }
     free_board(board);
 
-    return 0;
+    return ret_value;
 }
 
 /*

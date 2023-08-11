@@ -2,6 +2,9 @@
 #define __TYPES_H__
 
 #include <stdlib.h>
+#ifdef __linux__
+#include <stdint.h>
+#endif
 
 #define WHITE 1
 #define BLACK 0

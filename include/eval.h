@@ -25,8 +25,6 @@ extern int QUEEN_POSITION_VALUE[64];
 /* king position values */
 extern int KING_POSITION_VALUE[64];
 
-const int MATERIAL_VALUE[16];
-
 /////////////////////////////////////////////////////////////
 //  EVALUATION
 int nr_of_pieces(board_t *board);
