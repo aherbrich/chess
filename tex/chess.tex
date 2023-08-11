@@ -49,7 +49,7 @@
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
-\title{Learning to Play Chess from Expert Games and Selfplay}
+\title{Learning Move Selection Policies from Expert Games}
 
 \eat{
 \author{Ralf Herbrich \\
@@ -67,11 +67,14 @@ Berlin, Germany \\
 \maketitle
 
 \begin{abstract}
-We present a system for playing chess with a value-function learned from self-play as well as expert games and moves. ... 
+Board games have long served as the benchmark for artificial intelligence algorithms. Since the discovery of novel search and machine learning algorithms for Chess (DeepBlue) and Go (AlphaGo), algorithms are capable of playing far beyond the level of the strongest human players. However, these algorithms rely on the ability to either search the game tree much further than any human player could ever attempt or on value function that has been learned from billions of games of self-play and random rollout. In this paper, we introduce a probabilistic model of move selection in the game of chess, which can learn the move selection policy from expert games in the presence of erroneous moves. Using this move selection strategy, we are able to significantly reduce the branching factors of the game tree search, which allows us to build a chess game engine that plays at the level of the strongest chess engine (Stockfish) while consuming considerably less energy.
 \end{abstract}
 
 \section{Introduction}
+\input{intro.tex}
 
+\section{Move Selection Model}
+\input{move_model.tex}
 
 \section{Conclusions}
 
