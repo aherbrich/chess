@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "../../include/engine.h"
@@ -260,7 +261,9 @@ void refresh_update_graph(ranking_update_info_t *root, double epsilon, const cha
 
     while (outer_delta >= epsilon) {
         outer_delta = 0.0;
-        clock_t start = clock();
+        struct timeval start;
+        struct timeval end;
+        gettimeofday(&start, 0);
 
         /* iterate over all ranking updates */
         ranking_update_info_t* ranking_update = root;
@@ -293,7 +296,8 @@ void refresh_update_graph(ranking_update_info_t *root, double epsilon, const cha
             /* move to next update */
             ranking_update = ranking_update->next;
         }
-        double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
+        gettimeofday(&end, 0);
+        double cpu_time_used = ((end.tv_sec-start.tv_sec) + (end.tv_usec-start.tv_usec)/1000000.0);
 
 
         fprintf(stderr, "\touter delta (%f seconds): %f\n", cpu_time_used, outer_delta);
