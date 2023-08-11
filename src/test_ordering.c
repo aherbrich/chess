@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "../include/engine.h"
 #include "../include/factors.h"
@@ -59,6 +60,7 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
                 /* execute MADE_MOVE */
                 do_move(board, move);
                 free_move(move);
+                free_pq(&movelst);
                 /* and continue with next (opponent) MADE_MOVE */
             } else {
                 print_board(board);
@@ -76,6 +78,9 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
 double test_model(chessgame_t** chessgames, int no_games, int id){
     int moves_played = 0;
     int moves_predicted_correctly = 0;
+
+    /* seed random number generator */
+    srand(time(NULL));
 
     /* make directory tmp if it doesnt exist */
     mkdir("tmp", 0777); 
@@ -156,9 +161,24 @@ double test_model(chessgame_t** chessgames, int no_games, int id){
                         break;
                     }
                 }
+
+                /* find position of MADE_MOVE in legal move list */
+                maxpq_t legals;
+                initialize_maxpq(&legals);
+                generate_moves(board, &legals);
+                int idx_of_made_move_in_legal_moves = 0;
+                while((other_move = pop_max(&legals)) != NULL){
+                    if(is_same_move(move, other_move)){
+                        free_move(other_move);
+                        break;
+                    }
+                    idx_of_made_move_in_legal_moves++;
+                    free_move(other_move);
+                }
                 
-                /* write position of MADE_MOVE into file */
-                fprintf(file, "%d %d\n", idx_of_made_move, move_nr);
+                /* write results into file */
+                /* current ply, rank by bayesian, nr of possible, rank by random choice, rank by heuristic */
+                fprintf(file, "%d %d %d %d %d\n", move_nr, idx_of_made_move,  nr_of_moves, rand() % nr_of_moves, idx_of_made_move_in_legal_moves);
 
                 /* check if MADE_MOVE has the highest mean */
                 moves_played++;
@@ -169,6 +189,8 @@ double test_model(chessgame_t** chessgames, int no_games, int id){
                 /* execute MADE_MOVE */
                 do_move(board, move);
                 free_move(move);
+                free_pq(&movelst);
+                free_pq(&legals);
                 /* and continue with next (opponent) MADE_MOVE */
                 move_nr++;
             } else {
