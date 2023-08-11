@@ -17,7 +17,7 @@ int file_version_cookie = 0x10;
 /* global table of Gaussians corresponding to moves */
 gaussian_t* ht_gaussians = NULL;
 
-/* Initializes a Gaussian hashtable with standard Normals */
+/* initializes a Gaussian hashtable with standard Normals */
 gaussian_t* initialize_ht_gaussians() {
     gaussian_t* ht = (gaussian_t*)malloc(sizeof(gaussian_t) * HT_GAUSSIAN_SIZE);
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
@@ -27,12 +27,12 @@ gaussian_t* initialize_ht_gaussians() {
 }
 
 /* deletes the memory for a hashtable of Gaussians */
-void deletes_ht_gaussians(gaussian_t *ht) {
+void deletes_ht_gaussians(gaussian_t* ht) {
     if (ht) free(ht);
     return;
 }
 
-/* Hash function from move to gaussian ht index */
+/* hash function from move to gaussian ht index */
 int calculate_order_hash(board_t* board, move_t* move) {
     piece_t piece_moved = board->playingfield[move->from];
     square_t from = move->from;
@@ -43,8 +43,8 @@ int calculate_order_hash(board_t* board, move_t* move) {
     return piece_moved * 307200 + from * 4800 + piece_captured * 320 + to * 5 + piece_prom;
 }
 
-/* Writes a Gaussian hash-table to a file (only entries which are different from the prior) */
-void write_ht_gaussians_to_binary_file(const char* file_name, const gaussian_t *ht) {
+/* writes a Gaussian hash-table to a file (only entries which are different from the prior) */
+void write_ht_gaussians_to_binary_file(const char* file_name, const gaussian_t* ht) {
     FILE* fp = fopen(file_name, "wb");
     if (fp != NULL) {
         fwrite(&file_version_cookie, sizeof(int), 1, fp);
@@ -58,8 +58,8 @@ void write_ht_gaussians_to_binary_file(const char* file_name, const gaussian_t *
     fclose(fp);
 }
 
-/* Loads a Gaussian hash-table from a file (only entries which are different from the prior) */
-void load_ht_gaussians_from_binary_file(const char* file_name, gaussian_t *ht) {
+/* loads a Gaussian hash-table from a file (only entries which are different from the prior) */
+void load_ht_gaussians_from_binary_file(const char* file_name, gaussian_t* ht) {
     FILE* fp = fopen(file_name, "rb");
     if (fp != NULL) {
         int cookie;
