@@ -442,8 +442,8 @@ void initialize_chess_engine_necessary() {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
-    initalize_ranking_updates();
-    ht_gaussians = initialize_ht_gaussians();
+    initialize_ranking_updates();
+    ht_urgencies = initialize_ht_urgencies();
 }
 
 //////////////////////////////////////////////////////

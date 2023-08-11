@@ -11,14 +11,18 @@
 #include "../../include/ordering.h"
 #include "../../include/parse.h"
 
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for managing the hash-table of a urgencies for the Bayesian move ranking model         */
+/* ------------------------------------------------------------------------------------------------ */
+
 /* a unique cookie representing the file version */
 int file_version_cookie = 0x10;
 
-/* global table of Gaussians corresponding to moves */
-gaussian_t* ht_gaussians = NULL;
+/* hash table of urgencies for each move (hash) */
+gaussian_t* ht_urgencies = 0;
 
-/* initializes a Gaussian hashtable with standard Normals */
-gaussian_t* initialize_ht_gaussians() {
+/* initializes an urgency hashtable with standard Normals */
+gaussian_t* initialize_ht_urgencies() {
     gaussian_t* ht = (gaussian_t*)malloc(sizeof(gaussian_t) * HT_GAUSSIAN_SIZE);
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
         ht[i] = init_gaussian1D_from_mean_and_variance(0, 1);
@@ -26,13 +30,13 @@ gaussian_t* initialize_ht_gaussians() {
     return ht;
 }
 
-/* deletes the memory for a hashtable of Gaussians */
-void deletes_ht_gaussians(gaussian_t* ht) {
+/* deletes the memory for a hashtable of urgencies */
+void deletes_ht_urgencies(gaussian_t* ht) {
     if (ht) free(ht);
     return;
 }
 
-/* hash function from move to gaussian ht index */
+/* hash function from move to urgencies hash-table index */
 int calculate_order_hash(board_t* board, move_t* move) {
     piece_t piece_moved = board->playingfield[move->from];
     square_t from = move->from;
@@ -43,8 +47,8 @@ int calculate_order_hash(board_t* board, move_t* move) {
     return piece_moved * 307200 + from * 4800 + piece_captured * 320 + to * 5 + piece_prom;
 }
 
-/* writes a Gaussian hash-table to a file (only entries which are different from the prior) */
-void write_ht_gaussians_to_binary_file(const char* file_name, const gaussian_t* ht) {
+/* writes an urgencies hash-table to a file (only entries which are different from the prior) */
+void write_ht_urgencies_to_binary_file(const char* file_name, const gaussian_t* ht) {
     FILE* fp = fopen(file_name, "wb");
     if (fp != NULL) {
         fwrite(&file_version_cookie, sizeof(int), 1, fp);
@@ -58,8 +62,8 @@ void write_ht_gaussians_to_binary_file(const char* file_name, const gaussian_t* 
     fclose(fp);
 }
 
-/* loads a Gaussian hash-table from a file (only entries which are different from the prior) */
-void load_ht_gaussians_from_binary_file(const char* file_name, gaussian_t* ht) {
+/* loads a hash-table of urgencies from a file (only entries which are different from the prior) */
+void load_ht_urgencies_from_binary_file(const char* file_name, gaussian_t* ht) {
     FILE* fp = fopen(file_name, "rb");
     if (fp != NULL) {
         int cookie;
@@ -80,6 +84,10 @@ void load_ht_gaussians_from_binary_file(const char* file_name, gaussian_t* ht) {
     fclose(fp);
 }
 
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for online training of a Bayesian move ranking model                                   */
+/* ------------------------------------------------------------------------------------------------ */
+
 /* statically allocate the factors to speed up execution */
 gaussian_factor_info_t f[MAX_MOVES];
 gaussian_mean_factor_info_t g[MAX_MOVES];
@@ -99,7 +107,7 @@ gaussian_t msg_from_s_to_urgency[MAX_MOVES];
 gaussian_t msg_from_h_to_diffs[MAX_MOVES];
 
 /* this function should be called once and sets up the ranking update graph(s) */
-void initalize_ranking_updates() {
+void initialize_ranking_updates() {
     for (int i = 0; i < MAX_MOVES; ++i) {
         f[i].marginal = &urgency[i];
         f[i].msg = &msg_from_f_to_urgency[i];
@@ -128,7 +136,7 @@ void initalize_ranking_updates() {
     return;
 }
 
-/* updates the urgency belief distributions indexed by the no_hashes given */
+/* updates the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
 void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta_squared) {
     assert(no_hashes <= MAX_MOVES);
 
@@ -175,7 +183,11 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
     return;
 }
 
-/* computes the probability of all moves being the most urgent moves */
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for making predictions based on the Bayesian move ranking model                        */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* computes the probability of all moves being the most urgent move */
 void predict_move_probabilities(gaussian_t* urgency_beliefs, double* prob, int* hashes, int no_hashes, double beta_squared) {
     assert(no_hashes <= MAX_MOVES);
 

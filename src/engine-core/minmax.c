@@ -285,7 +285,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     initialize_maxpq(&movelst);
     generate_moves(searchdata->board, &movelst);
 
-    // extract gaussian move order prediction
+    // extract move order urgency prediction
     int hashes[movelst.nr_elem];
     double means[movelst.nr_elem];
     double probs[movelst.nr_elem];
@@ -295,11 +295,11 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     for (int i = 1; i <= movelst.nr_elem; i++) {
         hashes[i-1] = calculate_order_hash(searchdata->board, movelst.array[i]);
-        means[i-1] = mean(ht_gaussians[hashes[i-1]]);
+        means[i-1] = mean(ht_urgencies[hashes[i-1]]);
         probs[i-1] = 0.0;
     }
 
-    // predict_move_probabilities(ht_gaussians, probs, hashes, movelst.nr_elem, 0.5 * 0.5);
+    // predict_move_probabilities(ht_urgencies, probs, hashes, movelst.nr_elem, 0.5 * 0.5);
 
     for (int i = 1; i <= movelst.nr_elem; i++) {
         if(probs[i-1] >= probs[idx_of_max_prob-1]){

@@ -544,7 +544,7 @@ int ranking_graph_tests2() {
 
     // gaussian_t urgency_ht[3] = { init_gaussian1D(0, 1), init_gaussian1D(0, 1), init_gaussian1D(0, 1) };
 
-    // initalize_ranking_updates();
+    // initialize_ranking_updates();
     // update(urgency_ht, (int[]){ 0, 1, 2 }, 3, 0.5 * 0.5);
 
     // printf("\n\nThree Move example\n=================\n");

@@ -25,7 +25,7 @@ int main() {
 
     initialize_chess_engine_necessary();
     initialize_hashtable();
-    load_ht_gaussians_from_binary_file("ht_gaussians.bin", ht_gaussians);
+    load_ht_urgencies_from_binary_file("ht_gaussians.bin", ht_urgencies);
 
 
     searchdata_t* search_data = init_search_data(board);
@@ -52,7 +52,7 @@ int main() {
 
     free(board);
     free_search_data(search_data);
-    deletes_ht_gaussians(ht_gaussians);
+    deletes_ht_urgencies(ht_urgencies);
 
     return 0;
 }

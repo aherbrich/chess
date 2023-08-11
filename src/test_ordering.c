@@ -11,8 +11,8 @@
 
 /* Trains the model for k-fold cross validation */
 void train_model(chessgame_t** chessgames, int nr_of_games) {
-    deletes_ht_gaussians(ht_gaussians);
-    ht_gaussians = initialize_ht_gaussians();
+    deletes_ht_urgencies(ht_urgencies);
+    ht_urgencies = initialize_ht_urgencies();
 
     /* play games */
     for (int i = 0; i < nr_of_games; i++) {
@@ -54,7 +54,7 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
                 }
 
                 // execute_ranking update
-                update(ht_gaussians, move_hashes, nr_of_moves, 0.5 * 0.5);
+                update(ht_urgencies, move_hashes, nr_of_moves, 0.5 * 0.5);
 
                 /* execute MADE_MOVE */
                 do_move(board, move);
@@ -130,7 +130,7 @@ double test_model(chessgame_t** chessgames, int no_games, int id){
                 /* extract means corresponding to moves */
                 double means[nr_of_moves];
                 for(int k = 0; k < nr_of_moves; k++){
-                    means[k] = mean(ht_gaussians[move_hashes[k]]);
+                    means[k] = mean(ht_urgencies[move_hashes[k]]);
                 }
 
                 /* sort means (and indices accordingly) */
