@@ -9,10 +9,13 @@
 #include "../include/ordering.h"
 #include "../include/parse.h"
 
-/* Trains the model for k-fold cross validation */
-void train_model(chessgame_t** chessgames, int nr_of_games) {
-    deletes_ht_urgencies(ht_urgencies);
-    ht_urgencies = initialize_ht_urgencies();
+/* trains a Bayesian ranking model from the replay of the games */
+void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, const char* base_filename) {
+    ranking_update_info_t *ranking_updates = NULL;
+    int no_gaussian = 0, no_factors = 0;
+
+    /* print some information on the screen */
+    fprintf(stderr, "Training started (%s)\n", (full_training) ? "full" : "incremental");
 
     /* play games */
     for (int i = 0; i < nr_of_games; i++) {
@@ -30,16 +33,16 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
                 initialize_maxpq(&movelst);
                 generate_moves(board, &movelst);
 
-                /* create array to hold all indices of gaussians corresponding to moves a.k.a move hashes */
+                /* create array to hold all indices of urgency beliefs corresponding to moves */
                 int nr_of_moves = movelst.nr_elem;
-                int move_hashes[nr_of_moves];
+                int urgencies_indices[nr_of_moves];
                 int idx = 0;
 
-                /* calculate move hash for MADE_MOVE*/
-                move_hashes[idx] = calculate_order_hash(board, move);
+                /* extract move ranking-info from MADE_MOVE*/
+                urgencies_indices[idx] = calculate_order_hash(board, move);
                 idx++;
 
-                /* calculate move hashes for OTHER_MOVES */
+                /* extract move ranking-info from OTHER_MOVES */
                 move_t* other_move;
                 while ((other_move = pop_max(&movelst)) != NULL) {
                     /* if we see MADE_MOVE, skip it */
@@ -47,14 +50,20 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
                         free_move(other_move);
                         continue;
                     }
-                    /* else determine hash  */
-                    move_hashes[idx] = calculate_order_hash(board, other_move);
+                    /* else extract ranking-info from move */
+                    urgencies_indices[idx] = calculate_order_hash(board, other_move);
                     idx++;
                     free_move(other_move);
                 }
 
                 // execute_ranking update
-                update(ht_urgencies, move_hashes, nr_of_moves, 0.5 * 0.5);
+                if (full_training) {
+                    ranking_updates = add_ranking_update_graph(ranking_updates, ht_urgencies, urgencies_indices, nr_of_moves, 0.5 * 0.5);
+                    no_factors += (3 * nr_of_moves - 2);
+                    no_gaussian += (8 * nr_of_moves - 5);
+                } else {
+                    update(ht_urgencies, urgencies_indices, nr_of_moves, 0.5 * 0.5);
+                }
 
                 /* execute MADE_MOVE */
                 do_move(board, move);
@@ -70,6 +79,15 @@ void train_model(chessgame_t** chessgames, int nr_of_games) {
 
         free_board(board);
     }
+
+    /* now perform the full training and release the small update (factor) graphs */
+    if (full_training) {
+        fprintf(stderr, "Full training started\n\tNo. of factors: %d\n\tNo. of gaussians: %d\n", no_factors, no_gaussian);
+        refresh_update_graph(ranking_updates, 1e-1, base_filename);
+        delete_ranking_update_graphs(ranking_updates);
+    }
+
+    return;
 }
 
 /* Test the trained model for k-fold cross validation */
@@ -231,7 +249,9 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
         }
 
         /* train model */
-        train_model(training_set, training_set_size);
+        deletes_ht_urgencies(ht_urgencies);
+        ht_urgencies = initialize_ht_urgencies();
+        train_model(training_set, training_set_size, 1, NULL);
 
         printf("Training on fold %d done!\n", i + 1);
 
