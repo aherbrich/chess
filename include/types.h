@@ -83,6 +83,7 @@ typedef struct _board_t {
     bitboard_t piece_bb[NR_PIECES];
     bitboard_t checkers;
     bitboard_t pinned;
+    bitboard_t attackmap;
     
     player_t player;
 

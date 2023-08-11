@@ -47,10 +47,10 @@ int calculate_order_hash(board_t* board, move_t* move) {
     piece_t piece_captured = board->playingfield[move->to];
     square_t to = move->to;
     piece_t piece_prom = (move->flags & 0b1000) ? (move->flags & 0b11) : 4;
+    int in_attack_range = (board->attackmap & (1ULL << move->to)) != 0;
 
-    return piece_moved * 307200 + from * 4800 + piece_captured * 320 + to * 5 + piece_prom;
+    return piece_moved * 614400 + from * 9600 + piece_captured * 640 + to * 10 + piece_prom * 2 + in_attack_range;
 }
-
 /* writes an urgencies hash-table to a file (only entries which are different from the prior) */
 void write_ht_urgencies_to_binary_file(const char* file_name, const gaussian_t* ht) {
     FILE* fp = fopen(file_name, "wb");

@@ -715,6 +715,9 @@ void generate_legals(board_t* board, maxpq_t *movelst){
     make_moves_quiet(movelst, our_king_sq, bb1 & ~them_bb);
     make_moves_capture(movelst, board, our_king_sq, bb1 & them_bb);
 
+    /* Save danger/attack map in board field */
+    board->attackmap = danger; 
+
     /* The capture mask filters destination squares to those that contain an enemy piece that is checking the  
 	king and must be captured */
 	bitboard_t capture_mask;

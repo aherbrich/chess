@@ -5,7 +5,7 @@
 #include "../include/factors.h"
 #include "../include/types.h"
 
-#define HT_GAUSSIAN_SIZE 4608000
+#define HT_GAUSSIAN_SIZE 9216000
 #define MAX_MOVES 512
 
 /* hash table of urgencies for each move (hash) */
