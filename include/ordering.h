@@ -59,8 +59,8 @@ typedef struct _ranking_update_info_t {
 
 /* adds the factor graph that processes a single move made to the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
 ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta_squared);
-/* run message passing on the whole graph until convergence */
-void refresh_update_graph(ranking_update_info_t *root);
+/* run message passing on the whole graph until convergence of epsilon; if base_filename is non-NULL then snapshots are stored after every iteration */
+void refresh_update_graph(ranking_update_info_t *root, double epsilon, const char* base_filename);
 /* deletes the linked list of ranking updates */
 void delete_ranking_update_graphs(ranking_update_info_t* root);
 

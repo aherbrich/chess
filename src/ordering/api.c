@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "../../include/engine.h"
@@ -253,12 +254,15 @@ ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gau
     return (info);
 }
 
-/* run message passing on the whole graph until convergence */
-void refresh_update_graph(ranking_update_info_t *root) {
-    double outer_delta = EPSILON;
-    while (outer_delta >= EPSILON) {
-        outer_delta = 0.0;
+/* run message passing on the whole graph until convergence of epsilon; if base_filename is non-NULL then snapshots are stored after every iteration */
+void refresh_update_graph(ranking_update_info_t *root, double epsilon, const char* base_filename) {
+    double outer_delta = epsilon;
 
+    while (outer_delta >= epsilon) {
+        outer_delta = 0.0;
+        clock_t start = clock();
+
+        /* iterate over all ranking updates */
         ranking_update_info_t* ranking_update = root;
         while (ranking_update) {
             /* send message to latent urgencies */
@@ -289,8 +293,17 @@ void refresh_update_graph(ranking_update_info_t *root) {
             /* move to next update */
             ranking_update = ranking_update->next;
         }
+        double cpu_time_used = ((double) (clock() - start)) / CLOCKS_PER_SEC;
 
-        fprintf(stderr, "outer delta: %f\n", outer_delta);
+
+        fprintf(stderr, "\touter delta (%f seconds): %f\n", cpu_time_used, outer_delta);
+
+        /* store the snapshot in a file */
+        if (base_filename) {
+            char filename[1024];
+            sprintf(filename, "%s_%6.4f", base_filename, outer_delta);
+            write_ht_urgencies_to_binary_file(filename, ht_urgencies);
+        }
     }
 
     return;

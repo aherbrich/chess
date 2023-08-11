@@ -10,9 +10,11 @@
 #include "../include/parse.h"
 
 /* trains a Bayesian ranking model from the replay of the games */
-void train_model(chessgame_t** chessgames, int nr_of_games, int full_training) {
+void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, const char* base_filename) {
     ranking_update_info_t *ranking_updates = NULL;
+    int no_gaussian = 0, no_factors = 0;
 
+    /* print some information on the screen */
     fprintf(stderr, "Training started (%s)\n", (full_training) ? "full" : "incremental");
 
     /* play games */
@@ -57,6 +59,8 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training) {
                 // execute_ranking update
                 if (full_training) {
                     ranking_updates = add_ranking_update_graph(ranking_updates, ht_urgencies, urgencies_indices, nr_of_moves, 0.5 * 0.5);
+                    no_factors += (3 * nr_of_moves - 2);
+                    no_gaussian += (8 * nr_of_moves - 5);
                 } else {
                     update(ht_urgencies, urgencies_indices, nr_of_moves, 0.5 * 0.5);
                 }
@@ -78,7 +82,8 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training) {
 
     /* now perform the full training and release the small update (factor) graphs */
     if (full_training) {
-        refresh_update_graph(ranking_updates);
+        fprintf(stderr, "Full training started\n\tNo. of factors: %d\n\tNo. of gaussians: %d\n", no_factors, no_gaussian);
+        refresh_update_graph(ranking_updates, 1e-1, base_filename);
         delete_ranking_update_graphs(ranking_updates);
     }
 
@@ -120,8 +125,8 @@ int main(int argc, char** argv) {
 
     /* output the options used */
     printf("Options:\n");
-    printf("  Full Training: %s\n", (full_training)?"yes":"no");
-    printf("  Test model read-write: %s\n", (test_read_write_model)?"yes":"no");
+    printf("\tFull Training: %s\n", (full_training)?"yes":"no");
+    printf("\tTest model read-write: %s\n", (test_read_write_model)?"yes":"no");
 
     /* parse chess game file */
     int nr_of_games = count_number_of_games();
@@ -131,7 +136,7 @@ int main(int argc, char** argv) {
     initialize_chess_engine_necessary();
 
     /* train the model */
-    train_model(chessgames, nr_of_games, full_training);
+    train_model(chessgames, nr_of_games, full_training, "snapshot");
 
     /* write the mode to a binary file */
     write_ht_urgencies_to_binary_file("ht_urgencies.bin", ht_urgencies);
