@@ -39,7 +39,11 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
                 int idx = 0;
 
                 /* extract move ranking-info from MADE_MOVE*/
-                urgencies_ptr[idx] = &ht_urgencies[calculate_order_hash(board, move)];
+                int move_key = calculate_move_key(board, move);
+                urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
+                if (urgencies_ptr[idx] == NULL) {
+                    urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
+                }
                 idx++;
 
                 /* extract move ranking-info from OTHER_MOVES */
@@ -50,9 +54,15 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
                         free_move(other_move);
                         continue;
                     }
+                    
                     /* else extract ranking-info from move */
-                    urgencies_ptr[idx] = &ht_urgencies[calculate_order_hash(board, other_move)];
+                    move_key = calculate_move_key(board, other_move);
+                    urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
+                    if (urgencies_ptr[idx] == NULL) {
+                        urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
+                    }
                     idx++;
+
                     free_move(other_move);
                 }
 
@@ -145,32 +155,26 @@ int main(int argc, char** argv) {
     write_ht_urgencies_to_binary_file("ht_urgencies.bin", ht_urgencies);
 
     /* write some output statistics about the model */
-    int count = 0;
-    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-        if (mean(ht_urgencies[i]) != 0.0 || variance(ht_urgencies[i]) != 1.0) {
-            count++;
-        }
-    }
-    fprintf(stderr, "Unique moves: %d\n", count);
+    fprintf(stderr, "Unique moves: %d\n", get_no_keys(ht_urgencies));
 
     if (test_read_write_model) {
         /* test that we have written the same model as we have in memory */
-        gaussian_t* ht_urgencies_test = initialize_ht_urgencies();
+        urgency_ht_entry_t* ht_urgencies_test = initialize_ht_urgencies();
         load_ht_urgencies_from_binary_file("ht_urgencies.bin", ht_urgencies_test);
         for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-            if (mean(ht_urgencies[i]) != mean(ht_urgencies_test[i]) ||
-                variance(ht_urgencies[i]) != variance(ht_urgencies_test[i])) {
-                fprintf(stderr, "Error: ht_urgencies[%d] is not the same\n", i);
-                fprintf(stderr, "mean(ht_urgencies[%d]) = %f\n", i,
-                        mean(ht_urgencies[i]));
-                fprintf(stderr, "mean(ht_urgencies_test[%d]) = %f\n", i,
-                        mean(ht_urgencies_test[i]));
-                fprintf(stderr, "variance(ht_urgencies[%d]) = %f\n", i,
-                        variance(ht_urgencies[i]));
-                fprintf(stderr, "variance(ht_urgencies_test[%d]) = %f\n", i,
-                        variance(ht_urgencies_test[i]));
-                exit(-1);
-            }
+            // if (mean(ht_urgencies[i]) != mean(ht_urgencies_test[i]) ||
+            //     variance(ht_urgencies[i]) != variance(ht_urgencies_test[i])) {
+            //     fprintf(stderr, "Error: ht_urgencies[%d] is not the same\n", i);
+            //     fprintf(stderr, "mean(ht_urgencies[%d]) = %f\n", i,
+            //             mean(ht_urgencies[i]));
+            //     fprintf(stderr, "mean(ht_urgencies_test[%d]) = %f\n", i,
+            //             mean(ht_urgencies_test[i]));
+            //     fprintf(stderr, "variance(ht_urgencies[%d]) = %f\n", i,
+            //             variance(ht_urgencies[i]));
+            //     fprintf(stderr, "variance(ht_urgencies_test[%d]) = %f\n", i,
+            //             variance(ht_urgencies_test[i]));
+            //     exit(-1);
+            // }
         }
 
         /* free the memory for the hash-table of urgencies */

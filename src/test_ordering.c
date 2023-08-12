@@ -40,7 +40,11 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
                 int idx = 0;
 
                 /* extract move ranking-info from MADE_MOVE*/
-                urgencies_ptr[idx] = &ht_urgencies[calculate_order_hash(board, move)];
+                int move_key = calculate_move_key(board, move);
+                urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
+                if (urgencies_ptr[idx] == NULL) {
+                    urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
+                }
                 idx++;
 
                 /* extract move ranking-info from OTHER_MOVES */
@@ -51,9 +55,15 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
                         free_move(other_move);
                         continue;
                     }
+
                     /* else extract ranking-info from move */
-                    urgencies_ptr[idx] = &ht_urgencies[calculate_order_hash(board, other_move)];
+                    move_key = calculate_move_key(board, other_move);
+                    urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
+                    if (urgencies_ptr[idx] == NULL) {
+                        urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
+                    }
                     idx++;
+
                     free_move(other_move);
                 }
 
@@ -126,12 +136,12 @@ double test_model(chessgame_t** chessgames, int no_games, int id){
 
                 /* create arrays to hold move hashes and indices of moves as in movelist */
                 int nr_of_moves = movelst.nr_elem;
-                int move_hashes[nr_of_moves];
+                int move_keys[nr_of_moves];
                 int move_indices[nr_of_moves];
                 int idx = 0;
 
                 /* calculate move hash for  MADE_MOVE*/
-                move_hashes[idx] = calculate_order_hash(board, move);
+                move_keys[idx] = calculate_move_key(board, move);
                 move_indices[idx] = idx;
                 idx++;
 
@@ -144,7 +154,7 @@ double test_model(chessgame_t** chessgames, int no_games, int id){
                         continue;
                     }
                     /* else determine hash */
-                    move_hashes[idx] = calculate_order_hash(board, other_move);
+                    move_keys[idx] = calculate_move_key(board, other_move);
                     move_indices[idx] = idx;
                     idx++;
                     free_move(other_move);
@@ -153,7 +163,9 @@ double test_model(chessgame_t** chessgames, int no_games, int id){
                 /* extract means corresponding to moves */
                 double means[nr_of_moves];
                 for(int k = 0; k < nr_of_moves; k++){
-                    means[k] = mean(ht_urgencies[move_hashes[k]]);
+
+                    gaussian_t* g_ptr = get_urgency(ht_urgencies, move_keys[k]);
+                    means[k] = mean((g_ptr) ? *g_ptr : init_gaussian1D_standard_normal());
                 }
 
                 /* sort means (and indices accordingly) */

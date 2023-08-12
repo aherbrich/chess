@@ -286,7 +286,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     generate_moves(searchdata->board, &movelst);
 
     // extract move order urgency prediction
-    int hashes[movelst.nr_elem];
+    int move_keys[movelst.nr_elem];
     double means[movelst.nr_elem];
     double probs[movelst.nr_elem];
     
@@ -294,12 +294,13 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     int idx_of_max_mean = 1;
 
     for (int i = 1; i <= movelst.nr_elem; i++) {
-        hashes[i-1] = calculate_order_hash(searchdata->board, movelst.array[i]);
-        means[i-1] = mean(ht_urgencies[hashes[i-1]]);
+        move_keys[i-1] = calculate_move_key(searchdata->board, movelst.array[i]);
+        gaussian_t* g_ptr = get_urgency(ht_urgencies, move_keys[i-1]);
+        means[i-1] = mean((g_ptr) ? *g_ptr : init_gaussian1D_standard_normal());
         probs[i-1] = 0.0;
     }
 
-    // predict_move_probabilities(ht_urgencies, probs, hashes, movelst.nr_elem, 0.5 * 0.5);
+    // predict_move_probabilities(ht_urgencies, probs, move_keys, movelst.nr_elem, 0.5 * 0.5);
 
     for (int i = 1; i <= movelst.nr_elem; i++) {
         if(probs[i-1] >= probs[idx_of_max_prob-1]){
@@ -409,7 +410,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
 void search(searchdata_t *searchdata) {
     // Reset the history hash table from previous searches
-    // Of course we keep the hashes of already played
+    // Of course we keep the move_keys of already played
     // positions untouched
     for (int i = searchdata->board->ply_no; i < MAXPLIES; i++) {
         searchdata->board->history[i].hash = 0ULL;

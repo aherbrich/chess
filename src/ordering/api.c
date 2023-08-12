@@ -24,25 +24,40 @@
 int file_version_cookie = 0x10;
 
 /* hash table of urgencies for each move (hash) */
-gaussian_t* ht_urgencies = 0;
+urgency_ht_entry_t* ht_urgencies = 0;
 
 /* initializes an urgency hashtable with standard Normals */
-gaussian_t* initialize_ht_urgencies() {
-    gaussian_t* ht = (gaussian_t*)malloc(sizeof(gaussian_t) * HT_GAUSSIAN_SIZE);
+urgency_ht_entry_t* initialize_ht_urgencies() {
+    urgency_ht_entry_t* ht = (urgency_ht_entry_t*)malloc(sizeof(urgency_ht_entry_t) * HT_GAUSSIAN_SIZE);
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-        ht[i] = init_gaussian1D_from_mean_and_variance(0, 1);
+        ht[i].empty = 1;
     }
     return ht;
 }
 
 /* deletes the memory for a hashtable of urgencies */
-void deletes_ht_urgencies(gaussian_t* ht) {
-    if (ht) free(ht);
+void deletes_ht_urgencies(urgency_ht_entry_t* ht) {
+    if (ht) {
+        /* free all linked list for entries where there was a clash */
+        for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+            if (!ht[i].singleton_key && !ht[i].empty) {
+                /* free the linked list, if there is no single key */
+                while (ht[i].list) {
+                    urgency_ht_list_entry_t* next = ht[i].list->next;
+                    free(ht[i].list);
+                    ht[i].list = next;
+                }
+            }
+        }
+
+        /* then free the whole hash table */
+        free(ht);
+    }
     return;
 }
 
 /* hash function from move to urgencies hash-table index */
-int calculate_order_hash(board_t* board, move_t* move) {
+int calculate_move_key(board_t* board, move_t* move) {
     piece_t piece_moved = board->playingfield[move->from];
     square_t from = move->from;
     piece_t piece_captured = board->playingfield[move->to];
@@ -52,39 +67,129 @@ int calculate_order_hash(board_t* board, move_t* move) {
 
     return piece_moved * 614400 + from * 9600 + piece_captured * 640 + to * 10 + piece_prom * 2 + in_attack_range;
 }
-/* writes an urgencies hash-table to a file (only entries which are different from the prior) */
-void write_ht_urgencies_to_binary_file(const char* file_name, const gaussian_t* ht) {
-    FILE* fp = fopen(file_name, "wb");
-    if (fp != NULL) {
-        fwrite(&file_version_cookie, sizeof(int), 1, fp);
-        for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-            if (ht[i].tau != 0 || ht[i].rho != 1) {
-                fwrite(&i, sizeof(int), 1, fp);
-                fwrite(&ht[i], sizeof(gaussian_t), 1, fp);
+
+/* function that computes the move hash using a multiplicative hash */
+int move_hash(int move_key) {
+    uint32_t knuth = 2654435769;
+    uint32_t y = move_key;
+    return (y * knuth) >> (32 - HASH_SIZE);
+    // return move_key;
+}
+
+/* retrieves a pointer to the urgency belief for a given move key and move hash */
+gaussian_t* get_urgency(urgency_ht_entry_t* ht, int move_key) {
+    int hash = move_hash(move_key);
+
+    /* return NULL for empty entries and the pointer to the actual Gaussian for singletons */
+    if (ht[hash].empty) {
+        return NULL;
+    } else if (ht[hash].singleton_key) {
+        if (ht[hash].data.move_key == move_key) {
+            return &ht[hash].data.urgency;
+        } else {
+            return NULL;
+        }
+    } 
+
+    /* otherwise search the linked list for the move key */
+    urgency_ht_list_entry_t* entry = ht[hash].list;
+    while (entry) {
+        if (entry->data.move_key == move_key) {
+            return &entry->data.urgency;
+        }
+        entry = entry->next;
+    }
+
+    /* if that cannot be found, then return NULL */
+    return NULL;
+}
+
+/* adds a (Gaussian) urgency belief to the hash table */
+gaussian_t* add_urgency(urgency_ht_entry_t* ht, int move_key, gaussian_t urgency) {
+    int hash = move_hash(move_key);
+
+    if (ht[hash].empty) {
+        /* if empty, create a singleton */
+        ht[hash].empty = 0;
+        ht[hash].singleton_key = 1;
+        ht[hash].data.move_key = move_key;
+        ht[hash].data.urgency = urgency;
+        return &ht[hash].data.urgency;
+    } else if (ht[hash].singleton_key) {
+        /* if singleton, create a two-element list */
+        ht[hash].singleton_key = 0;
+        urgency_ht_list_entry_t* entry = (urgency_ht_list_entry_t*)malloc(sizeof(urgency_ht_list_entry_t));
+        entry->data.move_key = move_key;
+        entry->data.urgency = urgency;
+        entry->next = (urgency_ht_list_entry_t*)malloc(sizeof(urgency_ht_list_entry_t));
+        entry->next->data.move_key = ht[hash].data.move_key;
+        entry->next->data.urgency = ht[hash].data.urgency;
+        entry->next->next = NULL;
+        ht[hash].list = entry;
+        return &entry->data.urgency;
+    } 
+
+    /* otherwise add the entry at the root */
+    urgency_ht_list_entry_t* entry = (urgency_ht_list_entry_t*)malloc(sizeof(urgency_ht_list_entry_t));
+    entry->data.move_key = move_key;
+    entry->data.urgency = urgency;
+    entry->next = ht[hash].list;
+    ht[hash].list = entry;
+    return &entry->data.urgency;
+}
+
+/* returns the number of keys in the urgency hash table */
+int get_no_keys(const urgency_ht_entry_t* ht) {
+    int cnt = 0;
+    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+        if (!ht[i].empty) {
+            if (ht[i].singleton_key) {
+                cnt++;
+            } else {
+                urgency_ht_list_entry_t* entry = ht[i].list;
+                while (entry) {
+                    cnt++;
+                    entry = entry->next;
+                }
             }
         }
+    }
+    return cnt;
+}
+
+/* writes an urgencies hash-table to a file (only entries which are different from the prior) */
+void write_ht_urgencies_to_binary_file(const char* file_name, const urgency_ht_entry_t* ht) {
+    FILE* fp = fopen(file_name, "wb");
+    if (fp != NULL) {
+        // fwrite(&file_version_cookie, sizeof(int), 1, fp);
+        // for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+        //     if (ht[i].tau != 0 || ht[i].rho != 1) {
+        //         fwrite(&i, sizeof(int), 1, fp);
+        //         fwrite(&ht[i], sizeof(gaussian_t), 1, fp);
+        //     }
+        // }
     }
     fclose(fp);
 }
 
 /* loads a hash-table of urgencies from a file (only entries which are different from the prior) */
-void load_ht_urgencies_from_binary_file(const char* file_name, gaussian_t* ht) {
+void load_ht_urgencies_from_binary_file(const char* file_name, urgency_ht_entry_t* ht) {
     FILE* fp = fopen(file_name, "rb");
     if (fp != NULL) {
-        int cookie;
-        fread(&cookie, sizeof(int), 1, fp);
+        // int cookie;
+        // fread(&cookie, sizeof(int), 1, fp);
 
-        if (cookie != file_version_cookie) {
-            fprintf(stderr, "Error: file version mismatch\n");
-            exit(1);
-        }
+        // if (cookie != file_version_cookie) {
+        //     fprintf(stderr, "Error: file version mismatch\n");
+        //     exit(1);
+        // }
 
-        int hash;
-        gaussian_t gaussian;
-        while (fread(&hash, sizeof(int), 1, fp) == 1) {
-            fread(&gaussian, sizeof(gaussian_t), 1, fp);
-            ht[hash] = gaussian;
-        }
+        // int hash;
+        // gaussian_t gaussian;
+        // while (fread(&hash, sizeof(int), 1, fp) == 1) {
+        //     fread(&gaussian, sizeof(gaussian_t), 1, fp);
+        //     ht[hash] = gaussian;
+        // }
     }
     fclose(fp);
 }
