@@ -83,7 +83,7 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
     /* now perform the full training and release the small update (factor) graphs */
     if (full_training) {
         fprintf(stderr, "Full training started\n\tNo. of factors: %d\n\tNo. of gaussians: %d\n", no_factors, no_gaussian);
-        refresh_update_graph(ranking_updates, 1e-1, base_filename);
+        refresh_update_graph(ranking_updates, 5e-1, base_filename);
         delete_ranking_update_graphs(ranking_updates);
     }
 
