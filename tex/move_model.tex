@@ -1,16 +1,22 @@
 
 \label{sec:introduction}
 
+Our model is based in \cite{stern2006bayesianpatternranking}.
+
 \begin{tikzpicture}
-  \node[factor] (f1) {$f_1$};
-  \node[variable, right=of f1] (x1) {$x_1$};
-  \node[factor, right=of x1] (f2) {$f_2$};
-  \node[variable, right=of f2] (x2) {$x_2$};
-  \node[factor, right=of x2] (f3) {$f_3$};
-  \node[variable, right=of f3] (x3) {$x_3$};
-  \draw (f1) -- (x1);
-  \draw (x1) -- (f2);
-  \draw (f2) -- (x2);
-  \draw (x2) -- (f3);
-  \draw (f3) -- (x3);
+  % Define nodes
+  \node[latent] (X_1) {$x_1$};
+  \node[latent, right=of X_1, , xshift = 2cm] (X_2) {$x_2$};
+
+  \factor[above = of X_1]{X_1-f}{left:$\mathcal{N}(x_1;0,1)$}{}{};
+  \factor[above = of X_2]{X_2-f}{right:$\mathcal{N}(x_2;2,0.5)$}{}{};
+  \factor[left = of X_2, xshift=-1cm]{X_1-X_2}{below:$\mathcal{N}(x_2;x_1,1)$}{}{};
+
+  % Define edges
+  \factoredge{X_1}{X_1-f}{};
+  \factoredge{X_2}{X_2-f}{};
+  \factoredge{X_1}{X_1-X_2}{};
+  \factoredge{X_2}{X_1-X_2}{};
+
+  % Add plates or other labels if desired
 \end{tikzpicture}
