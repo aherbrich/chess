@@ -9,23 +9,14 @@
 #define HASH_SIZE (20)
 #define MAX_MOVES 512
 
-typedef struct _urgency_ht_single_entry_t {
+typedef struct _urgency_ht_list_entry_t {
     int move_key;                           /* true (non-clashing) value of the move */
     gaussian_t urgency;                     /* urgency of the move */
-} urgency_ht_single_entry_t;
-
-typedef struct _urgency_ht_list_entry_t {
-    urgency_ht_single_entry_t data;         /* the data for the entry */
     struct _urgency_ht_list_entry_t* next;  /* pointer to the next entry in the list */
 } urgency_ht_list_entry_t;
 
 typedef struct _urgency_ht_entry_t {
-    char empty;                              /* indicates that this entry is empty */
-    char singleton_key;                      /* indicates that this entry is a single Gaussian */
-    union {
-        urgency_ht_single_entry_t data;     /* urgency of the move and the key */
-        urgency_ht_list_entry_t* list;      /* pointer to the list of urgencies for this move */
-    };
+    urgency_ht_list_entry_t* root;          /* pointer to the root of the list of urgencies for this move */
 } urgency_ht_entry_t;
 
 /* hash table of urgencies for each move (hash) */
@@ -45,6 +36,8 @@ gaussian_t* add_urgency(urgency_ht_entry_t* ht, int move_key, gaussian_t urgency
 int get_no_keys(const urgency_ht_entry_t* ht);
 /* deletes the memory for a hashtable of urgencies */
 void deletes_ht_urgencies(urgency_ht_entry_t *ht);
+/* initiliazes zobrist table for moves */
+void initialize_move_zobrist_table();
 /* function that computes a unique move key */
 int calculate_move_key(board_t* board, move_t* move);
 /* function that computes the move hash */

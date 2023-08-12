@@ -139,6 +139,7 @@ int main(int argc, char** argv) {
 
     /* initialize chess engine */
     initialize_chess_engine_necessary();
+    initialize_move_zobrist_table();
 
     /* train the model */
     train_model(chessgames, nr_of_games, full_training, "snapshot");

@@ -16,6 +16,15 @@
 #define EPSILON (1e-2)
 #define MAX_ITER_CNT (10)
 
+typedef struct _move_zobrist_table_t {
+    uint32_t piecefrom[NR_PIECES];
+    uint32_t pieceto[NR_PIECES];
+    uint32_t from[64];
+    uint32_t to[64];
+    uint32_t prompiece[5];
+    uint32_t in_attack_range[2];
+} move_zobrist_table_t;
+
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for managing the hash-table of a urgencies for the Bayesian move ranking model         */
 /* ------------------------------------------------------------------------------------------------ */
@@ -25,12 +34,13 @@ int file_version_cookie = 0x10;
 
 /* hash table of urgencies for each move (hash) */
 urgency_ht_entry_t* ht_urgencies = 0;
+move_zobrist_table_t move_zobrist_table;
 
 /* initializes an urgency hashtable with standard Normals */
 urgency_ht_entry_t* initialize_ht_urgencies() {
     urgency_ht_entry_t* ht = (urgency_ht_entry_t*)malloc(sizeof(urgency_ht_entry_t) * HT_GAUSSIAN_SIZE);
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-        ht[i].empty = 1;
+        ht[i].root = NULL;
     }
     return ht;
 }
@@ -40,13 +50,11 @@ void deletes_ht_urgencies(urgency_ht_entry_t* ht) {
     if (ht) {
         /* free all linked list for entries where there was a clash */
         for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-            if (!ht[i].singleton_key && !ht[i].empty) {
-                /* free the linked list, if there is no single key */
-                while (ht[i].list) {
-                    urgency_ht_list_entry_t* next = ht[i].list->next;
-                    free(ht[i].list);
-                    ht[i].list = next;
-                }
+            /* free the linked list, if there is no single key */
+            while (ht[i].root) {
+                urgency_ht_list_entry_t* next = ht[i].root->next;
+                free(ht[i].root);
+                ht[i].root = next;
             }
         }
 
@@ -56,46 +64,54 @@ void deletes_ht_urgencies(urgency_ht_entry_t* ht) {
     return;
 }
 
+void initialize_move_zobrist_table(){
+    srand(time(NULL));
+    for(int i = 0; i < NR_PIECES; i++){
+        move_zobrist_table.piecefrom[i] = rand();
+        move_zobrist_table.pieceto[i] = rand();
+    }
+    for(int i = 0; i < 64; i++){
+        move_zobrist_table.from[i] = rand();
+        move_zobrist_table.to[i] = rand();
+    }
+    for(int i = 0; i < 5; i++){
+        move_zobrist_table.prompiece[i] = rand();
+    }
+    for(int i = 0; i < 2; i++){
+        move_zobrist_table.in_attack_range[i] = rand();
+    }
+}
+
 /* hash function from move to urgencies hash-table index */
 int calculate_move_key(board_t* board, move_t* move) {
-    piece_t piece_moved = board->playingfield[move->from];
-    square_t from = move->from;
-    piece_t piece_captured = board->playingfield[move->to];
-    square_t to = move->to;
-    piece_t piece_prom = (move->flags & 0b1000) ? (move->flags & 0b11) : 4;
-    int in_attack_range = (board->attackmap & (1ULL << move->to)) != 0;
+    uint32_t key = 0;
+    key ^= move_zobrist_table.piecefrom[board->playingfield[move->from]];
+    key ^= move_zobrist_table.pieceto[board->playingfield[move->to]];
+    key ^= move_zobrist_table.from[move->from];
+    key ^= move_zobrist_table.to[move->to];
+    key ^= move_zobrist_table.prompiece[(move->flags & 0b1000) ? (move->flags & 0b11) : 4];
+    key ^= move_zobrist_table.in_attack_range[(board->attackmap & (1ULL << move->to)) != 0];
 
-    return piece_moved * 614400 + from * 9600 + piece_captured * 640 + to * 10 + piece_prom * 2 + in_attack_range;
+    return key;
 }
 
 /* function that computes the move hash using a multiplicative hash */
 int move_hash(int move_key) {
     uint32_t knuth = 2654435769;
     uint32_t y = move_key;
-    return (y * knuth) >> (32 - HASH_SIZE);
-    // return move_key;
+    int move_hash = (y * knuth) >> (32 - HASH_SIZE);
+    return move_hash;
 }
 
 /* retrieves a pointer to the urgency belief for a given move key and move hash */
 gaussian_t* get_urgency(urgency_ht_entry_t* ht, int move_key) {
     int hash = move_hash(move_key);
 
-    /* return NULL for empty entries and the pointer to the actual Gaussian for singletons */
-    if (ht[hash].empty) {
-        return NULL;
-    } else if (ht[hash].singleton_key) {
-        if (ht[hash].data.move_key == move_key) {
-            return &ht[hash].data.urgency;
-        } else {
-            return NULL;
-        }
-    } 
-
     /* otherwise search the linked list for the move key */
-    urgency_ht_list_entry_t* entry = ht[hash].list;
+    urgency_ht_list_entry_t* entry = ht[hash].root;
     while (entry) {
-        if (entry->data.move_key == move_key) {
-            return &entry->data.urgency;
+        if (entry->move_key == move_key) {
+            return &entry->urgency;
         }
         entry = entry->next;
     }
@@ -108,50 +124,22 @@ gaussian_t* get_urgency(urgency_ht_entry_t* ht, int move_key) {
 gaussian_t* add_urgency(urgency_ht_entry_t* ht, int move_key, gaussian_t urgency) {
     int hash = move_hash(move_key);
 
-    if (ht[hash].empty) {
-        /* if empty, create a singleton */
-        ht[hash].empty = 0;
-        ht[hash].singleton_key = 1;
-        ht[hash].data.move_key = move_key;
-        ht[hash].data.urgency = urgency;
-        return &ht[hash].data.urgency;
-    } else if (ht[hash].singleton_key) {
-        /* if singleton, create a two-element list */
-        ht[hash].singleton_key = 0;
-        urgency_ht_list_entry_t* entry = (urgency_ht_list_entry_t*)malloc(sizeof(urgency_ht_list_entry_t));
-        entry->data.move_key = move_key;
-        entry->data.urgency = urgency;
-        entry->next = (urgency_ht_list_entry_t*)malloc(sizeof(urgency_ht_list_entry_t));
-        entry->next->data.move_key = ht[hash].data.move_key;
-        entry->next->data.urgency = ht[hash].data.urgency;
-        entry->next->next = NULL;
-        ht[hash].list = entry;
-        return &entry->data.urgency;
-    } 
-
-    /* otherwise add the entry at the root */
     urgency_ht_list_entry_t* entry = (urgency_ht_list_entry_t*)malloc(sizeof(urgency_ht_list_entry_t));
-    entry->data.move_key = move_key;
-    entry->data.urgency = urgency;
-    entry->next = ht[hash].list;
-    ht[hash].list = entry;
-    return &entry->data.urgency;
+    entry->move_key = move_key;
+    entry->urgency = urgency;
+    entry->next = ht[hash].root;
+    ht[hash].root = entry;
+    return &entry->urgency;
 }
 
 /* returns the number of keys in the urgency hash table */
 int get_no_keys(const urgency_ht_entry_t* ht) {
     int cnt = 0;
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-        if (!ht[i].empty) {
-            if (ht[i].singleton_key) {
-                cnt++;
-            } else {
-                urgency_ht_list_entry_t* entry = ht[i].list;
-                while (entry) {
-                    cnt++;
-                    entry = entry->next;
-                }
-            }
+        urgency_ht_list_entry_t* entry = ht[i].root;
+        while (entry) {
+            cnt++;
+            entry = entry->next;
         }
     }
     return cnt;

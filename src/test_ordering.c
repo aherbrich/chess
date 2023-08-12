@@ -285,7 +285,7 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
         /* train model */
         deletes_ht_urgencies(ht_urgencies);
         ht_urgencies = initialize_ht_urgencies();
-        train_model(training_set, training_set_size, 1, NULL);
+        train_model(training_set, training_set_size, 0, NULL);
 
         printf("Training on fold %d done!\n", i + 1);
 
@@ -330,7 +330,8 @@ int main() {
     chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
 
     /* initialize chess engine */
-    initialize_chess_engine_necessary();    
+    initialize_chess_engine_necessary();  
+    initialize_move_zobrist_table();  
 
     int folds = 10;
 
