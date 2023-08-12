@@ -13,7 +13,8 @@
 #include "../../include/ordering.h"
 #include "../../include/parse.h"
 
-#define EPSILON (1e-3)
+#define EPSILON (1e-2)
+#define MAX_ITER_CNT (10)
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for managing the hash-table of a urgencies for the Bayesian move ranking model         */
@@ -167,6 +168,7 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
         gaussian_mean_factor_update_to_variable(&g[i]);
     }
 
+    int cnt = 0;
     double delta = EPSILON;
     while (delta >= EPSILON) {
         delta = 0;
@@ -176,6 +178,11 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
             delta = fmax(delta, greater_than_factor_update(&h[i]));
             delta = fmax(delta, weighted_sum_factor_update_to_summand1(&s[i]));
             delta = fmax(delta, weighted_sum_factor_update_to_summand2(&s[i]));
+        }
+
+        if (cnt++ > MAX_ITER_CNT) {
+            fprintf(stderr, "\toverwriting convergence (delta: %f)\n", delta);
+            break;
         }
     }
 

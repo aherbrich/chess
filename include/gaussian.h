@@ -2,8 +2,8 @@
 #define __GAUSSIAN_H__
 
 typedef struct _gaussian_t {
-    double tau;
-    double rho;
+    float tau;
+    float rho;
 } gaussian_t;
 
 gaussian_t init_gaussian1D(double tau, double rho);
