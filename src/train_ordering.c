@@ -162,20 +162,13 @@ int main(int argc, char** argv) {
         /* test that we have written the same model as we have in memory */
         urgency_ht_entry_t* ht_urgencies_test = initialize_ht_urgencies();
         load_ht_urgencies_from_binary_file("ht_urgencies.bin", ht_urgencies_test);
-        for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-            // if (mean(ht_urgencies[i]) != mean(ht_urgencies_test[i]) ||
-            //     variance(ht_urgencies[i]) != variance(ht_urgencies_test[i])) {
-            //     fprintf(stderr, "Error: ht_urgencies[%d] is not the same\n", i);
-            //     fprintf(stderr, "mean(ht_urgencies[%d]) = %f\n", i,
-            //             mean(ht_urgencies[i]));
-            //     fprintf(stderr, "mean(ht_urgencies_test[%d]) = %f\n", i,
-            //             mean(ht_urgencies_test[i]));
-            //     fprintf(stderr, "variance(ht_urgencies[%d]) = %f\n", i,
-            //             variance(ht_urgencies[i]));
-            //     fprintf(stderr, "variance(ht_urgencies_test[%d]) = %f\n", i,
-            //             variance(ht_urgencies_test[i]));
-            //     exit(-1);
-            // }
+
+        /* compare the two tables */
+        if (!ht_urgencies_equal(ht_urgencies, ht_urgencies_test)) {
+            fprintf(stderr, "Error: ht_urgencies is not the same as ht_urgencies_test\n");
+            exit(-1);
+        } else {
+            fprintf(stderr, "Hash tables are the same after write & read\n");
         }
 
         /* free the memory for the hash-table of urgencies */

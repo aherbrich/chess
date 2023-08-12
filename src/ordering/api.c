@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "../../include/engine.h"
@@ -16,26 +16,38 @@
 #define EPSILON (1e-2)
 #define MAX_ITER_CNT (10)
 
-typedef struct _move_zobrist_table_t {
-    uint32_t piecefrom[NR_PIECES];
-    uint32_t pieceto[NR_PIECES];
-    uint32_t from[64];
-    uint32_t to[64];
-    uint32_t prompiece[5];
-    uint32_t in_attack_range_after[2];
-    uint32_t in_attack_range_before[2];
-} move_zobrist_table_t;
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for a Zobrist hash                                                                     */
+/* ------------------------------------------------------------------------------------------------ */
+
+move_zobrist_table_t move_zobrist_table;
+
+/* initializes the Zobrist hash for moves; should only be called once */
+void initialize_move_zobrist_table() {
+    srand(42);
+    for (int i = 0; i < NR_PIECES; i++) {
+        move_zobrist_table.piecefrom[i] = rand();
+        move_zobrist_table.pieceto[i] = rand();
+    }
+    for (int i = 0; i < 64; i++) {
+        move_zobrist_table.from[i] = rand();
+        move_zobrist_table.to[i] = rand();
+    }
+    for (int i = 0; i < 5; i++) {
+        move_zobrist_table.prompiece[i] = rand();
+    }
+    for (int i = 0; i < 2; i++) {
+        move_zobrist_table.in_attack_range_after[i] = rand();
+        move_zobrist_table.in_attack_range_before[i] = rand();
+    }
+}
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for managing the hash-table of a urgencies for the Bayesian move ranking model         */
 /* ------------------------------------------------------------------------------------------------ */
 
-/* a unique cookie representing the file version */
-int file_version_cookie = 0x10;
-
 /* hash table of urgencies for each move (hash) */
 urgency_ht_entry_t* ht_urgencies = 0;
-move_zobrist_table_t move_zobrist_table;
 
 /* initializes an urgency hashtable with standard Normals */
 urgency_ht_entry_t* initialize_ht_urgencies() {
@@ -63,25 +75,6 @@ void deletes_ht_urgencies(urgency_ht_entry_t* ht) {
         free(ht);
     }
     return;
-}
-
-void initialize_move_zobrist_table(){
-    srand(time(NULL));
-    for(int i = 0; i < NR_PIECES; i++){
-        move_zobrist_table.piecefrom[i] = rand();
-        move_zobrist_table.pieceto[i] = rand();
-    }
-    for(int i = 0; i < 64; i++){
-        move_zobrist_table.from[i] = rand();
-        move_zobrist_table.to[i] = rand();
-    }
-    for(int i = 0; i < 5; i++){
-        move_zobrist_table.prompiece[i] = rand();
-    }
-    for(int i = 0; i < 2; i++){
-        move_zobrist_table.in_attack_range_after[i] = rand();
-        move_zobrist_table.in_attack_range_before[i] = rand();
-    }
 }
 
 /* hash function from move to urgencies hash-table index */
@@ -147,17 +140,22 @@ int get_no_keys(const urgency_ht_entry_t* ht) {
     return cnt;
 }
 
-/* writes an urgencies hash-table to a file (only entries which are different from the prior) */
+/* a unique cookie representing the file version */
+int file_version_cookie = 0x20;
+
+/* writes an urgencies hash-table to a file */
 void write_ht_urgencies_to_binary_file(const char* file_name, const urgency_ht_entry_t* ht) {
     FILE* fp = fopen(file_name, "wb");
     if (fp != NULL) {
-        // fwrite(&file_version_cookie, sizeof(int), 1, fp);
-        // for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-        //     if (ht[i].tau != 0 || ht[i].rho != 1) {
-        //         fwrite(&i, sizeof(int), 1, fp);
-        //         fwrite(&ht[i], sizeof(gaussian_t), 1, fp);
-        //     }
-        // }
+        fwrite(&file_version_cookie, sizeof(int), 1, fp);
+        for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+            urgency_ht_list_entry_t* entry = ht[i].root;
+            while (entry) {
+                fwrite(&entry->move_key, sizeof(int), 1, fp);
+                fwrite(&entry->urgency, sizeof(gaussian_t), 1, fp);
+                entry = entry->next;
+            }
+        }
     }
     fclose(fp);
 }
@@ -166,24 +164,57 @@ void write_ht_urgencies_to_binary_file(const char* file_name, const urgency_ht_e
 void load_ht_urgencies_from_binary_file(const char* file_name, urgency_ht_entry_t* ht) {
     FILE* fp = fopen(file_name, "rb");
     if (fp != NULL) {
-        // int cookie;
-        // fread(&cookie, sizeof(int), 1, fp);
+        int cookie;
+        fread(&cookie, sizeof(int), 1, fp);
 
-        // if (cookie != file_version_cookie) {
-        //     fprintf(stderr, "Error: file version mismatch\n");
-        //     exit(1);
-        // }
+        if (cookie != file_version_cookie) {
+            fprintf(stderr, "Error: file version mismatch\n");
+            exit(1);
+        }
 
-        // int hash;
-        // gaussian_t gaussian;
-        // while (fread(&hash, sizeof(int), 1, fp) == 1) {
-        //     fread(&gaussian, sizeof(gaussian_t), 1, fp);
-        //     ht[hash] = gaussian;
-        // }
+        int move_key;
+        gaussian_t gaussian;
+        while (fread(&move_key, sizeof(int), 1, fp) == 1) {
+            fread(&gaussian, sizeof(gaussian_t), 1, fp);
+            add_urgency(ht, move_key, gaussian);
+        }
     }
     fclose(fp);
 }
 
+/* checks if two hash-tables are equivalent */
+int ht_urgencies_equal(urgency_ht_entry_t* ht1, urgency_ht_entry_t* ht2) {
+    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+
+        /* check if each key in ht1 is also contained and equivalent to ht2 */
+        urgency_ht_list_entry_t* entry1 = ht1[i].root;
+        while (entry1) {
+            gaussian_t* g_ptr;
+
+            if ((g_ptr = get_urgency(ht2, entry1->move_key)) == NULL) {
+                return 0;
+            } else if (g_ptr->rho != entry1->urgency.rho || g_ptr->tau != entry1->urgency.tau) {
+                return 0;
+            }
+            entry1 = entry1->next;
+        }
+
+        /* check if each key in ht1 is also contained and equivalent to ht2 */
+        urgency_ht_list_entry_t* entry2 = ht2[i].root;
+        while (entry2) {
+            gaussian_t* g_ptr;
+
+            if ((g_ptr = get_urgency(ht1, entry2->move_key)) == NULL) {
+                return 0;
+            } else if (g_ptr->rho != entry2->urgency.rho || g_ptr->tau != entry2->urgency.tau) {
+                return 0;
+            }
+            entry2 = entry2->next;
+        }
+    }
+    return 1;
+}
+ 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for online training of a Bayesian move ranking model                                   */
 /* ------------------------------------------------------------------------------------------------ */
@@ -295,24 +326,24 @@ void update(gaussian_t** urgencies_ptr, int no_hashes, double beta_squared) {
 
 /* adds the factor graph that processes a single move made to the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
 ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t** urgencies_ptr, int no_hashes, double beta_squared) {
-    ranking_update_info_t* info = (ranking_update_info_t*) malloc(sizeof(ranking_update_info_t));
+    ranking_update_info_t* info = (ranking_update_info_t*)malloc(sizeof(ranking_update_info_t));
 
     /* copy the number of moves */
     info->no_moves = no_hashes;
 
     /* allocate memory for the factors */
-    info->g = (gaussian_mean_factor_info_t*) malloc(no_hashes * sizeof(gaussian_mean_factor_info_t));
-    info->s = (weighted_sum_factor_info_t*) malloc((no_hashes - 1) * sizeof(weighted_sum_factor_info_t));
-    info->h = (greater_than_factor_info_t*) malloc((no_hashes - 1) * sizeof(greater_than_factor_info_t));
+    info->g = (gaussian_mean_factor_info_t*)malloc(no_hashes * sizeof(gaussian_mean_factor_info_t));
+    info->s = (weighted_sum_factor_info_t*)malloc((no_hashes - 1) * sizeof(weighted_sum_factor_info_t));
+    info->h = (greater_than_factor_info_t*)malloc((no_hashes - 1) * sizeof(greater_than_factor_info_t));
 
-    info->latent_urgency = (gaussian_t*) malloc(no_hashes * sizeof(gaussian_t));
-    info->msg_from_g_to_latent_urgency = (gaussian_t*) malloc(no_hashes * sizeof(gaussian_t));
-    info->msg_from_g_to_urgency = (gaussian_t*) malloc(no_hashes * sizeof(gaussian_t));
-    info->diffs = (gaussian_t*) malloc((no_hashes - 1) * sizeof(gaussian_t));
-    info->msg_from_s_to_diffs = (gaussian_t*) malloc((no_hashes - 1) * sizeof(gaussian_t));
-    info->msg_from_s_to_top_urgency = (gaussian_t*) malloc((no_hashes - 1) * sizeof(gaussian_t));
-    info->msg_from_s_to_urgency = (gaussian_t*) malloc((no_hashes - 1) * sizeof(gaussian_t));
-    info->msg_from_h_to_diffs = (gaussian_t*) malloc((no_hashes - 1) * sizeof(gaussian_t));
+    info->latent_urgency = (gaussian_t*)malloc(no_hashes * sizeof(gaussian_t));
+    info->msg_from_g_to_latent_urgency = (gaussian_t*)malloc(no_hashes * sizeof(gaussian_t));
+    info->msg_from_g_to_urgency = (gaussian_t*)malloc(no_hashes * sizeof(gaussian_t));
+    info->diffs = (gaussian_t*)malloc((no_hashes - 1) * sizeof(gaussian_t));
+    info->msg_from_s_to_diffs = (gaussian_t*)malloc((no_hashes - 1) * sizeof(gaussian_t));
+    info->msg_from_s_to_top_urgency = (gaussian_t*)malloc((no_hashes - 1) * sizeof(gaussian_t));
+    info->msg_from_s_to_urgency = (gaussian_t*)malloc((no_hashes - 1) * sizeof(gaussian_t));
+    info->msg_from_h_to_diffs = (gaussian_t*)malloc((no_hashes - 1) * sizeof(gaussian_t));
 
     /* wire the factors correctly */
     for (int i = 0; i < no_hashes; i++) {
@@ -340,15 +371,15 @@ ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gau
 
     /* initialize the messages and marginals correctly */
     for (int i = 0; i < no_hashes; i++) {
-        info->latent_urgency[i] = init_gaussian1D(0,0);
-        info->msg_from_g_to_latent_urgency[i] = init_gaussian1D(0,0);
-        info->msg_from_g_to_urgency[i] = init_gaussian1D(0,0);
+        info->latent_urgency[i] = init_gaussian1D(0, 0);
+        info->msg_from_g_to_latent_urgency[i] = init_gaussian1D(0, 0);
+        info->msg_from_g_to_urgency[i] = init_gaussian1D(0, 0);
         if (i < no_hashes - 1) {
-            info->diffs[i] = init_gaussian1D(0,0);
-            info->msg_from_s_to_diffs[i] = init_gaussian1D(0,0);
-            info->msg_from_s_to_top_urgency[i] = init_gaussian1D(0,0);
-            info->msg_from_s_to_urgency[i] = init_gaussian1D(0,0);
-            info->msg_from_h_to_diffs[i] = init_gaussian1D(0,0);
+            info->diffs[i] = init_gaussian1D(0, 0);
+            info->msg_from_s_to_diffs[i] = init_gaussian1D(0, 0);
+            info->msg_from_s_to_top_urgency[i] = init_gaussian1D(0, 0);
+            info->msg_from_s_to_urgency[i] = init_gaussian1D(0, 0);
+            info->msg_from_h_to_diffs[i] = init_gaussian1D(0, 0);
         }
     }
 
@@ -358,7 +389,7 @@ ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gau
 }
 
 /* run message passing on the whole graph until convergence of epsilon; if base_filename is non-NULL then snapshots are stored after every iteration */
-void refresh_update_graph(ranking_update_info_t *root, double epsilon, const char* base_filename) {
+void refresh_update_graph(ranking_update_info_t* root, double epsilon, const char* base_filename) {
     double outer_delta = epsilon;
 
     while (outer_delta >= epsilon) {
@@ -399,8 +430,7 @@ void refresh_update_graph(ranking_update_info_t *root, double epsilon, const cha
             ranking_update = ranking_update->next;
         }
         gettimeofday(&end, 0);
-        double cpu_time_used = ((end.tv_sec-start.tv_sec) + (end.tv_usec-start.tv_usec)/1000000.0);
-
+        double cpu_time_used = ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0);
 
         fprintf(stderr, "\touter delta (%f seconds): %f\n", cpu_time_used, outer_delta);
 
