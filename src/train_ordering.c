@@ -35,11 +35,11 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
 
                 /* create array to hold all indices of urgency beliefs corresponding to moves */
                 int nr_of_moves = movelst.nr_elem;
-                int urgencies_indices[nr_of_moves];
+                gaussian_t* urgencies_ptr[nr_of_moves];
                 int idx = 0;
 
                 /* extract move ranking-info from MADE_MOVE*/
-                urgencies_indices[idx] = calculate_order_hash(board, move);
+                urgencies_ptr[idx] = &ht_urgencies[calculate_order_hash(board, move)];
                 idx++;
 
                 /* extract move ranking-info from OTHER_MOVES */
@@ -51,18 +51,18 @@ void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, c
                         continue;
                     }
                     /* else extract ranking-info from move */
-                    urgencies_indices[idx] = calculate_order_hash(board, other_move);
+                    urgencies_ptr[idx] = &ht_urgencies[calculate_order_hash(board, other_move)];
                     idx++;
                     free_move(other_move);
                 }
 
                 // execute_ranking update
                 if (full_training) {
-                    ranking_updates = add_ranking_update_graph(ranking_updates, ht_urgencies, urgencies_indices, nr_of_moves, 0.5 * 0.5);
+                    ranking_updates = add_ranking_update_graph(ranking_updates, urgencies_ptr, nr_of_moves, 0.5 * 0.5);
                     no_factors += (3 * nr_of_moves - 2);
                     no_gaussian += (8 * nr_of_moves - 5);
                 } else {
-                    update(ht_urgencies, urgencies_indices, nr_of_moves, 0.5 * 0.5);
+                    update(urgencies_ptr, nr_of_moves, 0.5 * 0.5);
                 }
 
                 /* execute MADE_MOVE */

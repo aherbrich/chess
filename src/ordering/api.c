@@ -142,7 +142,7 @@ void initialize_ranking_updates() {
 }
 
 /* updates the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
-void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta_squared) {
+void update(gaussian_t** urgencies_ptr, int no_hashes, double beta_squared) {
     assert(no_hashes <= MAX_MOVES);
 
     /* initialize all messages and marginals with the constant function */
@@ -158,7 +158,7 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
         msg_from_s_to_urgency[i] = init_gaussian1D(0, 0);
         msg_from_h_to_diffs[i] = init_gaussian1D(0, 0);
 
-        f[i].g = urgency_beliefs[hashes[i]];
+        f[i].g = *urgencies_ptr[i];
         g[i].beta_squared = beta_squared;
     }
 
@@ -188,7 +188,7 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
 
     for (int i = 0; i < no_hashes; ++i) {
         gaussian_mean_factor_update_to_mean(&g[i]);
-        urgency_beliefs[hashes[i]] = urgency[i];
+        *urgencies_ptr[i] = urgency[i];
     }
 
     return;
@@ -199,7 +199,7 @@ void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta
 /* ------------------------------------------------------------------------------------------------ */
 
 /* adds the factor graph that processes a single move made to the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
-ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta_squared) {
+ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t** urgencies_ptr, int no_hashes, double beta_squared) {
     ranking_update_info_t* info = (ranking_update_info_t*) malloc(sizeof(ranking_update_info_t));
 
     /* copy the number of moves */
@@ -222,7 +222,7 @@ ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gau
     /* wire the factors correctly */
     for (int i = 0; i < no_hashes; i++) {
         info->g[i].var_marginal = &info->latent_urgency[i];
-        info->g[i].mean_marginal = &urgency_beliefs[hashes[i]];
+        info->g[i].mean_marginal = urgencies_ptr[i];
         info->g[i].var_msg = &info->msg_from_g_to_latent_urgency[i];
         info->g[i].mean_msg = &info->msg_from_g_to_urgency[i];
         info->g[i].beta_squared = beta_squared;

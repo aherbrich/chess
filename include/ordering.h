@@ -8,6 +8,12 @@
 #define HT_GAUSSIAN_SIZE 9216000
 #define MAX_MOVES 512
 
+typedef struct _urgency_ht_list_entry_t {
+    int move_key;                           /* true (non-clashing) value of the move */
+    gaussian_t urgency;                     /* urgency of the move */
+    struct _urgency_ht_list_entry_t* next;
+} urgency_ht_entry_t;
+
 /* hash table of urgencies for each move (hash) */
 extern gaussian_t* ht_urgencies;
 
@@ -33,7 +39,7 @@ void write_ht_urgencies_to_binary_file(const char* file_name, const gaussian_t *
 /* this function should be called once and sets up the ranking update graph(s) */
 void initialize_ranking_updates();
 /* updates the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
-void update(gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta_squared);
+void update(gaussian_t** urgencies_ptr, int no_hashes, double beta_squared);
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for batch training of a Bayesian move ranking model                                    */
@@ -58,7 +64,7 @@ typedef struct _ranking_update_info_t {
 } ranking_update_info_t;
 
 /* adds the factor graph that processes a single move made to the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
-ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t* urgency_beliefs, int* hashes, int no_hashes, double beta_squared);
+ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t** urgencies_ptr, int no_hashes, double beta_squared);
 /* run message passing on the whole graph until convergence of epsilon; if base_filename is non-NULL then snapshots are stored after every iteration */
 void refresh_update_graph(ranking_update_info_t *root, double epsilon, const char* base_filename);
 /* deletes the linked list of ranking updates */
