@@ -28,7 +28,7 @@ CC = clang
 CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3
 
 .PHONY: all
-all: uci_engine train_ordering train_eval
+all: uci_engine train_ordering test_ordering train_eval
 
 .PHONY: engine_core
 engine_core: $(ENGINE_CORE_OBJ)
