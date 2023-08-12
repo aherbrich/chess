@@ -22,7 +22,8 @@ typedef struct _move_zobrist_table_t {
     uint32_t from[64];
     uint32_t to[64];
     uint32_t prompiece[5];
-    uint32_t in_attack_range[2];
+    uint32_t in_attack_range_after[2];
+    uint32_t in_attack_range_before[2];
 } move_zobrist_table_t;
 
 /* ------------------------------------------------------------------------------------------------ */
@@ -78,7 +79,8 @@ void initialize_move_zobrist_table(){
         move_zobrist_table.prompiece[i] = rand();
     }
     for(int i = 0; i < 2; i++){
-        move_zobrist_table.in_attack_range[i] = rand();
+        move_zobrist_table.in_attack_range_after[i] = rand();
+        move_zobrist_table.in_attack_range_before[i] = rand();
     }
 }
 
@@ -90,8 +92,8 @@ int calculate_move_key(board_t* board, move_t* move) {
     key ^= move_zobrist_table.from[move->from];
     key ^= move_zobrist_table.to[move->to];
     key ^= move_zobrist_table.prompiece[(move->flags & 0b1000) ? (move->flags & 0b11) : 4];
-    key ^= move_zobrist_table.in_attack_range[(board->attackmap & (1ULL << move->to)) != 0];
-
+    key ^= move_zobrist_table.in_attack_range_after[(board->attackmap & (1ULL << move->to)) != 0];
+    key ^= move_zobrist_table.in_attack_range_before[(board->attackmap & (1ULL << move->from)) != 0];
     return key;
 }
 

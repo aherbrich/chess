@@ -289,6 +289,9 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
 
         printf("Training on fold %d done!\n", i + 1);
 
+        /* output nr of keys */
+        printf("Unique moves: %d\n", get_no_keys(ht_urgencies));
+
         /* test model */
         total_accuracy += test_model(test_set, test_set_size, i+1) * (float) test_set_size/ (float) no_games;
 
