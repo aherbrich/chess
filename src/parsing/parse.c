@@ -42,11 +42,11 @@ int count_number_of_games() {
     return game_count;
 }
 
-int count_moves_made(chessgame_t **chessgames, int nr_of_games) {
+int count_moves_made(chess_game_t **chess_games, int nr_of_games) {
     int total_count = 0;
     for (int i = 0; i < nr_of_games; i++) {
-        chessgame_t *chessgame = chessgames[i];
-        char *token = strtok(chessgame->movelist, " ");
+        chess_game_t *chess_game = chess_games[i];
+        char *token = strtok(chess_game->move_list, " ");
         do {
             total_count++;
         } while ((token = strtok(NULL, " ")));
@@ -55,14 +55,13 @@ int count_moves_made(chessgame_t **chessgames, int nr_of_games) {
     return total_count;
 }
 
-/* Parses PGN chess game file */
-/* i.e stores games in accesible way in memory */
-chessgame_t **parse_chessgames_file(int nr_of_games) {
+/* Parses PGN chess game file, i.e stores games in accessible way in memory */
+chess_game_t **parse_chess_games_file(int nr_of_games) {
     /* allocate memory for chess game data structures and initialize */
-    chessgame_t **chessgames =
-        (chessgame_t **)malloc(sizeof(chessgame_t *) * nr_of_games);
+    chess_game_t **chess_games =
+        (chess_game_t **)malloc(sizeof(chess_game_t *) * nr_of_games);
     for (int i = 0; i < nr_of_games; i++) {
-        chessgames[i] = NULL;
+        chess_games[i] = NULL;
     }
 
     char file_name[PATH_MAX];
@@ -82,9 +81,9 @@ chessgame_t **parse_chessgames_file(int nr_of_games) {
     while (fgets(buffer, buffersize, fp) != NULL) {
         /* if we read the line with the result of a game, remember the result */
         if (strstr(buffer, "Result \"1-0\"")) {
-            winner = WINWHITE;
+            winner = WHITE_WIN;
         } else if (strstr(buffer, "Result \"0-1\"")) {
-            winner = WINBLACK;
+            winner = BLACK_WIN;
         } else if (strstr(buffer, "Result \"1/2-1/2\"")) {
             winner = DRAW;
         }
@@ -122,14 +121,14 @@ chessgame_t **parse_chessgames_file(int nr_of_games) {
                 parsedbuffer[idx - 1] = '\0';
 
                 /* store data in chess game structure */
-                chessgame_t *chessgame =
-                    (chessgame_t *)malloc(sizeof(chessgame_t));
-                chessgame->movelist = (char *)malloc(strlen(parsedbuffer) + 1);
-                strcpy(chessgame->movelist, parsedbuffer);
-                chessgame->winner = winner;
+                chess_game_t *chess_game =
+                    (chess_game_t *)malloc(sizeof(chess_game_t));
+                chess_game->move_list = (char *)malloc(strlen(parsedbuffer) + 1);
+                strcpy(chess_game->move_list, parsedbuffer);
+                chess_game->winner = winner;
 
-                /* add chess game into list of chessgames */
-                chessgames[game_idx] = chessgame;
+                /* add chess game into list of chess games */
+                chess_games[game_idx] = chess_game;
                 game_idx++;
             }
 
@@ -140,5 +139,5 @@ chessgame_t **parse_chessgames_file(int nr_of_games) {
 
     fclose(fp);
     fprintf(stderr, "Nr. of games:\t%d\n", nr_of_games);
-    return chessgames;
+    return chess_games;
 }

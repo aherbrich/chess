@@ -80,7 +80,7 @@ typedef struct _train_info_t {
 } train_info_t;
 
 /* trains a Bayesian ranking model from the replay of the games */
-void train_model(chessgame_t** chessgames, int nr_of_games, train_info_t train_info);
+void train_model(chess_game_t** chess_games, int nr_of_games, train_info_t train_info);
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for making predictions based on the Bayesian move ranking model                        */

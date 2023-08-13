@@ -12,7 +12,7 @@
 #include "include/parse/parse.h"
 
 /* Test the trained model for k-fold cross validation */
-double test_model(chessgame_t** chessgames, int no_games, int id) {
+double test_model(chess_game_t** chess_games, int no_games, int id) {
     int moves_played = 0;
     int moves_predicted_correctly = 0;
 
@@ -28,12 +28,12 @@ double test_model(chessgame_t** chessgames, int no_games, int id) {
 
     /* play games */
     for (int i = 0; i < no_games; i++) {
-        chessgame_t* chessgame = chessgames[i];
+        chess_game_t* chess_game = chess_games[i];
         board_t* board = init_board();
         load_by_FEN(board,
                     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        char* token = strtok(chessgame->movelist, " ");
+        char* token = strtok(chess_game->move_list, " ");
         int move_nr = 0;
         do {
             move_t* move = str_to_move(board, token);
@@ -43,7 +43,7 @@ double test_model(chessgame_t** chessgames, int no_games, int id) {
                 initialize_maxpq(&movelst);
                 generate_moves(board, &movelst);
 
-                /* create arrays to hold move hashes and indices of moves as in movelist */
+                /* create arrays to hold move hashes and indices of moves as in move list */
                 int nr_of_moves = movelst.nr_elem;
                 int move_keys[nr_of_moves];
                 int move_indices[nr_of_moves];
@@ -148,7 +148,7 @@ double test_model(chessgame_t** chessgames, int no_games, int id) {
 }
 
 /* Runs a k fold cross validation test */
-double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_folds) {
+double k_fold_cross_validation(chess_game_t** chess_games, int no_games, int no_folds) {
     int fold_size = no_games / no_folds;
     int remainder = no_games % no_folds;
 
@@ -164,29 +164,29 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
 
         /* create training set */
         int training_set_size = no_games - (end_idx - start_idx);
-        chessgame_t** training_set = (chessgame_t**)malloc(sizeof(chessgame_t*) * training_set_size);
+        chess_game_t** training_set = (chess_game_t**)malloc(sizeof(chess_game_t*) * training_set_size);
         int idx = 0;
         for (int j = 0; j < no_games; j++) {
             if (j < start_idx || j >= end_idx) {
-                /* make deep copy of chessgame */
-                training_set[idx] = (chessgame_t*)malloc(sizeof(chessgame_t));
-                training_set[idx]->movelist = (char*)malloc(strlen(chessgames[j]->movelist) + 1);
-                strcpy(training_set[idx]->movelist, chessgames[j]->movelist);
-                training_set[idx]->winner = chessgames[j]->winner;
+                /* make deep copy of chess game */
+                training_set[idx] = (chess_game_t*)malloc(sizeof(chess_game_t));
+                training_set[idx]->move_list = (char*)malloc(strlen(chess_games[j]->move_list) + 1);
+                strcpy(training_set[idx]->move_list, chess_games[j]->move_list);
+                training_set[idx]->winner = chess_games[j]->winner;
                 idx++;
             }
         }
 
         /* create test set */
         int test_set_size = end_idx - start_idx;
-        chessgame_t** test_set = (chessgame_t**)malloc(sizeof(chessgame_t*) * test_set_size);
+        chess_game_t** test_set = (chess_game_t**)malloc(sizeof(chess_game_t*) * test_set_size);
         idx = 0;
         for (int j = start_idx; j < end_idx; j++) {
-            /* make deep copy of chessgame */
-            test_set[idx] = (chessgame_t*)malloc(sizeof(chessgame_t));
-            test_set[idx]->movelist = (char*)malloc(strlen(chessgames[j]->movelist) + 1);
-            strcpy(test_set[idx]->movelist, chessgames[j]->movelist);
-            test_set[idx]->winner = chessgames[j]->winner;
+            /* make deep copy of chess game */
+            test_set[idx] = (chess_game_t*)malloc(sizeof(chess_game_t));
+            test_set[idx]->move_list = (char*)malloc(strlen(chess_games[j]->move_list) + 1);
+            strcpy(test_set[idx]->move_list, chess_games[j]->move_list);
+            test_set[idx]->winner = chess_games[j]->winner;
             idx++;
         }
 
@@ -215,11 +215,11 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
 
         /* free sets */
         for (int j = 0; j < training_set_size; j++) {
-            free(training_set[j]->movelist);
+            free(training_set[j]->move_list);
             free(training_set[j]);
         }
         for (int j = 0; j < test_set_size; j++) {
-            free(test_set[j]->movelist);
+            free(test_set[j]->move_list);
             free(test_set[j]);
         }
         free(training_set);
@@ -234,10 +234,10 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
     }
 
     for (int i = 0; i < no_games; i++) {
-        free(chessgames[i]->movelist);
-        free(chessgames[i]);
+        free(chess_games[i]->move_list);
+        free(chess_games[i]);
     }
-    free(chessgames);
+    free(chess_games);
 
     return total_accuracy;
 }
@@ -245,7 +245,7 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
 int main() {
     /* parse chess game file */
     int nr_of_games = count_number_of_games();
-    chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
+    chess_game_t** chess_games = parse_chess_games_file(nr_of_games);
 
     /* initialize chess engine */
     initialize_chess_engine_necessary();
@@ -253,7 +253,7 @@ int main() {
 
     int folds = 10;
 
-    double accuracy = k_fold_cross_validation(chessgames, nr_of_games, folds);
+    double accuracy = k_fold_cross_validation(chess_games, nr_of_games, folds);
 
     printf("%sAccuracy over %d folds:%s %f\n", Color_GREEN, folds, Color_END, accuracy);
 

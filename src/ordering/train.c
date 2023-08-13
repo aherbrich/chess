@@ -11,7 +11,7 @@
 #include "include/parse/parse.h"
 
 /* trains a Bayesian ranking model from the replay of the games */
-void train_model(chessgame_t** chessgames, int nr_of_games, train_info_t train_info) {
+void train_model(chess_game_t** chess_games, int nr_of_games, train_info_t train_info) {
     /* parameters needed for full inference/training */
     ranking_update_info_t* ranking_updates = NULL;
     int no_gaussian = 0, no_factors = 0;
@@ -23,11 +23,11 @@ void train_model(chessgame_t** chessgames, int nr_of_games, train_info_t train_i
 
     /* play games */
     for (int i = 0; i < nr_of_games; i++) {
-        chessgame_t* chessgame = chessgames[i];
+        chess_game_t* chess_game = chess_games[i];
         board_t* board = init_board();
         load_by_FEN(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        char* token = strtok(chessgame->movelist, " ");
+        char* token = strtok(chess_game->move_list, " ");
         do {
             move_t* move = str_to_move(board, token);
             if (move) {

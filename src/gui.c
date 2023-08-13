@@ -61,7 +61,7 @@ move_t *gui_str_to_move(board_t *board, char *move_str) {
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    /* find the move in the movelist that is described by the move string */
+    /* find the move in the move list that is described by the move string */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
         move_t *move = (&movelst)->array[i];
         /* if the move has matching from and to squares */

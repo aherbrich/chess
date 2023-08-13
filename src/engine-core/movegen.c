@@ -817,19 +817,19 @@ square_t make_piece(player_t player, int pc) {
     return (player == WHITE) ? (square_t)(0b1000 & pc) : (square_t)(pc);
 }
 
-/* Generates and adds moves to movelist given a from square
+/* Generates and adds moves to move list given a from square
 and a bitboard of target squares */
 void make_moves_quiet(maxpq_t *movelst, square_t from, bitboard_t targets) {
     while (targets) insert(movelst, generate_move(from, pop_1st_bit(&targets), QUIET, 0));
 }
 
-/* Generates and adds moves to movelist given a from square
+/* Generates and adds moves to move list given a from square
 and a bitboard of target squares */
 void make_moves_doubleep(maxpq_t *movelst, square_t from, bitboard_t targets) {
     while (targets) insert(movelst, generate_move(from, pop_1st_bit(&targets), DOUBLEP, 0));
 }
 
-/* Generates and adds moves to movelist given a from square
+/* Generates and adds moves to move list given a from square
 and a bitboard of target squares */
 void make_moves_capture(maxpq_t *movelst, board_t *board, square_t from, bitboard_t targets) {
     while (targets) {
@@ -838,13 +838,13 @@ void make_moves_capture(maxpq_t *movelst, board_t *board, square_t from, bitboar
     }
 }
 
-/* Generates and adds moves to movelist given a from square
+/* Generates and adds moves to move list given a from square
 and a bitboard of target squares */
 void make_moves_epcapture(maxpq_t *movelst, square_t from, bitboard_t targets) {
     while (targets) insert(movelst, generate_move(from, pop_1st_bit(&targets), EPCAPTURE, 0));
 }
 
-/* Generates and adds moves to movelist given a from square
+/* Generates and adds moves to move list given a from square
 and a bitboard of target squares */
 void make_moves_promcaptures(maxpq_t *movelst, square_t from, bitboard_t targets) {
     while (targets) {

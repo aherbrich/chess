@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
     /****** parse chess game file ******/
     int nr_of_games = count_number_of_games();
-    chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
+    chess_game_t** chess_games = parse_chess_games_file(nr_of_games);
 
     /* initialize chess engine */
     initialize_chess_engine_necessary();
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
         .full_training = full_training,
         .base_filename = "snapshot",
         .verbosity = 1};
-    train_model(chessgames, nr_of_games, train_info);
+    train_model(chess_games, nr_of_games, train_info);
 
     /* write some output statistics about the model */
     fprintf(stderr, "Unique moves: %d\n", get_no_keys(ht_urgencies));
@@ -68,10 +68,10 @@ int main(int argc, char** argv) {
 
     /****** free chess games read in for the sake of training ******/
     for (int i = 0; i < nr_of_games; i++) {
-        free(chessgames[i]->movelist);
-        free(chessgames[i]);
+        free(chess_games[i]->move_list);
+        free(chess_games[i]);
     }
-    free(chessgames);
+    free(chess_games);
 
     /****** test read-write code ******/
     if (test_read_write_model) {
