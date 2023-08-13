@@ -6,9 +6,14 @@
 #include "../../include/database.h"
 #include "../../include/zobrist.h"
 
+/* global database*/
 databaseentry_t **database;
 
-/* Allocates memeory for database and initializes it */
+/* ------------------------------------------------------------------------------------------------ */
+/* functions and types for database                                                                 */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* allocates memory and initiliazes database with NULL entries */
 void initialize_database() {
     database =
         (databaseentry_t **)malloc(sizeof(databaseentry_t *) * DATABASESIZE);
@@ -18,7 +23,7 @@ void initialize_database() {
     return;
 }
 
-/* Stores board positions and corresponding winrate in global database */
+/* updates win percentage information i.e how often white/black won from this position*/
 void update_database_entry(board_t *board, int winner) {
     uint64_t hash = calculate_zobrist_hash(board);
     uint64_t key = hash % DATABASESIZE;
@@ -62,28 +67,5 @@ void update_database_entry(board_t *board, int winner) {
     if (winner == WINBLACK) new->black_won = 1;
     if (winner == DRAW) new->draw = 1;
 
-    return;
-}
-
-/* Get the evaluation of a board */
-void probe_database_entry(board_t *board) {
-    uint64_t hash = calculate_zobrist_hash(board);
-    uint64_t key = hash % DATABASESIZE;
-
-    databaseentry_t *cur = database[key];
-    /* search the list for the entry with the same hash */
-    while (cur) {
-        /* if there is one, print eval */
-        if (cur->hash == hash) {
-            fprintf(stderr, "\n#:\t%d\nW:\t%f\nB:\t%f\nD:\t%f\n", cur->seen,
-                    (float)cur->white_won / cur->seen,
-                    (float)cur->black_won / cur->seen,
-                    (float)cur->draw / cur->seen);
-            return;
-        }
-        cur = cur->next;
-    }
-
-    fprintf(stderr, "\nNo entry found!\n");
     return;
 }

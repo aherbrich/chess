@@ -1,5 +1,6 @@
 #include "../../include/types.h"
 
+
 const int DEBRUIJN64[64] = {
 	0, 47,  1, 56, 48, 27,  2, 60,
    57, 49, 41, 37, 28, 16,  3, 61,
@@ -13,7 +14,11 @@ const int DEBRUIJN64[64] = {
 
 const bitboard_t MAGICDEBRUIJN = 0x03f79d71b4cb0a89;
 
-/* Generates a pseudo-random 64bit unsigned integer */
+/* ------------------------------------------------------------------------------------------------ */
+/* helper functions for universal use                                                               */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* generates pseudorandom 64-bit interger*/
 uint64_t random_uint64() {
     uint64_t u1, u2, u3, u4;
     u1 = (uint64_t)(rand()) & 0xFFFF;
@@ -23,20 +28,20 @@ uint64_t random_uint64() {
     return (u1 | (u2 << 16) | (u3 << 32) | (u4 << 48));
 }
 
-/* Generates a pseudo-random 64bit unsigned integer with only few bits set */
+/* generates pseudorandom 64-bit interger with few bits set to 1 */
 uint64_t random_uint64_fewbits() {
     return random_uint64() & random_uint64() & random_uint64();
 }
 
-/* Calculate idx based on a row & column */
+/* determines index given a row and column */
 idx_t pos_to_idx(int row, int col) { return (row * 8 + col); }
 
-/* Returns index of least significant bit */
+/* determines index of first bit set to 1 */
 int find_1st_bit(bitboard_t bb) {
     return DEBRUIJN64[MAGICDEBRUIJN * (bb ^ (bb - 1)) >> 58];
 }
 
-/* Sets the LS1B (least significant 1 bit) to 0 and returns it index */
+/* determines index of first bit set to 1 and sets it to 0 */
 int pop_1st_bit(bitboard_t *bb) {
     if (!(*bb)) {
         return -1;
@@ -46,8 +51,7 @@ int pop_1st_bit(bitboard_t *bb) {
     *bb &= *bb - 1;
     return idx;
 }
-
-/* Counts number of set bits in bitboard */
+/* determines number of bits set to 1 (efficiently if only few bits are set) */
 int sparse_pop_count(bitboard_t x) {
 	int count = 0;
 	/* while 64-bit number != 0 */
@@ -59,7 +63,11 @@ int sparse_pop_count(bitboard_t x) {
 	return count;
 }
 
+/* determines rank of a given square */
 rank_t rank_of(square_t s) { return s >> 3; }
+/* determines file of a given square */
 file_t file_of(square_t s) { return s & 0b111; }
+/* determines diagonal of a given square */
 int diagonal_of(square_t s) { return 7 + rank_of(s) - file_of(s); }
+/* determines anti-diagonal of a given square */
 int anti_diagonal_of(square_t s) { return rank_of(s) + file_of(s); }

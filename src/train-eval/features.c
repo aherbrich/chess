@@ -2,6 +2,11 @@
 #include "../../include/eval.h"
 #include "../../include/linalg.h"
 
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for training of a linear regression evaluation model                                   */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* returns (normalized) material difference of board */
 double material_difference(board_t* board){
     int material = 0;
     for(int i = 0; i < 64; i++){
@@ -10,6 +15,7 @@ double material_difference(board_t* board){
     return ((double) material) / 800.0;
 }
 
+/* returns (normalized) positional difference of board */
 double positional_difference(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -57,6 +63,7 @@ double positional_difference(board_t* board){
     return ((double) positional) / 300.0;
 }
 
+/* returns (normalized) positional difference of pawns only */
 double positional_diff_pawn(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -74,6 +81,7 @@ double positional_diff_pawn(board_t* board){
     return ((double) positional) / 30.0;
 }
 
+/* returns (normalized) positional difference of knights only */
 double positional_diff_knight(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -91,6 +99,7 @@ double positional_diff_knight(board_t* board){
     return ((double) positional) / 30.0;
 }
 
+/* returns (normalized) positional difference of bishops only */
 double positional_diff_bishop(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -108,6 +117,7 @@ double positional_diff_bishop(board_t* board){
     return ((double) positional) / 30.0;
 }
 
+/* returns (normalized) positional difference of rooks only */
 double positional_diff_rook(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -125,6 +135,7 @@ double positional_diff_rook(board_t* board){
     return ((double) positional) / 30.0;
 }
 
+/* returns (normalized) positional difference of queens only */
 double positional_diff_queen(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -142,6 +153,7 @@ double positional_diff_queen(board_t* board){
     return ((double) positional) / 30.0;
 }
 
+/* returns (normalized) positional difference of kings only */
 double positional_diff_king(board_t* board){
     int positional = 0;
     for(int i = 0; i < 64; i++){
@@ -159,15 +171,6 @@ double positional_diff_king(board_t* board){
     return ((double) positional) / 30.0;
 }
 
-/* Calculates feature matrix */
+/* calculates feature matrix */
 void calculate_feautures(board_t *board, matrix_t *X, int idx) {
-    int nr_pieces = nr_of_pieces(board);
-
-    matrix_set(X, material_difference(board), idx, nr_pieces-3); // 2-3 = 0 smallest idx, 32-3 = 29 largest index
-    matrix_set(X, positional_diff_pawn(board), idx, 30+(nr_pieces-3));
-    matrix_set(X, positional_diff_knight(board), idx, 60+(nr_pieces-3));
-    matrix_set(X, positional_diff_bishop(board), idx, 90+(nr_pieces-3));
-    matrix_set(X, positional_diff_rook(board), idx, 120+(nr_pieces-3));
-    matrix_set(X, positional_diff_queen(board), idx, 150+(nr_pieces-3));
-    matrix_set(X, positional_diff_king(board), idx, 180+(nr_pieces-3));
 }

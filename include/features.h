@@ -4,8 +4,11 @@
 #include "../include/types.h"
 #include "../include/linalg.h"
 
-//////////////////////////////////////////////////////////////
-//  FUNCTIONS
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for training of a linear regression evaluation model                                   */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* calculates feature matrix */
 void calculate_feautures(board_t* board, matrix_t* X, int idx);
 
 #endif

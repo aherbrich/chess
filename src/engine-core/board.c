@@ -4,7 +4,12 @@
 #include "../../include/helpers.h"
 #include "../../include/zobrist.h"
 
-/* Clears the board */
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for managing the board structure                                                       */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* resets the board to an empty, white at turn, default flags, no previous moves state */
 void clear_board(board_t* board) {
     /* clear the playing field */
     for(int i = 0; i < 64; i++){
@@ -29,10 +34,10 @@ void clear_board(board_t* board) {
 
     board->ply_no = 0;
 
+    /* calculate board hash */
     board->hash = calculate_zobrist_hash(board);
 }
-
-/* Copies given board */
+/* makes a deep copy of a board */
 board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
 
@@ -64,17 +69,17 @@ board_t* copy_board(board_t* board) {
     return copy;
 }
 
-/* Allocates memory and initializes empty board */
+/* allocates memory and initiliazes board by call to 'clear_board' */
 board_t* init_board() {
     board_t* board = (board_t*)malloc(sizeof(board_t));
     clear_board(board);
     return board;
 }
 
-/* Frees memory of board */
+/* frees the memory of a board */
 void free_board(board_t* board) { free(board); }
 
-/* Load a game position based on FEN */
+/* loads a board position based given a fen-string */
 void load_by_FEN(board_t* board, char* FEN) {
     int row = 7;
     int col = 0;
