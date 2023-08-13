@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "include/engine-core/engine.h"
 #include "include/ordering/factors.h"
@@ -11,7 +12,7 @@
 #include "include/ordering/urgencies.h"
 #include "include/parse/parse.h"
 
-/* Test the trained model for k-fold cross validation */
+/* test the trained model for k-fold cross validation */
 double test_model(chess_game_t** chess_games, int no_games, int id) {
     int moves_played = 0;
     int moves_predicted_correctly = 0;
@@ -30,21 +31,20 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
     for (int i = 0; i < no_games; i++) {
         chess_game_t* chess_game = chess_games[i];
         board_t* board = init_board();
-        load_by_FEN(board,
-                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        load_by_FEN(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         char* token = strtok(chess_game->move_list, " ");
         int move_nr = 0;
         do {
             move_t* move = str_to_move(board, token);
             if (move) {
-                /* genearate all possible moves */
-                maxpq_t movelst;
-                initialize_maxpq(&movelst);
-                generate_moves(board, &movelst);
+                /* generate all possible moves */
+                maxpq_t move_lst;
+                initialize_maxpq(&move_lst);
+                generate_moves(board, &move_lst);
 
                 /* create arrays to hold move hashes and indices of moves as in move list */
-                int nr_of_moves = movelst.nr_elem;
+                int nr_of_moves = move_lst.nr_elem;
                 int move_keys[nr_of_moves];
                 int move_indices[nr_of_moves];
                 int idx = 0;
@@ -56,7 +56,7 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
 
                 /* calculate move hashes for OTHER_MOVES */
                 move_t* other_move;
-                while ((other_move = pop_max(&movelst)) != NULL) {
+                while ((other_move = pop_max(&move_lst)) != NULL) {
                     /* if we see MADE_MOVE, skip it */
                     if (is_same_move(move, other_move)) {
                         free_move(other_move);
@@ -115,7 +115,7 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
                 }
 
                 /* write results into file */
-                /* current ply, rank by bayesian, nr of possible, rank by random choice, rank by heuristic */
+                /* current ply, rank by Bayesian, nr of possible, rank by random choice, rank by heuristic */
                 fprintf(file, "%d %d %d %d %d\n", move_nr, idx_of_made_move, nr_of_moves, rand() % nr_of_moves, idx_of_made_move_in_legal_moves);
 
                 /* check if MADE_MOVE has the highest mean */
@@ -127,14 +127,14 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
                 /* execute MADE_MOVE */
                 do_move(board, move);
                 free_move(move);
-                free_pq(&movelst);
+                free_pq(&move_lst);
                 free_pq(&legals);
+
                 /* and continue with next (opponent) MADE_MOVE */
                 move_nr++;
             } else {
                 print_board(board);
-                fprintf(stderr, "%sInvalid move: %s%s\n", Color_PURPLE, token,
-                        Color_END);
+                fprintf(stderr, "%sInvalid move: %s%s\n", Color_PURPLE, token, Color_END);
                 exit(-1);
             }
         } while ((token = strtok(NULL, " ")));
@@ -143,14 +143,15 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
     }
 
     fclose(file);
+
     /* return precision */
     return (float)moves_predicted_correctly / (float)moves_played;
 }
 
-/* Runs a k fold cross validation test */
-double k_fold_cross_validation(chess_game_t** chess_games, int no_games, int no_folds) {
-    int fold_size = no_games / no_folds;
-    int remainder = no_games % no_folds;
+/* runs a k-fold cross validation test */
+double k_fold_cross_validation(chess_games_t chess_games, int no_folds) {
+    int fold_size = chess_games.no_games / no_folds;
+    int remainder = chess_games.no_games % no_folds;
 
     int start_idx = 0;
     int end_idx = fold_size;
@@ -163,16 +164,16 @@ double k_fold_cross_validation(chess_game_t** chess_games, int no_games, int no_
         }
 
         /* create training set */
-        int training_set_size = no_games - (end_idx - start_idx);
+        int training_set_size = chess_games.no_games - (end_idx - start_idx);
         chess_game_t** training_set = (chess_game_t**)malloc(sizeof(chess_game_t*) * training_set_size);
         int idx = 0;
-        for (int j = 0; j < no_games; j++) {
+        for (int j = 0; j < chess_games.no_games; j++) {
             if (j < start_idx || j >= end_idx) {
                 /* make deep copy of chess game */
                 training_set[idx] = (chess_game_t*)malloc(sizeof(chess_game_t));
-                training_set[idx]->move_list = (char*)malloc(strlen(chess_games[j]->move_list) + 1);
-                strcpy(training_set[idx]->move_list, chess_games[j]->move_list);
-                training_set[idx]->winner = chess_games[j]->winner;
+                training_set[idx]->move_list = (char*)malloc(strlen(chess_games.games[j]->move_list) + 1);
+                strcpy(training_set[idx]->move_list, chess_games.games[j]->move_list);
+                training_set[idx]->winner = chess_games.games[j]->winner;
                 idx++;
             }
         }
@@ -184,9 +185,9 @@ double k_fold_cross_validation(chess_game_t** chess_games, int no_games, int no_
         for (int j = start_idx; j < end_idx; j++) {
             /* make deep copy of chess game */
             test_set[idx] = (chess_game_t*)malloc(sizeof(chess_game_t));
-            test_set[idx]->move_list = (char*)malloc(strlen(chess_games[j]->move_list) + 1);
-            strcpy(test_set[idx]->move_list, chess_games[j]->move_list);
-            test_set[idx]->winner = chess_games[j]->winner;
+            test_set[idx]->move_list = (char*)malloc(strlen(chess_games.games[j]->move_list) + 1);
+            strcpy(test_set[idx]->move_list, chess_games.games[j]->move_list);
+            test_set[idx]->winner = chess_games.games[j]->winner;
             idx++;
         }
 
@@ -209,7 +210,7 @@ double k_fold_cross_validation(chess_game_t** chess_games, int no_games, int no_
         printf("Unique moves: %d\n", get_no_keys(ht_urgencies));
 
         /* test model */
-        total_accuracy += test_model(test_set, test_set_size, i + 1) * (float)test_set_size / (float)no_games;
+        total_accuracy += test_model(test_set, test_set_size, i + 1) * (float)test_set_size / (float)chess_games.no_games;
 
         printf("Testing on fold %d  done!\n", i + 1);
 
@@ -233,19 +234,15 @@ double k_fold_cross_validation(chess_game_t** chess_games, int no_games, int no_
         printf("Current prediction of overall accuracy: %f\n", total_accuracy * (float)no_folds / (float)(i + 1));
     }
 
-    for (int i = 0; i < no_games; i++) {
-        free(chess_games[i]->move_list);
-        free(chess_games[i]);
-    }
-    free(chess_games);
-
     return total_accuracy;
 }
 
 int main() {
     /* parse chess game file */
-    int nr_of_games = count_number_of_games();
-    chess_game_t** chess_games = parse_chess_games_file(nr_of_games);
+    char file_name[PATH_MAX];
+    getcwd(file_name, PATH_MAX);
+    strcat(file_name, "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn");
+    chess_games_t chess_games = load_chess_games(file_name);
 
     /* initialize chess engine */
     initialize_chess_engine_necessary();
@@ -253,9 +250,11 @@ int main() {
 
     int folds = 10;
 
-    double accuracy = k_fold_cross_validation(chess_games, nr_of_games, folds);
-
+    double accuracy = k_fold_cross_validation(chess_games, folds);
     printf("%sAccuracy over %d folds:%s %f\n", Color_GREEN, folds, Color_END, accuracy);
+
+    delete_chess_games(chess_games);
+    deletes_ht_urgencies(ht_urgencies);
 
     return 0;
 }

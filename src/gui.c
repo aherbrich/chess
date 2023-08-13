@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "include/engine-core/engine.h"
+#include "include/ordering/urgencies.h"
 
 int MAX_LEN = 32768;
 
@@ -351,4 +352,7 @@ int main() {
 
     /* free the board */
     free_board(board);
+
+    /* free the urgencies */
+    deletes_ht_urgencies(ht_urgencies);
 }

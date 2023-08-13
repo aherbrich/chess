@@ -2,6 +2,7 @@
 #include "include/engine-core/move.h"
 #include "include/engine-core/perft.h"
 #include "include/engine-core/types.h"
+#include "include/ordering/urgencies.h"
 
 /*
  * MAIN ENTRY POINT
@@ -16,4 +17,7 @@ int main() {
     perft_divide(board, 5);
 
     free(board);
+    deletes_ht_urgencies(ht_urgencies);
+
+    return 0;
 }

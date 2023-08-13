@@ -10,6 +10,7 @@
 #include "include/engine-core/prettyprint.h"
 #include "include/engine-core/types.h"
 #include "include/engine-core/zobrist.h"
+#include "include/ordering/urgencies.h"
 
 typedef struct _perfttest_t {
     char fen[256];
@@ -249,4 +250,6 @@ int main() {
         printf("%sALL OK...%s\n\n", Color_GREEN, Color_END);
         exit(EXIT_SUCCESS);
     }
+
+    deletes_ht_urgencies(ht_urgencies);
 }
