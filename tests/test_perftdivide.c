@@ -1,8 +1,7 @@
-#include "../include/types.h"
-#include "../include/board.h"
-#include "../include/move.h"
-#include "../include/perft.h"   
-
+#include "include/engine-core/board.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/perft.h"
+#include "include/engine-core/types.h"
 
 /*
  * MAIN ENTRY POINT

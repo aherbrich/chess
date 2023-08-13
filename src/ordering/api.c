@@ -7,11 +7,11 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../../include/engine.h"
-#include "../../include/factors.h"
-#include "../../include/gaussian.h"
-#include "../../include/ordering.h"
-#include "../../include/parse.h"
+#include "include/engine-core/engine.h"
+#include "include/ordering/factors.h"
+#include "include/ordering/gaussian.h"
+#include "include/ordering/ordering.h"
+#include "include/parse/parse.h"
 
 #define EPSILON (1e-2)
 #define MAX_ITER_CNT (10)
@@ -185,7 +185,6 @@ void load_ht_urgencies_from_binary_file(const char* file_name, urgency_ht_entry_
 /* checks if two hash-tables are equivalent */
 int ht_urgencies_equal(urgency_ht_entry_t* ht1, urgency_ht_entry_t* ht2) {
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
-
         /* check if each key in ht1 is also contained and equivalent to ht2 */
         urgency_ht_list_entry_t* entry1 = ht1[i].root;
         while (entry1) {
@@ -214,7 +213,7 @@ int ht_urgencies_equal(urgency_ht_entry_t* ht1, urgency_ht_entry_t* ht2) {
     }
     return 1;
 }
- 
+
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for online training of a Bayesian move ranking model                                   */
 /* ------------------------------------------------------------------------------------------------ */

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../include/types.h"
-#include "../../include/move.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/types.h"
 
 #define AMBIG_BY_RANK -1
 #define AMBIG_BY_FILE 1

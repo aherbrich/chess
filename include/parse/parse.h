@@ -1,7 +1,8 @@
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
+
 typedef enum _gameresult_t {
     WINBLACK = -1, DRAW = 0, WINWHITE = 1
 } gameresult_t;

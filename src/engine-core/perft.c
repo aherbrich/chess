@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "../../include/types.h"
-#include "../../include/move.h"
-#include "../../include/prettyprint.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/prettyprint.h"
+#include "include/engine-core/types.h"
 
 /* Runs perft test for a given board and depth */
 uint64_t perft(board_t* board, int depth) {
@@ -41,7 +41,7 @@ uint64_t perft_divide(board_t* board, int depth) {
         undo_move(board, move);
 
         print_LAN_move(move, board->player);
-#ifdef __linux__        
+#ifdef __linux__
         printf(": %lu\n", num_positions);
 #else
         printf(": %llu\n", num_positions);

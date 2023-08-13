@@ -1,10 +1,9 @@
 #include <stdio.h>
 
-#include "../include/types.h"
-#include "../include/board.h"
-#include "../include/move.h"
-#include "../include/prettyprint.h"
-
+#include "include/engine-core/board.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/prettyprint.h"
+#include "include/engine-core/types.h"
 
 /*
  * MAIN ENTRY POINT
@@ -26,7 +25,7 @@ int main() {
         printf("\"");
         print_move_test(board, move);
         printf("\"");
-        if((&movelst)->nr_elem == 0){
+        if ((&movelst)->nr_elem == 0) {
             break;
         }
         printf(",");

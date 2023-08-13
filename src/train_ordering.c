@@ -3,9 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../include/engine.h"
-#include "../include/ordering.h"
-#include "../include/parse.h"
+#include "include/engine-core/engine.h"
+#include "include/ordering/ordering.h"
+#include "include/parse/parse.h"
 
 /* main entry point of the program */
 int main(int argc, char** argv) {
@@ -38,8 +38,8 @@ int main(int argc, char** argv) {
 
     /* output the options used */
     printf("Options:\n");
-    printf("\tFull Training: %s\n", (full_training)?"yes":"no");
-    printf("\tTest model read-write: %s\n", (test_read_write_model)?"yes":"no");
+    printf("\tFull Training: %s\n", (full_training) ? "yes" : "no");
+    printf("\tTest model read-write: %s\n", (test_read_write_model) ? "yes" : "no");
 
     /****** parse chess game file ******/
     int nr_of_games = count_number_of_games();
@@ -56,8 +56,7 @@ int main(int argc, char** argv) {
         .beta = 0.5,
         .full_training = full_training,
         .base_filename = "snapshot",
-        .verbosity = 1
-    };
+        .verbosity = 1};
     train_model(chessgames, nr_of_games, train_info);
 
     /* write some output statistics about the model */

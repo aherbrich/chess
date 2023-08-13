@@ -1,7 +1,7 @@
 #ifndef __DATABASE_H__
 #define __DATABASE_H__
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
 
 #define DATABASESIZE 18815231
 

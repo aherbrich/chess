@@ -1,9 +1,9 @@
 #ifndef __PQ_H__
 #define __PQ_H__
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
 
-#define PRIORITY_QUEUE_SIZE 322     // 321 possible moves at most 
+#define PRIORITY_QUEUE_SIZE 322  // 321 possible moves at most
 typedef struct _maxpq_t {
     int size;
     int nr_elem;
@@ -24,6 +24,5 @@ move_t* pop_max(maxpq_t* pq);
 void free_pq(maxpq_t* pq);
 
 void heap_sort(maxpq_t* pq);
-
 
 #endif

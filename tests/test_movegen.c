@@ -1,15 +1,15 @@
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
-#include <limits.h>
-#include "sys/time.h"
 
-#include "../include/types.h"
-#include "../include/board.h"
-#include "../include/move.h"
-#include "../include/zobrist.h"
-#include "../include/perft.h"   
-#include "../include/prettyprint.h"
+#include "include/engine-core/board.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/perft.h"
+#include "include/engine-core/prettyprint.h"
+#include "include/engine-core/types.h"
+#include "include/engine-core/zobrist.h"
 
 typedef struct _perfttest_t {
     char fen[256];
@@ -17,7 +17,7 @@ typedef struct _perfttest_t {
     int results[16];
 } perfttest_t;
 
-uint64_t GLOBAL_COUNT = 0; 
+uint64_t GLOBAL_COUNT = 0;
 
 /* pads whitespaces left and right of given string until given width reached */
 char *pad_to_center(char *str, int width) {
@@ -56,7 +56,7 @@ char *pad_to_center(char *str, int width) {
 
 /* prints perft test row */
 void print_perft_test_row(char *fen, char *depth, char *expected, char *found,
-                          char* nps ,char *passed, char *color) {
+                          char *nps, char *passed, char *color) {
     // pad the info strings
     char *padded_fen = pad_to_center(fen, 84);
     char *padded_depth = pad_to_center(depth, 6);
@@ -179,10 +179,10 @@ int run_specific_test(perfttest_t *test) {
         // perft result for given depth
         gettimeofday(&start, 0);
         nr_of_moves = perft(board, test->depths[i]);
-        GLOBAL_COUNT += (uint64_t) nr_of_moves;
+        GLOBAL_COUNT += (uint64_t)nr_of_moves;
         gettimeofday(&end, 0);
 
-        double nps = ((nr_of_moves)/((end.tv_sec-start.tv_sec)*1000.0 + (end.tv_usec-start.tv_usec)/1000.0))/1000.0;
+        double nps = ((nr_of_moves) / ((end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0)) / 1000.0;
 
         // string formatting and output
         sprintf(depth_str, "%d", test->depths[i]);
@@ -237,8 +237,7 @@ int main() {
     }
     gettimeofday(&global_end, 0);
 
-
-    printf("Average nps: %.2f Mn/s\n", ((GLOBAL_COUNT)/((global_end.tv_sec-global_start.tv_sec)*1000.0 + (global_end.tv_usec-global_start.tv_usec)/1000.0))/1000.0);
+    printf("Average nps: %.2f Mn/s\n", ((GLOBAL_COUNT) / ((global_end.tv_sec - global_start.tv_sec) * 1000.0 + (global_end.tv_usec - global_start.tv_usec) / 1000.0)) / 1000.0);
 
     free(perfttests);
 

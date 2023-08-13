@@ -1,14 +1,13 @@
-#include <sys/time.h>
 #include <stdio.h>
+#include <sys/time.h>
 
-
-#include "../../include/types.h"
-#include "../../include/move.h"
-#include "../../include/zobrist.h"
-#include "../../include/eval.h"
-#include "../../include/search.h"
-#include "../../include/prettyprint.h"
-#include "../../include/ordering.h"
+#include "include/engine-core/eval.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/prettyprint.h"
+#include "include/engine-core/search.h"
+#include "include/engine-core/types.h"
+#include "include/engine-core/zobrist.h"
+#include "include/ordering/ordering.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1
@@ -46,7 +45,7 @@ char *get_mate_or_cp_value(int score, int depth) {
 
 /* Determines a draw by threefold repitiion */
 int draw_by_repition(board_t *board) {
-    uint64_t current_board_hash = board->hash; 
+    uint64_t current_board_hash = board->hash;
 
     int counter = 0;
     for (int i = 0; i < board->ply_no; i++) {
@@ -140,7 +139,6 @@ int search_has_to_be_stopped(searchdata_t *search_data) {
 /* Quescience search */
 int quiet_search(board_t *board, int alpha, int beta,
                  searchdata_t *searchdata, int depth) {
-    
     searchdata->nodes_searched++;
     searchdata->max_seldepth = (searchdata->max_seldepth < depth) ? depth : searchdata->max_seldepth;
     int eval = eval_board(board);
@@ -189,7 +187,7 @@ int quiet_search(board_t *board, int alpha, int beta,
         // }
 
         do_move(board, move);
-        eval = -quiet_search(board, -beta, -alpha, searchdata, depth+1);
+        eval = -quiet_search(board, -beta, -alpha, searchdata, depth + 1);
         undo_move(board, move);
 
         // if eval is better than the best so far, update it
@@ -289,37 +287,35 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     int move_keys[movelst.nr_elem];
     double means[movelst.nr_elem];
     double probs[movelst.nr_elem];
-    
+
     int idx_of_max_prob = 1;
     int idx_of_max_mean = 1;
 
     for (int i = 1; i <= movelst.nr_elem; i++) {
-        move_keys[i-1] = calculate_move_key(searchdata->board, movelst.array[i]);
-        gaussian_t* g_ptr = get_urgency(ht_urgencies, move_keys[i-1]);
-        means[i-1] = mean((g_ptr) ? *g_ptr : init_gaussian1D_standard_normal());
-        probs[i-1] = 0.0;
+        move_keys[i - 1] = calculate_move_key(searchdata->board, movelst.array[i]);
+        gaussian_t *g_ptr = get_urgency(ht_urgencies, move_keys[i - 1]);
+        means[i - 1] = mean((g_ptr) ? *g_ptr : init_gaussian1D_standard_normal());
+        probs[i - 1] = 0.0;
     }
 
     // predict_move_probabilities(ht_urgencies, probs, move_keys, movelst.nr_elem, 0.5 * 0.5);
 
     for (int i = 1; i <= movelst.nr_elem; i++) {
-        if(probs[i-1] >= probs[idx_of_max_prob-1]){
+        if (probs[i - 1] >= probs[idx_of_max_prob - 1]) {
             idx_of_max_prob = i;
         }
-        if(means[i-1] >= means[idx_of_max_mean-1]){
+        if (means[i - 1] >= means[idx_of_max_mean - 1]) {
             idx_of_max_mean = i;
         }
     }
 
-    if(searchdata->nodes_searched % 300000 == 0){
+    if (searchdata->nodes_searched % 300000 == 0) {
         printf("================================\n");
         // printf("| Hits/Searched(Prob):\n| %d/%d\t(%f)\n", pv_move_hits_prob, pv_move_searches, (float) pv_move_hits_prob/(float) pv_move_searches);
         // printf("|\n");
-        printf("| Hits/Searched(Mean):\n| %d/%d\t(%f)\n", pv_move_hits_mean, pv_move_searches, (float) pv_move_hits_mean/(float) pv_move_searches);
+        printf("| Hits/Searched(Mean):\n| %d/%d\t(%f)\n", pv_move_hits_mean, pv_move_searches, (float)pv_move_hits_mean / (float)pv_move_searches);
         printf("================================\n\n\n");
     }
-    
-    
 
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
@@ -331,8 +327,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
         pv_move_searches++;
         for (int i = 1; i <= movelst.nr_elem; i++) {
             if (is_same_move(movelst.array[i], pv_move)) {
-                if(i == idx_of_max_prob) pv_move_hits_prob++;
-                if(i == idx_of_max_mean) pv_move_hits_mean++;
+                if (i == idx_of_max_prob) pv_move_hits_prob++;
+                if (i == idx_of_max_mean) pv_move_hits_mean++;
                 movelst.array[i]->value = 10000;
                 swap(&movelst, i, 1);
                 break;

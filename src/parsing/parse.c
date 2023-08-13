@@ -1,10 +1,10 @@
-#include <string.h>
-#include <unistd.h>
+#include "include/parse/parse.h"
+
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-
-#include "../../include/parse.h"
+#include <string.h>
+#include <unistd.h>
 
 /* Counts the number of games in a PGN chess game file */
 int count_number_of_games() {
@@ -42,11 +42,11 @@ int count_number_of_games() {
     return game_count;
 }
 
-int count_moves_made(chessgame_t** chessgames, int nr_of_games) {
+int count_moves_made(chessgame_t **chessgames, int nr_of_games) {
     int total_count = 0;
     for (int i = 0; i < nr_of_games; i++) {
-        chessgame_t* chessgame = chessgames[i];
-        char* token = strtok(chessgame->movelist, " ");
+        chessgame_t *chessgame = chessgames[i];
+        char *token = strtok(chessgame->movelist, " ");
         do {
             total_count++;
         } while ((token = strtok(NULL, " ")));

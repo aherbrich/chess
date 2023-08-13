@@ -1,9 +1,8 @@
 #include <string.h>
 
-#include "../../include/types.h"
-#include "../../include/helpers.h"
-#include "../../include/zobrist.h"
-
+#include "include/engine-core/helpers.h"
+#include "include/engine-core/types.h"
+#include "include/engine-core/zobrist.h"
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for managing the board structure                                                       */
@@ -12,18 +11,18 @@
 /* resets the board to an empty, white at turn, default flags, no previous moves state */
 void clear_board(board_t* board) {
     /* clear the playing field */
-    for(int i = 0; i < 64; i++){
+    for (int i = 0; i < 64; i++) {
         board->playingfield[i] = NO_PIECE;
     }
 
-    for(int i = 0; i < NR_PIECES; i++){
+    for (int i = 0; i < NR_PIECES; i++) {
         board->piece_bb[i] = 0;
     }
 
     /* reset player, en passant field/possible, castle rights and ply number */
     board->player = WHITE;
 
-    for(int i = 0; i < MAXPLIES; i++){
+    for (int i = 0; i < MAXPLIES; i++) {
         board->history[i].captured = NO_PIECE;
         board->history[i].castlerights = 0b1111;
         board->history[i].epsq = NO_SQUARE;
@@ -42,18 +41,18 @@ board_t* copy_board(board_t* board) {
     board_t* copy = (board_t*)malloc(sizeof(board_t));
 
     /* copy the playing field */
-    for(int i = 0; i < 64; i++){
+    for (int i = 0; i < 64; i++) {
         copy->playingfield[i] = board->playingfield[i];
     }
 
-    for(int i = 0; i < NR_PIECES; i++){
+    for (int i = 0; i < NR_PIECES; i++) {
         copy->piece_bb[i] = board->piece_bb[i];
     }
 
     /* copy player, en passant field/possible, castle rights and ply number */
     copy->player = board->player;
 
-    for(int i = 0; i < MAXPLIES; i++){
+    for (int i = 0; i < MAXPLIES; i++) {
         copy->history[i].captured = board->history[i].captured;
         copy->history[i].castlerights = board->history[i].castlerights;
         copy->history[i].epsq = board->history[i].epsq;
@@ -257,7 +256,7 @@ void load_by_FEN(board_t* board, char* FEN) {
             }
             ptr++;
         }
-       board->history[0].epsq = idx;
+        board->history[0].epsq = idx;
         ptr++;
     }
 

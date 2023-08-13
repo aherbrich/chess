@@ -1,10 +1,10 @@
 #ifndef __ORDERING_H__
 #define __ORDERING_H__
 
-#include "../include/factors.h"
-#include "../include/gaussian.h"
-#include "../include/parse.h"
-#include "../include/types.h"
+#include "include/ordering/factors.h"
+#include "include/ordering/gaussian.h"
+#include "include/parse/parse.h"
+#include "include/engine-core/types.h"
 
 #define HT_GAUSSIAN_SIZE (1048576)
 #define HASH_SIZE (20)

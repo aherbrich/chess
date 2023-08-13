@@ -1,7 +1,7 @@
 #ifndef __PRETTYPRINT_H__
 #define __PRETTYPRINT_H__
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"

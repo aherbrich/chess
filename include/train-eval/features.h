@@ -1,8 +1,8 @@
 #ifndef __FEATURES_H__
 #define __FEATURES_H__
 
-#include "../include/types.h"
-#include "../include/linalg.h"
+#include "include/engine-core/types.h"
+#include "include/train-eval/linalg.h"
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for training of a linear regression evaluation model                                   */

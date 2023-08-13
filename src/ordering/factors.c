@@ -1,9 +1,9 @@
+#include "include/ordering/factors.h"
+
 #include <math.h>
 #include <stdio.h>
 
-#include "../../include/gaussian.h"
-#include "../../include/factors.h"
-
+#include "include/ordering/gaussian.h"
 
 /* update function for the Gaussian factor */
 double gaussian_factor_update(gaussian_factor_info_t* info) {

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "../../include/gaussian.h"
+#include "include/ordering/gaussian.h"
 
 /* initializes a 1D Gaussian in natural parameters */
 gaussian_t init_gaussian1D(double tau, double rho) {

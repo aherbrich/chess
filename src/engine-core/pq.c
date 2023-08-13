@@ -1,9 +1,10 @@
+#include "include/engine-core/pq.h"
+
 #include <stdio.h>
 
-#include "../../include/types.h"
-#include "../../include/move.h"
-#include "../../include/pq.h"
-#include "../../include/prettyprint.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/prettyprint.h"
+#include "include/engine-core/types.h"
 
 /* Returns true if value (of move) at index i is truely lower than value at
  * index j in queue */

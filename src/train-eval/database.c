@@ -1,10 +1,11 @@
+#include "include/train-eval/database.h"
+
 #include <stdio.h>
 
-#include "../../include/types.h"
-#include "../../include/parse.h"
-#include "../../include/board.h"
-#include "../../include/database.h"
-#include "../../include/zobrist.h"
+#include "include/engine-core/board.h"
+#include "include/engine-core/types.h"
+#include "include/engine-core/zobrist.h"
+#include "include/parse/parse.h"
 
 /* global database*/
 databaseentry_t **database;

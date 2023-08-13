@@ -1,13 +1,11 @@
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "../include/engine.h"
-#include "../include/database.h"
-#include "../include/parse.h"
+#include "include/engine-core/engine.h"
+#include "include/parse/parse.h"
+#include "include/train-eval/database.h"
 
-
-/*  Playes all games in given chess game list and
-    stores all chess positions and corresponding winrates */
+/*  Plays all games in given chess game list and stores all chess positions and corresponding win-rates */
 void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {
     /* play games */
     for (int i = 0; i < nr_of_games; i++) {
@@ -51,7 +49,6 @@ void load_games_into_database(chessgame_t** chessgames, int nr_of_games) {
     free(chessgames);
 }
 
-
 /*  Playes all games in given chess game list and
     prints all moves played */
 void load_moves_into_database(chessgame_t** chessgames, int nr_of_games) {
@@ -72,7 +69,6 @@ void load_moves_into_database(chessgame_t** chessgames, int nr_of_games) {
 
             /* (3) play move */
             if (move) {
-
                 /* print made move */
                 print_move_ranking(board, move);
                 printf("{");
@@ -82,7 +78,7 @@ void load_moves_into_database(chessgame_t** chessgames, int nr_of_games) {
                 generate_moves(board, &movelst);
                 move_t* other_move;
                 while ((other_move = pop_max(&movelst)) != NULL) {
-                    if(is_same_move(move, other_move)){
+                    if (is_same_move(move, other_move)) {
                         free_move(other_move);
                         continue;
                     }
@@ -126,5 +122,3 @@ int main() {
     load_moves_into_database(chessgames, nr_of_games);
     /* number of different boards = 1739062 */
 }
-
-

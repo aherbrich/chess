@@ -1,8 +1,7 @@
-
 #ifndef __EVAL_H__
 #define __EVAL_H__
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
 
 #define PAWNVALUE 100
 #define KNIGHTVALUE 320

@@ -1,16 +1,17 @@
-
 #ifndef __SEARCH_H__
 #define __SEARCH_H__
 
 #include <limits.h>
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
 
 #define INF INT_MAX
 #define NEGINF (-INF)
 
 typedef enum _ttflag_t {
-    EXACT, UPPERBOUND, LOWERBOUND
+    EXACT,
+    UPPERBOUND,
+    LOWERBOUND
 } ttflag_t;
 
 typedef struct _searchdata_t {
@@ -31,14 +32,14 @@ typedef struct _searchdata_t {
 
     struct timeval start;
     struct timeval end;
-    move_t* best_move;   // best move (so far)
-    int best_eval;       // evaluation of board after best move made
-    int nodes_searched;  // amount of nodes searched in iterative search
-    int hash_used;  // amount of hash entries that lead to not needing to search
-                    // the node again
+    move_t* best_move;         // best move (so far)
+    int best_eval;             // evaluation of board after best move made
+    int nodes_searched;        // amount of nodes searched in iterative search
+    int hash_used;             // amount of hash entries that lead to not needing to search
+                               // the node again
     int hash_bounds_adjusted;  // amount of hash entries that lead to a
                                // adjustment of alpha/beta bounds
-    int pv_node_hit;  // amount of pv moves that turned out to be the best move
+    int pv_node_hit;           // amount of pv moves that turned out to be the best move
 } searchdata_t;
 
 ///////////////////////////////////////////////////////////////
@@ -49,6 +50,5 @@ void free_search_data(searchdata_t* data);
 ///////////////////////////////////////////////////////////////
 //  SEARCH
 void search(searchdata_t* search_data);
-
 
 #endif

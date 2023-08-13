@@ -26,7 +26,7 @@ TEST_BIN = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
 TEST_TARGET = $(notdir $(TEST_BIN))
 
 CC = clang
-CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3
+CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3 -I.
 
 .PHONY: all
 all: uci_engine train_ordering test_ordering train_eval library

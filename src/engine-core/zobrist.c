@@ -1,8 +1,8 @@
-#include "../../include/types.h"
-#include "../../include/move.h"
-#include "../../include/helpers.h"
-#include "../../include/zobrist.h"
+#include "include/engine-core/zobrist.h"
 
+#include "include/engine-core/helpers.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/types.h"
 
 zobrist_t zobrist_table;
 htentry_t **ht_table;
@@ -89,7 +89,7 @@ uint64_t calculate_zobrist_hash(board_t *board) {
         hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
     }
 
-    hash ^= zobrist_table.flag_random64[8+board->history[board->ply_no].castlerights];
+    hash ^= zobrist_table.flag_random64[8 + board->history[board->ply_no].castlerights];
 
     if (board->player == BLACK) {
         hash ^= zobrist_table.flag_random64[24];
@@ -155,7 +155,7 @@ uint64_t get_memory_usage_hashtable_in_bytes() {
 /* Stores entry in the global hashtable */
 void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
                            move_t *move, int8_t depth) {
-    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
+    uint64_t hash = board->hash;  // calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *new = NULL;
@@ -218,7 +218,7 @@ void store_hashtable_entry(board_t *board, int8_t flags, int16_t value,
 /* Gets the best move from the hashtable for the board position (or NULL, if
  * there isnt one) */
 move_t *get_best_move_from_hashtable(board_t *board) {
-    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
+    uint64_t hash = board->hash;  // calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
@@ -239,7 +239,7 @@ move_t *get_best_move_from_hashtable(board_t *board) {
  * (otherwise 0) */
 int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value,
                         move_t **move, int8_t *depth) {
-    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
+    uint64_t hash = board->hash;  // calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];
@@ -263,7 +263,7 @@ int get_hashtable_entry(board_t *board, int8_t *flags, int16_t *value,
 
 /* Gets the eval from the hashtable for the board position */
 int get_eval_from_hashtable(board_t *board) {
-    uint64_t hash = board->hash; //calculate_zobrist_hash(board);
+    uint64_t hash = board->hash;  // calculate_zobrist_hash(board);
     uint64_t key = hash % HTSIZE;
 
     htentry_t *cur = ht_table[key];

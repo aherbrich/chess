@@ -1,7 +1,7 @@
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
-#include "../include/types.h"
+#include "include/engine-core/types.h"
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for managing the board structure                                                       */

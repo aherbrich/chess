@@ -3,11 +3,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../../include/engine.h"
-#include "../../include/factors.h"
-#include "../../include/gaussian.h"
-#include "../../include/ordering.h"
-#include "../../include/parse.h"
+#include "include/engine-core/engine.h"
+#include "include/ordering/factors.h"
+#include "include/ordering/gaussian.h"
+#include "include/ordering/ordering.h"
+#include "include/parse/parse.h"
 
 /* trains a Bayesian ranking model from the replay of the games */
 void train_model(chessgame_t** chessgames, int nr_of_games, train_info_t train_info) {

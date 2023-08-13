@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
-#include "../include/gaussian.h"
-#include "../include/factors.h"
-#include "../include/prettyprint.h"
+#include "include/engine-core/prettyprint.h"
+#include "include/ordering/factors.h"
+#include "include/ordering/gaussian.h"
 
 /* runs the Gaussian tests */
 int gaussian_tests() {
     int fail_counter = 0;
 
     printf("Running Gaussian tests...\n");
-    
+
     if (mean(init_gaussian1D(1, 2)) != 0.5) {
         printf("%sFAIL%s: mean(init_gaussian1D(1, 2)) != 0.5\n", Color_RED, Color_END);
         fail_counter++;
@@ -42,25 +42,25 @@ int gaussian_tests() {
     }
 
     gaussian_t g1 = init_gaussian1D_standard_normal();
-    if (absdiff(gaussian1D_mult(g1,g1), init_gaussian1D(0, 2)) != 0.0) {
+    if (absdiff(gaussian1D_mult(g1, g1), init_gaussian1D(0, 2)) != 0.0) {
         printf("%sFAIL%s: absdiff(gaussian1D_mult(g1,g1), init_gaussian1D(0, 2)) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    gaussian_t g2 = init_gaussian1D(0,0.5);
-    if (absdiff(gaussian1D_div(g1,g2), init_gaussian1D(0, 0.5)) != 0.0) {
+    gaussian_t g2 = init_gaussian1D(0, 0.5);
+    if (absdiff(gaussian1D_div(g1, g2), init_gaussian1D(0, 0.5)) != 0.0) {
         printf("%sFAIL%s: absdiff(gaussian1D_mult(g1,g2), init_gaussian1D(0, 0.5)) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (log_norm_product(g1,g1) != -1.2655121234846454) {
+    if (log_norm_product(g1, g1) != -1.2655121234846454) {
         printf("%sFAIL%s: log_norm_product(g1,g1) != -1.2655121234846454\n", Color_RED, Color_END);
-        fail_counter++;        
+        fail_counter++;
     }
 
-    if (log_norm_ratio(g1,g2) != 1.612085713764618) {
+    if (log_norm_ratio(g1, g2) != 1.612085713764618) {
         printf("%sFAIL%s: log_norm_ratio(g1,g2) != 1.612085713764618\n", Color_RED, Color_END);
-        fail_counter++;        
+        fail_counter++;
     }
 
     return fail_counter;
@@ -76,8 +76,8 @@ int gaussian_factor_tests() {
     gaussian_t msg1_to_s = init_gaussian1D(0, 0);
     gaussian_t msg2_to_s = init_gaussian1D(0, 0);
 
-    gaussian_factor_info_t factor = { init_gaussian1D_from_mean_and_variance(2,42), &s, &msg1_to_s };
-    gaussian_factor_info_t factor2 = { init_gaussian1D_from_mean_and_variance(1,1), &s, &msg2_to_s };
+    gaussian_factor_info_t factor = {init_gaussian1D_from_mean_and_variance(2, 42), &s, &msg1_to_s};
+    gaussian_factor_info_t factor2 = {init_gaussian1D_from_mean_and_variance(1, 1), &s, &msg2_to_s};
 
     if (gaussian_factor_update(&factor) != 0.1543033499620919) {
         printf("%sFAIL%s: gaussian_factor_update(&factor) != 0.1543033499620919\n", Color_RED, Color_END);
@@ -141,8 +141,8 @@ int gaussian_mean_factor_tests() {
     gaussian_t msg_g_to_s1 = init_gaussian1D(0, 0);
     gaussian_t msg_g_to_s2 = init_gaussian1D(0, 0);
 
-    gaussian_factor_info_t f = { init_gaussian1D_from_mean_and_variance(3,1), &s1, &msg_f_to_s1 };
-    gaussian_mean_factor_info_t g = { 0.5, &s2, &s1, &msg_g_to_s2, &msg_g_to_s1 };
+    gaussian_factor_info_t f = {init_gaussian1D_from_mean_and_variance(3, 1), &s1, &msg_f_to_s1};
+    gaussian_mean_factor_info_t g = {0.5, &s2, &s1, &msg_g_to_s2, &msg_g_to_s1};
 
     if (gaussian_factor_update(&f) != 3.0) {
         printf("%sFAIL%s: gaussian_factor_update(&f) != 3.0\n", Color_RED, Color_END);
@@ -236,11 +236,10 @@ int weighted_sum_factor_tests() {
     gaussian_t msg_g_to_s2 = init_gaussian1D(0, 0);
     gaussian_t msg_g_to_s3 = init_gaussian1D(0, 0);
 
-    gaussian_factor_info_t f1 = { init_gaussian1D_from_mean_and_variance(1,1), &s1, &msg_f1_to_s1 };
-    gaussian_factor_info_t f2 = { init_gaussian1D_from_mean_and_variance(2,4), &s2, &msg_f2_to_s2 };
-    gaussian_factor_info_t f3 = { init_gaussian1D_from_mean_and_variance(2,0.5), &s3, &msg_f3_to_s3 };
-    weighted_sum_factor_info_t g = { 0.5, 0.5, &s1, &s2, &s3, &msg_g_to_s1, &msg_g_to_s2, &msg_g_to_s3 };
-
+    gaussian_factor_info_t f1 = {init_gaussian1D_from_mean_and_variance(1, 1), &s1, &msg_f1_to_s1};
+    gaussian_factor_info_t f2 = {init_gaussian1D_from_mean_and_variance(2, 4), &s2, &msg_f2_to_s2};
+    gaussian_factor_info_t f3 = {init_gaussian1D_from_mean_and_variance(2, 0.5), &s3, &msg_f3_to_s3};
+    weighted_sum_factor_info_t g = {0.5, 0.5, &s1, &s2, &s3, &msg_g_to_s1, &msg_g_to_s2, &msg_g_to_s3};
 
     if (gaussian_factor_update(&f1) != 1.0) {
         printf("%sFAIL%s: gaussian_factor_update(&f1) != 1.0\n", Color_RED, Color_END);
@@ -257,7 +256,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s3)- 1.5) > 1e-6) {
+    if (fabs(mean(s3) - 1.5) > 1e-6) {
         printf("%sFAIL%s: mean(s3) != 1.5\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -272,7 +271,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s3)- 1.8571428571428574) > 1e-6) {
+    if (fabs(mean(s3) - 1.8571428571428574) > 1e-6) {
         printf("%sFAIL%s: mean(s3) != 1.8571428571428574\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -287,7 +286,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s1)- 1.142857142857143) > 1e-6) {
+    if (fabs(mean(s1) - 1.142857142857143) > 1e-6) {
         printf("%sFAIL%s: mean(s1) != 1.142857142857143\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -302,7 +301,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s2)- 2.571428571428572) > 1e-6) {
+    if (fabs(mean(s2) - 2.571428571428572) > 1e-6) {
         printf("%sFAIL%s: mean(s2) != 2.571428571428572\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -336,7 +335,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s1)- 1.142857142857143) > 1e-6) {
+    if (fabs(mean(s1) - 1.142857142857143) > 1e-6) {
         printf("%sFAIL%s: mean(s1) != 1.142857142857143\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -346,7 +345,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s2)- 2.571428571428572) > 1e-6) {
+    if (fabs(mean(s2) - 2.571428571428572) > 1e-6) {
         printf("%sFAIL%s: mean(s2) != 2.571428571428572\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -356,7 +355,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s3)- 1.8571428571428574) > 1e-6) {
+    if (fabs(mean(s3) - 1.8571428571428574) > 1e-6) {
         printf("%sFAIL%s: mean(s3) != 1.8571428571428574\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -384,8 +383,8 @@ int greater_than_factor_tests() {
     gaussian_t msg_f_to_s = init_gaussian1D(0, 0);
     gaussian_t msg_g_to_s = init_gaussian1D(0, 0);
 
-    gaussian_factor_info_t f = { init_gaussian1D_from_mean_and_variance(1,1), &s, &msg_f_to_s };
-    greater_than_factor_info_t g = { 0.0, &s, &msg_g_to_s };
+    gaussian_factor_info_t f = {init_gaussian1D_from_mean_and_variance(1, 1), &s, &msg_f_to_s};
+    greater_than_factor_info_t g = {0.0, &s, &msg_g_to_s};
 
     if (gaussian_factor_update(&f) != 1.0) {
         printf("%sFAIL%s: gaussian_factor_update(&f) != 1.0\n", Color_RED, Color_END);
@@ -397,7 +396,7 @@ int greater_than_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s)- 1.2875999709391783) > 1e-6) {
+    if (fabs(mean(s) - 1.2875999709391783) > 1e-6) {
         printf("%sFAIL%s: mean(s) != 1.2875999709391783\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -419,7 +418,7 @@ int greater_than_factor_tests() {
         fail_counter++;
     }
 
-    if (fabs(mean(s)- 1.2875999709391783) > 1e-6) {
+    if (fabs(mean(s) - 1.2875999709391783) > 1e-6) {
         printf("%sFAIL%s: mean(s) != 1.2875999709391783\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -443,31 +442,30 @@ int ranking_graph_tests() {
 
     printf("Running ranking graph tests...\n");
 
-    gaussian_t urgency[3] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t latent_urgency[3] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t diffs[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
+    gaussian_t urgency[3] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t latent_urgency[3] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t diffs[2] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
 
-    gaussian_t msg_from_f_to_urgency[3] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t msg_from_g_to_latent_urgency[3] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t msg_from_g_to_urgency[3] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t msg_from_s_to_diffs[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t msg_from_s_to_top_urgency[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t msg_from_s_to_urgency[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
-    gaussian_t msg_from_h_to_diffs[2] = { init_gaussian1D(0, 0), init_gaussian1D(0, 0) };
+    gaussian_t msg_from_f_to_urgency[3] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t msg_from_g_to_latent_urgency[3] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t msg_from_g_to_urgency[3] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t msg_from_s_to_diffs[2] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t msg_from_s_to_top_urgency[2] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t msg_from_s_to_urgency[2] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
+    gaussian_t msg_from_h_to_diffs[2] = {init_gaussian1D(0, 0), init_gaussian1D(0, 0)};
 
-    gaussian_factor_info_t f[3] = { { init_gaussian1D_from_mean_and_variance(0,1), &urgency[0], &msg_from_f_to_urgency[0] },
-                                    { init_gaussian1D_from_mean_and_variance(0,1), &urgency[1], &msg_from_f_to_urgency[1] },
-                                    { init_gaussian1D_from_mean_and_variance(0,1), &urgency[2], &msg_from_f_to_urgency[2] } };
+    gaussian_factor_info_t f[3] = {{init_gaussian1D_from_mean_and_variance(0, 1), &urgency[0], &msg_from_f_to_urgency[0]},
+                                   {init_gaussian1D_from_mean_and_variance(0, 1), &urgency[1], &msg_from_f_to_urgency[1]},
+                                   {init_gaussian1D_from_mean_and_variance(0, 1), &urgency[2], &msg_from_f_to_urgency[2]}};
 
-    gaussian_mean_factor_info_t g[3] = { { 1./2 * 1./2, &latent_urgency[0], &urgency[0], &msg_from_g_to_latent_urgency[0], &msg_from_g_to_urgency[0] },
-                                         { 1./2 * 1./2, &latent_urgency[1], &urgency[1], &msg_from_g_to_latent_urgency[1], &msg_from_g_to_urgency[1] },
-                                         { 1./2 * 1./2, &latent_urgency[2], &urgency[2], &msg_from_g_to_latent_urgency[2], &msg_from_g_to_urgency[2] } };
+    gaussian_mean_factor_info_t g[3] = {{1. / 2 * 1. / 2, &latent_urgency[0], &urgency[0], &msg_from_g_to_latent_urgency[0], &msg_from_g_to_urgency[0]},
+                                        {1. / 2 * 1. / 2, &latent_urgency[1], &urgency[1], &msg_from_g_to_latent_urgency[1], &msg_from_g_to_urgency[1]},
+                                        {1. / 2 * 1. / 2, &latent_urgency[2], &urgency[2], &msg_from_g_to_latent_urgency[2], &msg_from_g_to_urgency[2]}};
 
-    weighted_sum_factor_info_t s[2] = { { 1.0, -1.0, &latent_urgency[0], &latent_urgency[1], &diffs[0], &msg_from_s_to_top_urgency[0], &msg_from_s_to_urgency[0], &msg_from_s_to_diffs[0] },
-                                        { 1.0, -1.0, &latent_urgency[0], &latent_urgency[2], &diffs[1], &msg_from_s_to_top_urgency[1], &msg_from_s_to_urgency[1], &msg_from_s_to_diffs[1] } };
-    greater_than_factor_info_t h[2] = { { 0.0, &diffs[0], &msg_from_h_to_diffs[0] },
-                                        { 0.0, &diffs[1], &msg_from_h_to_diffs[1] } };
-
+    weighted_sum_factor_info_t s[2] = {{1.0, -1.0, &latent_urgency[0], &latent_urgency[1], &diffs[0], &msg_from_s_to_top_urgency[0], &msg_from_s_to_urgency[0], &msg_from_s_to_diffs[0]},
+                                       {1.0, -1.0, &latent_urgency[0], &latent_urgency[2], &diffs[1], &msg_from_s_to_top_urgency[1], &msg_from_s_to_urgency[1], &msg_from_s_to_diffs[1]}};
+    greater_than_factor_info_t h[2] = {{0.0, &diffs[0], &msg_from_h_to_diffs[0]},
+                                       {0.0, &diffs[1], &msg_from_h_to_diffs[1]}};
 
     gaussian_factor_update(&f[0]);
     gaussian_factor_update(&f[1]);
@@ -516,7 +514,7 @@ int ranking_graph_tests() {
     logZ += weighted_sum_factor_log_variable_norm(&s[1]);
     logZ += greater_than_factor_log_variable_norm(&h[0]);
     logZ += greater_than_factor_log_variable_norm(&h[1]);
-    
+
     logZ += gaussian_mean_factor_log_factor_norm(&g[0]);
     logZ += gaussian_mean_factor_log_factor_norm(&g[1]);
     logZ += gaussian_mean_factor_log_factor_norm(&g[2]);
@@ -524,7 +522,7 @@ int ranking_graph_tests() {
     logZ += weighted_sum_factor_log_factor_norm(&s[1]);
     logZ += greater_than_factor_log_factor_norm(&h[0]);
     logZ += greater_than_factor_log_factor_norm(&h[1]);
-    
+
     /* output the computation results */
     printf("\n\nThree Move example\n=================\n");
     printf("urgency[0] = %f +/- %f\n", mean(urgency[0]), sqrt(variance(urgency[0])));
@@ -534,7 +532,6 @@ int ranking_graph_tests() {
 
     return fail_counter;
 }
-
 
 /* runs the ranking graph tests */
 int ranking_graph_tests2() {
@@ -555,9 +552,6 @@ int ranking_graph_tests2() {
     return fail_counter;
 }
 
-
-
-
 /*
  * MAIN ENTRY POINT
  */
@@ -572,7 +566,7 @@ int main() {
     fail_counter += gaussian_mean_factor_tests();
     fail_counter += weighted_sum_factor_tests();
     fail_counter += greater_than_factor_tests();
-    
+
     // tests the ranking graph
     fail_counter += ranking_graph_tests();
     fail_counter += ranking_graph_tests2();
