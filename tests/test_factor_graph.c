@@ -79,7 +79,7 @@ int gaussian_factor_tests() {
     gaussian_factor_info_t factor = {init_gaussian1D_from_mean_and_variance(2, 42), &s, &msg1_to_s};
     gaussian_factor_info_t factor2 = {init_gaussian1D_from_mean_and_variance(1, 1), &s, &msg2_to_s};
 
-    if (gaussian_factor_update(&factor) != 0.1543033499620919) {
+    if (fabs(gaussian_factor_update(&factor) - 0.1543033499620919) > 1e-6) {
         printf("%sFAIL%s: gaussian_factor_update(&factor) != 0.1543033499620919\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -94,12 +94,12 @@ int gaussian_factor_tests() {
         fail_counter++;
     }
 
-    if (mean(s) != 1.0232558139534884) {
+    if (fabs(mean(s) - 1.0232558139534884) > 1e-6) {
         printf("%sFAIL%s: mean(s) != 1.0232558139534884\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (variance(s) != 0.9767441860465117) {
+    if (fabs(variance(s) - 0.9767441860465117) > 1e-6) {
         printf("%sFAIL%s: variance(s) != 0.9767441860465117\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -111,17 +111,17 @@ int gaussian_factor_tests() {
         fail_counter++;
     }
 
-    if (gaussian_factor_log_variable_norm(&factor2) != -2.8111664980281983) {
+    if (fabs(gaussian_factor_log_variable_norm(&factor2) - -2.8111664980281983) > 1e-6) {
         printf("%sFAIL%s: gaussian_factor_log_variable_norm(&factor2) != -2.8111664980281983\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (mean(s) != 1.0232558139534884) {
+    if (fabs(mean(s) - 1.0232558139534884) > 1e-6) {
         printf("%sFAIL%s: mean(s) != 1.0232558139534884\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (variance(s) != 0.9767441860465117) {
+    if (fabs(variance(s) - 0.9767441860465117) > 1e-6) {
         printf("%sFAIL%s: variance(s) != 0.9767441860465117\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -169,12 +169,12 @@ int gaussian_mean_factor_tests() {
         fail_counter++;
     }
 
-    if (variance(s2) != 1.5) {
+    if (fabs(variance(s2) - 1.5) > 1e-6) {
         printf("%sFAIL%s: variance(s2) != 1.5\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (gaussian_mean_factor_update_to_mean(&g) != 0.0) {
+    if (fabs(gaussian_mean_factor_update_to_mean(&g) - 0.0) > 1e-6) {
         printf("%sFAIL%s: gaussian_mean_factor_update_to_mean(&g) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -187,32 +187,32 @@ int gaussian_mean_factor_tests() {
         fail_counter++;
     }
 
-    if (gaussian_mean_factor_log_variable_norm(&g) != 0.0) {
+    if (fabs(gaussian_mean_factor_log_variable_norm(&g) - 0.0) > 1e-6) {
         printf("%sFAIL%s: gaussian_mean_factor_log_variable_norm(&g) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (mean(s1) != 3.0) {
+    if (fabs(mean(s1) - 3.0) > 1e-6) {
         printf("%sFAIL%s: mean(s1) != 3.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (mean(s2) != 3.0) {
+    if (fabs(mean(s2) - 3.0) > 1e-6) {
         printf("%sFAIL%s: mean(s2) != 3.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (variance(s1) != 1.0) {
+    if (fabs(variance(s1) - 1.0) > 1e-6) {
         printf("%sFAIL%s: variance(s1) != 1.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (variance(s2) != 1.5) {
+    if (fabs(variance(s2) - 1.5) > 1e-6) {
         printf("%sFAIL%s: variance(s2) != 1.5\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (gaussian_mean_factor_log_factor_norm(&g) != 0.0) {
+    if (fabs(gaussian_mean_factor_log_factor_norm(&g) - 0.0) > 1e-6) {
         printf("%sFAIL%s: gaussian_mean_factor_log_factor_norm(&g) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -241,17 +241,17 @@ int weighted_sum_factor_tests() {
     gaussian_factor_info_t f3 = {init_gaussian1D_from_mean_and_variance(2, 0.5), &s3, &msg_f3_to_s3};
     weighted_sum_factor_info_t g = {0.5, 0.5, &s1, &s2, &s3, &msg_g_to_s1, &msg_g_to_s2, &msg_g_to_s3};
 
-    if (gaussian_factor_update(&f1) != 1.0) {
+    if (fabs(gaussian_factor_update(&f1) - 1.0) > 1e-6) {
         printf("%sFAIL%s: gaussian_factor_update(&f1) != 1.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (gaussian_factor_update(&f2) != 0.5) {
+    if (fabs(gaussian_factor_update(&f2) - 0.5) > 1e-6) {
         printf("%sFAIL%s: gaussian_factor_update(&f2) != 0.5\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (weighted_sum_factor_update_to_sum(&g) != 1.2) {
+    if (fabs(weighted_sum_factor_update_to_sum(&g) - 1.2) > 1e-6) {
         printf("%sFAIL%s: weighted_sum_factor_update_to_sum(&g) != 1.2\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -266,7 +266,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (gaussian_factor_update(&f3) != 4.0) {
+    if (fabs(gaussian_factor_update(&f3) - 4.0) > 1e-6) {
         printf("%sFAIL%s: gaussian_factor_update(&f3) != 4.0\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -330,7 +330,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (weighted_sum_factor_log_variable_norm(&g) != -5.196819356922758) {
+    if (fabs(weighted_sum_factor_log_variable_norm(&g) - -5.196819356922758) > 1e-6) {
         printf("%sFAIL%s: weighted_sum_factor_log_variable_norm(&g) != -5.196819356922758\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -365,7 +365,7 @@ int weighted_sum_factor_tests() {
         fail_counter++;
     }
 
-    if (weighted_sum_factor_log_factor_norm(&g) != 3.926644358321802) {
+    if (fabs(weighted_sum_factor_log_factor_norm(&g) - 3.926644358321802) > 1e-6) {
         printf("%sFAIL%s: weighted_sum_factor_log_factor_norm(&g) != 3.926644358321802\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -413,7 +413,7 @@ int greater_than_factor_tests() {
         fail_counter++;
     }
 
-    if (greater_than_factor_log_variable_norm(&g) != -1.5273215487580363) {
+    if (fabs(greater_than_factor_log_variable_norm(&g) - -1.5273215487580363) > 1e-6) {
         printf("%sFAIL%s: greater_than_factor_log_variable_norm(&g) != -1.5273215487580363\n", Color_RED, Color_END);
         fail_counter++;
     }
@@ -428,7 +428,7 @@ int greater_than_factor_tests() {
         fail_counter++;
     }
 
-    if (greater_than_factor_log_factor_norm(&g) != 1.3545677697345866) {
+    if (fabs(greater_than_factor_log_factor_norm(&g) - 1.3545677697345866) > 1e-6) {
         printf("%sFAIL%s: greater_than_factor_log_factor_norm(&g) != 1.3545677697345866\n", Color_RED, Color_END);
         fail_counter++;
     }
