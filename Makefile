@@ -1,5 +1,6 @@
 BUILD_DIR = build
 BIN_DIR = bin
+LIB_DIR = lib
 TEST_DIR = tests
 TMP_DIR = tmp
 
@@ -28,7 +29,7 @@ CC = clang
 CC_FLAGS = -Wall -Wcast-qual -Wextra -Wshadow -Wmissing-declarations -O3
 
 .PHONY: all
-all: uci_engine train_ordering test_ordering train_eval
+all: uci_engine train_ordering test_ordering train_eval library
 
 .PHONY: engine_core
 engine_core: $(ENGINE_CORE_OBJ)
@@ -53,6 +54,9 @@ test_ordering: engine_core parser ordering $(BIN_DIR)/test_ordering
 
 .PHONY: train_eval
 train_eval: engine_core parser ordering eval $(BIN_DIR)/train_eval
+
+.PHONY: library
+library: engine_core parser ordering $(LIB_DIR)/libchess.so
 
 .PHONY: build_tests
 build_tests: $(TEST_BIN)   # Build the tests
@@ -96,6 +100,10 @@ $(EVAL_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
+$(LIB_DIR)/libchess.so: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(PARSING_OBJ)
+	@mkdir -p $(dir $@)
+	$(CC) $(CC_FLAGS) -shared -fPIC -o $@ $^ -lm
+
 $(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(PARSING_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -lm
@@ -122,3 +130,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TMP_DIR)
 	rm -rf $(BIN_DIR)
+	rm -rf $(LIB_DIR)/libchess.so
