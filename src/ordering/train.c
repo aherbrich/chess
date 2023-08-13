@@ -7,6 +7,7 @@
 #include "include/ordering/factors.h"
 #include "include/ordering/gaussian.h"
 #include "include/ordering/ordering.h"
+#include "include/ordering/urgencies.h"
 #include "include/parse/parse.h"
 
 /* trains a Bayesian ranking model from the replay of the games */

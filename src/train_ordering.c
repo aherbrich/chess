@@ -5,6 +5,7 @@
 
 #include "include/engine-core/engine.h"
 #include "include/ordering/ordering.h"
+#include "include/ordering/urgencies.h"
 #include "include/parse/parse.h"
 
 /* main entry point of the program */

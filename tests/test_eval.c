@@ -3,6 +3,7 @@
 
 #include "include/engine-core/engine.h"
 #include "include/ordering/ordering.h"
+#include "include/ordering/urgencies.h"
 
 char STARTING_FEN[] =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";

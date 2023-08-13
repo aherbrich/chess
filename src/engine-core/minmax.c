@@ -8,6 +8,7 @@
 #include "include/engine-core/types.h"
 #include "include/engine-core/zobrist.h"
 #include "include/ordering/ordering.h"
+#include "include/ordering/urgencies.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1

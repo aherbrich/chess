@@ -8,6 +8,7 @@
 #include "include/ordering/factors.h"
 #include "include/ordering/gaussian.h"
 #include "include/ordering/ordering.h"
+#include "include/ordering/urgencies.h"
 #include "include/parse/parse.h"
 
 /* Test the trained model for k-fold cross validation */
