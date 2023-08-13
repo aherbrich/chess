@@ -10,98 +10,6 @@
 #include "../include/ordering.h"
 #include "../include/parse.h"
 
-/* trains a Bayesian ranking model from the replay of the games */
-void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, const char* base_filename) {
-    ranking_update_info_t *ranking_updates = NULL;
-    int no_gaussian = 0, no_factors = 0;
-
-    /* print some information on the screen */
-    fprintf(stderr, "Training started (%s)\n", (full_training) ? "full" : "incremental");
-
-    /* play games */
-    for (int i = 0; i < nr_of_games; i++) {
-        chessgame_t* chessgame = chessgames[i];
-        board_t* board = init_board();
-        load_by_FEN(board,
-                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
-        char* token = strtok(chessgame->movelist, " ");
-        do {
-            move_t* move = str_to_move(board, token);
-            if (move) {
-                /* genearate all possible moves */
-                maxpq_t movelst;
-                initialize_maxpq(&movelst);
-                generate_moves(board, &movelst);
-
-                /* create array to hold all indices of urgency beliefs corresponding to moves */
-                int nr_of_moves = movelst.nr_elem;
-                gaussian_t* urgencies_ptr[nr_of_moves];
-                int idx = 0;
-
-                /* extract move ranking-info from MADE_MOVE*/
-                int move_key = calculate_move_key(board, move);
-                urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
-                if (urgencies_ptr[idx] == NULL) {
-                    urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
-                }
-                idx++;
-
-                /* extract move ranking-info from OTHER_MOVES */
-                move_t* other_move;
-                while ((other_move = pop_max(&movelst)) != NULL) {
-                    /* if we see MADE_MOVE, skip it */
-                    if (is_same_move(move, other_move)) {
-                        free_move(other_move);
-                        continue;
-                    }
-
-                    /* else extract ranking-info from move */
-                    move_key = calculate_move_key(board, other_move);
-                    urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
-                    if (urgencies_ptr[idx] == NULL) {
-                        urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
-                    }
-                    idx++;
-
-                    free_move(other_move);
-                }
-
-                // execute_ranking update
-                if (full_training) {
-                    ranking_updates = add_ranking_update_graph(ranking_updates, urgencies_ptr, nr_of_moves, 0.5 * 0.5);
-                    no_factors += (3 * nr_of_moves - 2);
-                    no_gaussian += (8 * nr_of_moves - 5);
-                } else {
-                    update(urgencies_ptr, nr_of_moves, 0.5 * 0.5);
-                }
-
-                /* execute MADE_MOVE */
-                do_move(board, move);
-                free_move(move);
-                free_pq(&movelst);
-                /* and continue with next (opponent) MADE_MOVE */
-            } else {
-                print_board(board);
-                fprintf(stderr, "%sInvalid move: %s%s\n", Color_PURPLE, token,
-                        Color_END);
-                exit(-1);
-            }
-        } while ((token = strtok(NULL, " ")));
-
-        free_board(board);
-    }
-
-    /* now perform the full training and release the small update (factor) graphs */
-    if (full_training) {
-        fprintf(stderr, "Full training started\n\tNo. of factors: %d\n\tNo. of gaussians: %d\n", no_factors, no_gaussian);
-        refresh_update_graph(ranking_updates, 5e-1, base_filename);
-        delete_ranking_update_graphs(ranking_updates);
-    }
-
-    return;
-}
-
 /* Test the trained model for k-fold cross validation */
 double test_model(chessgame_t** chessgames, int no_games, int id){
     int moves_played = 0;
@@ -285,7 +193,16 @@ double k_fold_cross_validation(chessgame_t** chessgames, int no_games, int no_fo
         /* train model */
         deletes_ht_urgencies(ht_urgencies);
         ht_urgencies = initialize_ht_urgencies();
-        train_model(training_set, training_set_size, 0, NULL);
+
+        train_info_t train_info = {
+            .ht_urgencies = ht_urgencies,
+            .prior = init_gaussian1D_standard_normal(),
+            .beta = 0.5,
+            .full_training = 0,
+            .base_filename = NULL,
+            .verbosity = 1
+        };
+        train_model(training_set, training_set_size, train_info);
 
         printf("Training on fold %d done!\n", i + 1);
 

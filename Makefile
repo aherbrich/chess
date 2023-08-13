@@ -43,7 +43,7 @@ ordering: $(ORDERING_OBJ)
 eval: $(EVAL_OBJ)
 
 .PHONY: uci_engine
-uci_engine: engine_core ordering $(BIN_DIR)/uci_engine
+uci_engine: engine_core parser ordering $(BIN_DIR)/uci_engine
 
 .PHONY: train_ordering
 train_ordering: engine_core parser ordering $(BIN_DIR)/train_ordering
@@ -96,7 +96,7 @@ $(EVAL_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
-$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
+$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(PARSING_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
@@ -112,7 +112,7 @@ $(BIN_DIR)/train_eval: $(TRAIN_EVAL_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(EVA
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -L./lib -llinalg -lm
 
-$(TEST_BIN): $(BUILD_DIR)/%: %.c $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
+$(TEST_BIN): $(BUILD_DIR)/%: %.c $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(PARSING_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
@@ -121,3 +121,4 @@ $(TEST_BIN): $(BUILD_DIR)/%: %.c $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TMP_DIR)
+	rm -rf $(BIN_DIR)

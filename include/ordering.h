@@ -1,8 +1,9 @@
 #ifndef __ORDERING_H__
 #define __ORDERING_H__
 
-#include "../include/gaussian.h"
 #include "../include/factors.h"
+#include "../include/gaussian.h"
+#include "../include/parse.h"
 #include "../include/types.h"
 
 #define HT_GAUSSIAN_SIZE (1048576)
@@ -31,13 +32,13 @@ void initialize_move_zobrist_table();
 /* functions for managing the hash-table of a urgencies for the Bayesian move ranking model         */
 /* ------------------------------------------------------------------------------------------------ */
 typedef struct _urgency_ht_list_entry_t {
-    int move_key;                           /* true (non-clashing) value of the move */
-    gaussian_t urgency;                     /* urgency of the move */
-    struct _urgency_ht_list_entry_t* next;  /* pointer to the next entry in the list */
+    int move_key;                          /* true (non-clashing) value of the move */
+    gaussian_t urgency;                    /* urgency of the move */
+    struct _urgency_ht_list_entry_t* next; /* pointer to the next entry in the list */
 } urgency_ht_list_entry_t;
 
 typedef struct _urgency_ht_entry_t {
-    urgency_ht_list_entry_t* root;          /* pointer to the root of the list of urgencies for this move */
+    urgency_ht_list_entry_t* root; /* pointer to the root of the list of urgencies for this move */
 } urgency_ht_entry_t;
 
 /* hash table of urgencies for each move (hash) */
@@ -52,13 +53,13 @@ gaussian_t* add_urgency(urgency_ht_entry_t* ht, int move_key, gaussian_t urgency
 /* returns the number of keys in the urgency hash table */
 int get_no_keys(const urgency_ht_entry_t* ht);
 /* deletes the memory for a hashtable of urgencies */
-void deletes_ht_urgencies(urgency_ht_entry_t *ht);
+void deletes_ht_urgencies(urgency_ht_entry_t* ht);
 /* function that computes a unique move key */
 int calculate_move_key(board_t* board, move_t* move);
 /* loads a hash-table of urgencies from a file (only entries which are different from the prior) */
-void load_ht_urgencies_from_binary_file(const char* file_name, urgency_ht_entry_t *ht);
+void load_ht_urgencies_from_binary_file(const char* file_name, urgency_ht_entry_t* ht);
 /* writes an urgencies hash-table to a file (only entries which are different from the prior) */
-void write_ht_urgencies_to_binary_file(const char* file_name, const urgency_ht_entry_t *ht);
+void write_ht_urgencies_to_binary_file(const char* file_name, const urgency_ht_entry_t* ht);
 /* checks if two hash-tables are equivalent */
 int ht_urgencies_equal(urgency_ht_entry_t* ht1, urgency_ht_entry_t* ht2);
 
@@ -76,29 +77,45 @@ void update(gaussian_t** urgencies_ptr, int no_hashes, double beta_squared);
 /* ------------------------------------------------------------------------------------------------ */
 
 typedef struct _ranking_update_info_t {
-    int no_moves;                               /* the number of moves in the ranking update */
-    gaussian_mean_factor_info_t* g;             /* the Gaussian mean factor to the latent urgencies */
-    weighted_sum_factor_info_t* s;              /* the weighted sum factor between the latent urgencies and the diffs */
-    greater_than_factor_info_t* h;              /* the greater-than factor for the pairwise ordering */
+    int no_moves;                   /* the number of moves in the ranking update */
+    gaussian_mean_factor_info_t* g; /* the Gaussian mean factor to the latent urgencies */
+    weighted_sum_factor_info_t* s;  /* the weighted sum factor between the latent urgencies and the diffs */
+    greater_than_factor_info_t* h;  /* the greater-than factor for the pairwise ordering */
 
-    gaussian_t* latent_urgency;                 /* the latent urgencies */
-    gaussian_t* diffs;                          /* the difference factors */
-    gaussian_t* msg_from_g_to_latent_urgency;   /* the messages from the Gaussian mean factor to latent urgencies */
-    gaussian_t* msg_from_g_to_urgency;          /* the messages from the Gaussian mean factor to the actual urgencies */
-    gaussian_t* msg_from_s_to_diffs;            /* the messages from the weighted sum factor to the sum/difference */
-    gaussian_t* msg_from_s_to_top_urgency;      /* the messages from the weighted sum factor to the latent urgency of the move made */
-    gaussian_t* msg_from_s_to_urgency;          /* the messages from the weighted sum factor to the latent urgency of the move not made */
-    gaussian_t* msg_from_h_to_diffs;            /* the messages from the greater-than factor to the sum/difference */
+    gaussian_t* latent_urgency;               /* the latent urgencies */
+    gaussian_t* diffs;                        /* the difference factors */
+    gaussian_t* msg_from_g_to_latent_urgency; /* the messages from the Gaussian mean factor to latent urgencies */
+    gaussian_t* msg_from_g_to_urgency;        /* the messages from the Gaussian mean factor to the actual urgencies */
+    gaussian_t* msg_from_s_to_diffs;          /* the messages from the weighted sum factor to the sum/difference */
+    gaussian_t* msg_from_s_to_top_urgency;    /* the messages from the weighted sum factor to the latent urgency of the move made */
+    gaussian_t* msg_from_s_to_urgency;        /* the messages from the weighted sum factor to the latent urgency of the move not made */
+    gaussian_t* msg_from_h_to_diffs;          /* the messages from the greater-than factor to the sum/difference */
 
-    struct _ranking_update_info_t* next;        /* pointer to the next ranking update info */
+    struct _ranking_update_info_t* next; /* pointer to the next ranking update info */
 } ranking_update_info_t;
 
 /* adds the factor graph that processes a single move made to the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
 ranking_update_info_t* add_ranking_update_graph(ranking_update_info_t* root, gaussian_t** urgencies_ptr, int no_hashes, double beta_squared);
 /* run message passing on the whole graph until convergence of epsilon; if base_filename is non-NULL then snapshots are stored after every iteration */
-void refresh_update_graph(ranking_update_info_t *root, double epsilon, const char* base_filename);
+void refresh_update_graph(ranking_update_info_t* root, double epsilon, const char* base_filename);
 /* deletes the linked list of ranking updates */
 void delete_ranking_update_graphs(ranking_update_info_t* root);
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions and types for training from Chess game records                                         */
+/* ------------------------------------------------------------------------------------------------ */
+
+typedef struct _train_info_t {
+    urgency_ht_entry_t* ht_urgencies; /* hash table of urgencies for each move (hash) */
+    gaussian_t prior;                 /* prior for the urgencies */
+    double beta;                      /* the standard deviation parameter for the latent urgencies */
+    int full_training;                /* whether we are doing full training or incremental training */
+    char* base_filename;              /* the base filename for storing snapshots of the model */
+    int verbosity;                    /* the verbosity level */
+} train_info_t;
+
+/* trains a Bayesian ranking model from the replay of the games */
+void train_model(chessgame_t** chessgames, int nr_of_games, train_info_t train_info);
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for making predictions based on the Bayesian move ranking model                        */

@@ -4,107 +4,15 @@
 #include <unistd.h>
 
 #include "../include/engine.h"
-#include "../include/factors.h"
-#include "../include/gaussian.h"
 #include "../include/ordering.h"
 #include "../include/parse.h"
 
-/* trains a Bayesian ranking model from the replay of the games */
-void train_model(chessgame_t** chessgames, int nr_of_games, int full_training, const char* base_filename) {
-    ranking_update_info_t *ranking_updates = NULL;
-    int no_gaussian = 0, no_factors = 0;
-
-    /* print some information on the screen */
-    fprintf(stderr, "Training started (%s)\n", (full_training) ? "full" : "incremental");
-
-    /* play games */
-    for (int i = 0; i < nr_of_games; i++) {
-        chessgame_t* chessgame = chessgames[i];
-        board_t* board = init_board();
-        load_by_FEN(board,
-                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
-        char* token = strtok(chessgame->movelist, " ");
-        do {
-            move_t* move = str_to_move(board, token);
-            if (move) {
-                /* genearate all possible moves */
-                maxpq_t movelst;
-                initialize_maxpq(&movelst);
-                generate_moves(board, &movelst);
-
-                /* create array to hold all indices of urgency beliefs corresponding to moves */
-                int nr_of_moves = movelst.nr_elem;
-                gaussian_t* urgencies_ptr[nr_of_moves];
-                int idx = 0;
-
-                /* extract move ranking-info from MADE_MOVE*/
-                int move_key = calculate_move_key(board, move);
-                urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
-                if (urgencies_ptr[idx] == NULL) {
-                    urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
-                }
-                idx++;
-
-                /* extract move ranking-info from OTHER_MOVES */
-                move_t* other_move;
-                while ((other_move = pop_max(&movelst)) != NULL) {
-                    /* if we see MADE_MOVE, skip it */
-                    if (is_same_move(move, other_move)) {
-                        free_move(other_move);
-                        continue;
-                    }
-                    
-                    /* else extract ranking-info from move */
-                    move_key = calculate_move_key(board, other_move);
-                    urgencies_ptr[idx] = get_urgency(ht_urgencies, move_key);
-                    if (urgencies_ptr[idx] == NULL) {
-                        urgencies_ptr[idx] = add_urgency(ht_urgencies, move_key, init_gaussian1D_standard_normal());
-                    }
-                    idx++;
-
-                    free_move(other_move);
-                }
-
-                // execute_ranking update
-                if (full_training) {
-                    ranking_updates = add_ranking_update_graph(ranking_updates, urgencies_ptr, nr_of_moves, 0.5 * 0.5);
-                    no_factors += (3 * nr_of_moves - 2);
-                    no_gaussian += (8 * nr_of_moves - 5);
-                } else {
-                    update(urgencies_ptr, nr_of_moves, 0.5 * 0.5);
-                }
-
-                /* execute MADE_MOVE */
-                do_move(board, move);
-                free_move(move);
-                /* and continue with next (opponent) MADE_MOVE */
-            } else {
-                print_board(board);
-                fprintf(stderr, "%sInvalid move: %s%s\n", Color_PURPLE, token,
-                        Color_END);
-                exit(-1);
-            }
-        } while ((token = strtok(NULL, " ")));
-
-        free_board(board);
-    }
-
-    /* now perform the full training and release the small update (factor) graphs */
-    if (full_training) {
-        fprintf(stderr, "Full training started\n\tNo. of factors: %d\n\tNo. of gaussians: %d\n", no_factors, no_gaussian);
-        refresh_update_graph(ranking_updates, 5e-1, base_filename);
-        delete_ranking_update_graphs(ranking_updates);
-    }
-
-    return;
-}
-
+/* main entry point of the program */
 int main(int argc, char** argv) {
     int full_training = 0;
     int test_read_write_model = 0;
 
-    /* command line parsing using getopt */
+    /***** command line parsing using getopt *****/
     int c;
     while ((c = getopt(argc, argv, "fht")) != -1) {
         switch (c) {
@@ -133,7 +41,7 @@ int main(int argc, char** argv) {
     printf("\tFull Training: %s\n", (full_training)?"yes":"no");
     printf("\tTest model read-write: %s\n", (test_read_write_model)?"yes":"no");
 
-    /* parse chess game file */
+    /****** parse chess game file ******/
     int nr_of_games = count_number_of_games();
     chessgame_t** chessgames = parse_chessgames_file(nr_of_games);
 
@@ -141,23 +49,31 @@ int main(int argc, char** argv) {
     initialize_chess_engine_necessary();
     initialize_move_zobrist_table();
 
-    /* train the model */
-    train_model(chessgames, nr_of_games, full_training, "snapshot");
+    /****** train the model ******/
+    train_info_t train_info = {
+        .ht_urgencies = ht_urgencies,
+        .prior = init_gaussian1D_standard_normal(),
+        .beta = 0.5,
+        .full_training = full_training,
+        .base_filename = "snapshot",
+        .verbosity = 1
+    };
+    train_model(chessgames, nr_of_games, train_info);
 
+    /* write some output statistics about the model */
+    fprintf(stderr, "Unique moves: %d\n", get_no_keys(ht_urgencies));
 
-    /* free chess games read in for the sake of training */
+    /* write the mode to a binary file */
+    write_ht_urgencies_to_binary_file("ht_urgencies.bin", ht_urgencies);
+
+    /****** free chess games read in for the sake of training ******/
     for (int i = 0; i < nr_of_games; i++) {
         free(chessgames[i]->movelist);
         free(chessgames[i]);
     }
     free(chessgames);
 
-    /* write the mode to a binary file */
-    write_ht_urgencies_to_binary_file("ht_urgencies.bin", ht_urgencies);
-
-    /* write some output statistics about the model */
-    fprintf(stderr, "Unique moves: %d\n", get_no_keys(ht_urgencies));
-
+    /****** test read-write code ******/
     if (test_read_write_model) {
         /* test that we have written the same model as we have in memory */
         urgency_ht_entry_t* ht_urgencies_test = initialize_ht_urgencies();
@@ -174,7 +90,6 @@ int main(int argc, char** argv) {
         /* free the memory for the hash-table of urgencies */
         deletes_ht_urgencies(ht_urgencies_test);
     }
-
     /* free the memory for the hash-table of urgencies */
     deletes_ht_urgencies(ht_urgencies);
 
