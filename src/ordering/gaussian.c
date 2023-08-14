@@ -35,7 +35,7 @@ double variance(gaussian_t gaussian1D) {
 }
 
 /* returns the absolute difference between two 1D Gaussian */
-double absdiff(gaussian_t g1, gaussian_t g2) {
+double abs_diff(gaussian_t g1, gaussian_t g2) {
     return fmax(fabs(g1.tau - g2.tau), sqrt(fabs(g1.rho - g2.rho)));
 }
 

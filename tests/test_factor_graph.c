@@ -31,25 +31,25 @@ int gaussian_tests() {
         fail_counter++;
     }
 
-    if (absdiff(init_gaussian1D(0, 1), init_gaussian1D(0, 2)) != 1.0) {
-        printf("%sFAIL%s: absdiff(init_gaussian1D(0, 1), init_gaussian1D(0, 2)) != 1.0\n", Color_RED, Color_END);
+    if (abs_diff(init_gaussian1D(0, 1), init_gaussian1D(0, 2)) != 1.0) {
+        printf("%sFAIL%s: abs_diff(init_gaussian1D(0, 1), init_gaussian1D(0, 2)) != 1.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
-    if (absdiff(init_gaussian1D(0, 1), init_gaussian1D(0, 3)) != 1.4142135623730951) {
-        printf("%sFAIL%s: absdiff(init_gaussian1D(0, 1), init_gaussian1D(0, 3)) != 1.4142135623730951\n", Color_RED, Color_END);
+    if (abs_diff(init_gaussian1D(0, 1), init_gaussian1D(0, 3)) != 1.4142135623730951) {
+        printf("%sFAIL%s: abs_diff(init_gaussian1D(0, 1), init_gaussian1D(0, 3)) != 1.4142135623730951\n", Color_RED, Color_END);
         fail_counter++;
     }
 
     gaussian_t g1 = init_gaussian1D_standard_normal();
-    if (absdiff(gaussian1D_mult(g1, g1), init_gaussian1D(0, 2)) != 0.0) {
-        printf("%sFAIL%s: absdiff(gaussian1D_mult(g1,g1), init_gaussian1D(0, 2)) != 0.0\n", Color_RED, Color_END);
+    if (abs_diff(gaussian1D_mult(g1, g1), init_gaussian1D(0, 2)) != 0.0) {
+        printf("%sFAIL%s: abs_diff(gaussian1D_mult(g1,g1), init_gaussian1D(0, 2)) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 
     gaussian_t g2 = init_gaussian1D(0, 0.5);
-    if (absdiff(gaussian1D_div(g1, g2), init_gaussian1D(0, 0.5)) != 0.0) {
-        printf("%sFAIL%s: absdiff(gaussian1D_mult(g1,g2), init_gaussian1D(0, 0.5)) != 0.0\n", Color_RED, Color_END);
+    if (abs_diff(gaussian1D_div(g1, g2), init_gaussian1D(0, 0.5)) != 0.0) {
+        printf("%sFAIL%s: abs_diff(gaussian1D_mult(g1,g2), init_gaussian1D(0, 0.5)) != 0.0\n", Color_RED, Color_END);
         fail_counter++;
     }
 

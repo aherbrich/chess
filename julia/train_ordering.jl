@@ -15,8 +15,8 @@ struct ChessGames
 end
 # structure for a single 1d gaussian_t
 struct CGaussian
-    τ::Cfloat
-    ρ::Cfloat
+    τ::Cdouble
+    ρ::Cdouble
 end
 
 # placeholder for a hash table of urgency beliefs
@@ -71,4 +71,4 @@ function run()
     @ccall "lib/libchess.so".delete_chess_games(chess_games::ChessGames)::Cvoid
 end
 
-run()
+@time run()

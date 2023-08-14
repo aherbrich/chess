@@ -10,7 +10,7 @@ double gaussian_factor_update(gaussian_factor_info_t* info) {
     gaussian_t old_marginal = *info->marginal;
     *info->marginal = gaussian1D_mult(gaussian1D_div(old_marginal, *info->msg), info->g);
     *info->msg = info->g;
-    return absdiff(*info->marginal, old_marginal);
+    return abs_diff(*info->marginal, old_marginal);
 }
 
 /* log of variable normalization of Gaussian factor */
@@ -29,7 +29,7 @@ double gaussian_mean_factor_update_to_variable(gaussian_mean_factor_info_t* info
     gaussian_t old_var_marginal = *info->var_marginal;
     *info->var_marginal = gaussian1D_mult(gaussian1D_div(old_var_marginal, *info->var_msg), new_msg);
     *info->var_msg = new_msg;
-    return absdiff(*info->var_marginal, old_var_marginal);
+    return abs_diff(*info->var_marginal, old_var_marginal);
 }
 
 /* update function for the Gaussian mean factor to the mean */
@@ -41,7 +41,7 @@ double gaussian_mean_factor_update_to_mean(gaussian_mean_factor_info_t* info) {
     gaussian_t old_mean_marginal = *info->mean_marginal;
     *info->mean_marginal = gaussian1D_mult(gaussian1D_div(old_mean_marginal, *info->mean_msg), new_msg);
     *info->mean_msg = new_msg;
-    return absdiff(*info->mean_marginal, old_mean_marginal);
+    return abs_diff(*info->mean_marginal, old_mean_marginal);
 }
 
 /* log of variable normalization of Gaussian mean factor */
@@ -68,7 +68,7 @@ double weighted_sum_factor_update_to_sum(weighted_sum_factor_info_t* info) {
     gaussian_t old_sum_marginal = *info->sum_marginal;
     *info->sum_marginal = gaussian1D_mult(gaussian1D_div(old_sum_marginal, *info->sum_msg), new_msg);
     *info->sum_msg = new_msg;
-    return absdiff(*info->sum_marginal, old_sum_marginal);
+    return abs_diff(*info->sum_marginal, old_sum_marginal);
 }
 
 /* update function for the weighted sum factor to the summand 1 variable */
@@ -81,7 +81,7 @@ double weighted_sum_factor_update_to_summand1(weighted_sum_factor_info_t* info) 
     gaussian_t old_s1_marginal = *info->s1_marginal;
     *info->s1_marginal = gaussian1D_mult(gaussian1D_div(old_s1_marginal, *info->s1_msg), new_msg);
     *info->s1_msg = new_msg;
-    return absdiff(*info->s1_marginal, old_s1_marginal);
+    return abs_diff(*info->s1_marginal, old_s1_marginal);
 }
 
 /* update function for the weighted sum factor to the summand 2 variable */
@@ -94,7 +94,7 @@ double weighted_sum_factor_update_to_summand2(weighted_sum_factor_info_t* info) 
     gaussian_t old_s2_marginal = *info->s2_marginal;
     *info->s2_marginal = gaussian1D_mult(gaussian1D_div(old_s2_marginal, *info->s2_msg), new_msg);
     *info->s2_msg = new_msg;
-    return absdiff(*info->s2_marginal, old_s2_marginal);
+    return abs_diff(*info->s2_marginal, old_s2_marginal);
 }
 
 /* log of variable normalization of weighted sum factor */
@@ -125,7 +125,7 @@ double greater_than_factor_update(greater_than_factor_info_t* info) {
     gaussian_t old_marginal = *info->marginal;
     *info->marginal = init_gaussian1D((msg_back.tau + sqrt(msg_back.rho) * v) / c, msg_back.rho / c);
     *info->msg = gaussian1D_div(*info->marginal, msg_back);
-    return absdiff(*info->marginal, old_marginal);
+    return abs_diff(*info->marginal, old_marginal);
 }
 
 /* log of variable normalization of greater-than factor */
