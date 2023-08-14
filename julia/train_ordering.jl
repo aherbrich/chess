@@ -76,18 +76,18 @@ function run(file_name)
         urgencies::Ptr{HTUrgencies},
     )::Cvoid
 
-    # iterate over the urgencies
-    urgencies_iterator = HTUrgenciesIterator(0, C_NULL)
-    @ccall "lib/libchess.so".setup_ht_urgencies_iterator(urgencies::Ptr{HTUrgencies}, urgencies_iterator::Ref{HTUrgenciesIterator})::Cvoid
-    finished = 0
-    cnt = 1
-    while (finished == 0)
-        urgency_entry = unsafe_load(urgencies_iterator.cur_urgency_entry)
-        println("Move $(cnt): $(urgency_entry.move_key), urgency: $(urgency_entry.urgency.τ), $(urgency_entry.urgency.ρ)")
-        @ccall "lib/libchess.so".inc_ht_urgencies_iterator(urgencies::Ptr{HTUrgencies}, urgencies_iterator::Ref{HTUrgenciesIterator})::Cvoid
-        finished = @ccall "lib/libchess.so".ht_urgencies_iterator_finished(urgencies_iterator::Ref{HTUrgenciesIterator})::Cint
-        cnt += 1
-    end
+    # # iterate over the urgencies
+    # urgencies_iterator = HTUrgenciesIterator(0, C_NULL)
+    # @ccall "lib/libchess.so".setup_ht_urgencies_iterator(urgencies::Ptr{HTUrgencies}, urgencies_iterator::Ref{HTUrgenciesIterator})::Cvoid
+    # finished = 0
+    # cnt = 1
+    # while (finished == 0)
+    #     urgency_entry = unsafe_load(urgencies_iterator.cur_urgency_entry)
+    #     println("Move $(cnt): $(urgency_entry.move_key), urgency: $(urgency_entry.urgency.τ), $(urgency_entry.urgency.ρ)")
+    #     @ccall "lib/libchess.so".inc_ht_urgencies_iterator(urgencies::Ptr{HTUrgencies}, urgencies_iterator::Ref{HTUrgenciesIterator})::Cvoid
+    #     finished = @ccall "lib/libchess.so".ht_urgencies_iterator_finished(urgencies_iterator::Ref{HTUrgenciesIterator})::Cint
+    #     cnt += 1
+    # end
 
     # release the hash table for urgencies
     @ccall "lib/libchess.so".deletes_ht_urgencies(urgencies::Ptr{HTUrgencies})::Cvoid
@@ -96,5 +96,5 @@ function run(file_name)
     @ccall "lib/libchess.so".delete_chess_games(chess_games::ChessGames)::Cvoid
 end
 
-# @time run(pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn")
-run("/tmp/very_short_games.pgn")
+@time run(pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn")
+# run("/tmp/very_short_games.pgn")

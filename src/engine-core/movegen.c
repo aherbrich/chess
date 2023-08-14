@@ -832,9 +832,11 @@ void make_moves_doubleep(maxpq_t *movelst, square_t from, bitboard_t targets) {
 /* Generates and adds moves to move list given a from square
 and a bitboard of target squares */
 void make_moves_capture(maxpq_t *movelst, board_t *board, square_t from, bitboard_t targets) {
+    int piece_from = (board->playingfield[from] & 0b111);
     while (targets) {
         int p = pop_1st_bit(&targets);
-        insert(movelst, generate_move(from, p, CAPTURE, board->piece_bb[p] * 100 + (KING_ID - (board->piece_bb[from] & 0b111))));
+        int piece_to = (board->playingfield[p] & 0b111);
+        insert(movelst, generate_move(from, p, CAPTURE, piece_to * 100 + (KING_ID - piece_from)));
     }
 }
 
@@ -981,9 +983,11 @@ void generate_legals(board_t *board, maxpq_t *movelst) {
                     /* If the checker is either a pawn or a knight the only legal moves are to capture
                     the checker. Only non-pinned pieces can capture it */
                     bb1 = attackers_from(board, checker_square, all, us) & not_pinned;
+                    int piece_to = (board->playingfield[checker_square] & 0b111);
                     while (bb1) {
                         int p = pop_1st_bit(&bb1);
-                        insert(movelst, generate_move(p, checker_square, CAPTURE, board->piece_bb[checker_square] * 100 + (KING_ID - (board->piece_bb[p] & 0b111))));
+                        int piece_from = (board->playingfield[p] & 0b111);
+                        insert(movelst, generate_move(p, checker_square, CAPTURE, piece_to * 100 + (KING_ID - piece_from)));
                     }
                     return;
                 default:
@@ -1190,15 +1194,17 @@ void generate_legals(board_t *board, maxpq_t *movelst) {
     /* Pawn captures */
     bb2 = shift(bb1, relative_dir(us, NORTH_WEST)) & capture_mask;
     bb3 = shift(bb1, relative_dir(us, NORTH_EAST)) & capture_mask;
-
+    int piece_from = PAWN_ID;
     while (bb2) {
         s = pop_1st_bit(&bb2);
-        insert(movelst, generate_move(s - relative_dir(us, NORTH_WEST), s, CAPTURE, board->piece_bb[s] * 100 + (KING_ID - PAWN_ID)));
+        int piece_to = (board->playingfield[s] & 0b111);
+        insert(movelst, generate_move(s - relative_dir(us, NORTH_WEST), s, CAPTURE, piece_to * 100 + (KING_ID - piece_from)));
     }
 
     while (bb3) {
         s = pop_1st_bit(&bb3);
-        insert(movelst, generate_move(s - relative_dir(us, NORTH_EAST), s, CAPTURE, board->piece_bb[s] * 100 + (KING_ID - PAWN_ID)));
+        int piece_to = (board->playingfield[s] & 0b111);
+        insert(movelst, generate_move(s - relative_dir(us, NORTH_EAST), s, CAPTURE, piece_to * 100 + (KING_ID - piece_from)));
     }
 
     /* Determine pawns which are about to promote */
