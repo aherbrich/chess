@@ -20,6 +20,11 @@ typedef struct _urgency_ht_entry_t {
     urgency_ht_list_entry_t* root; /* pointer to the root of the list of urgencies for this move */
 } urgency_ht_entry_t;
 
+typedef struct _urgency_ht_iterator_t {
+    int cur_hash;                        /* current hash value */
+    urgency_ht_list_entry_t* cur_urgency_entry; /* pointer to the current entry in the list */
+} urgency_ht_iterator_t;
+
 /* hash table of urgencies for each move (hash) */
 extern urgency_ht_entry_t* ht_urgencies;
 
@@ -39,5 +44,12 @@ void load_ht_urgencies_from_binary_file(const char* file_name, urgency_ht_entry_
 void write_ht_urgencies_to_binary_file(const char* file_name, const urgency_ht_entry_t* ht);
 /* checks if two hash-tables are equivalent */
 int ht_urgencies_equal(urgency_ht_entry_t* ht1, urgency_ht_entry_t* ht2);
+
+/* sets up an urgency hash-table iterator */
+void setup_ht_urgencies_iterator(const urgency_ht_entry_t* ht, urgency_ht_iterator_t* it);
+/* increments the urgency hash-table iterator */
+void inc_ht_urgencies_iterator(const urgency_ht_entry_t* ht, urgency_ht_iterator_t* it);
+/* checks if the iterator is at the end */
+int ht_urgencies_iterator_finished(const urgency_ht_iterator_t* it);
 
 #endif

@@ -163,3 +163,42 @@ int ht_urgencies_equal(urgency_ht_entry_t* ht1, urgency_ht_entry_t* ht2) {
     }
     return 1;
 }
+
+/* sets up an urgency hash-table iterator */
+void setup_ht_urgencies_iterator(const urgency_ht_entry_t* ht, urgency_ht_iterator_t* it) {
+    it->cur_hash = -1;
+    it->cur_urgency_entry = NULL;
+
+    for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
+        if (ht[i].root) {
+            it->cur_hash = i;
+            it->cur_urgency_entry = ht[i].root;
+            return;
+        }
+    }
+    return;
+}
+
+/* increments the urgency hash-table iterator */
+void inc_ht_urgencies_iterator(const urgency_ht_entry_t* ht, urgency_ht_iterator_t* it) {
+    if (it->cur_urgency_entry->next) {
+        it->cur_urgency_entry = it->cur_urgency_entry->next;
+    } else {
+        for (int i = it->cur_hash + 1; i < HT_GAUSSIAN_SIZE; i++) {
+            if (ht[i].root) {
+                it->cur_hash = i;
+                it->cur_urgency_entry = ht[i].root;
+                return;
+            }
+        }
+        it->cur_hash = -1;
+        it->cur_urgency_entry = NULL;
+    }
+
+    return;
+}
+
+/* checks if the iterator is at the end */
+int ht_urgencies_iterator_finished(const urgency_ht_iterator_t* it) {
+    return it->cur_hash == -1;
+}

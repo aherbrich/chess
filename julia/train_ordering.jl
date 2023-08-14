@@ -22,6 +22,19 @@ end
 # placeholder for a hash table of urgency beliefs
 struct HTUrgencies end
 
+# structure for a single urgency belief
+struct HTUrgenciesListEntry
+    move_key::Cint
+    urgency::CGaussian
+    next::Ptr{HTUrgenciesListEntry}
+end
+
+#structure for the iterator over the hash table of urgencies
+mutable struct HTUrgenciesIterator
+    cur_hash::Cint
+    cur_urgency_entry::Ptr{HTUrgenciesListEntry}
+end
+
 # structure mirroring a training info
 struct TrainingInfo
     ht_urgencies::Ptr{HTUrgencies}  # hash table of urgencies for each move (hash)
@@ -33,8 +46,7 @@ struct TrainingInfo
 end
 
 # runs a training run
-function run()
-    file_name = pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn"
+function run(file_name)
     chess_games = @ccall "lib/libchess.so".load_chess_games(file_name::Cstring)::ChessGames
 
     # initalizes the chess engine
@@ -48,7 +60,7 @@ function run()
     urgencies = @ccall "lib/libchess.so".initialize_ht_urgencies()::Ptr{HTUrgencies}
 
     # train the model 
-    train_info = TrainingInfo(urgencies, CGaussian(0, 1), 0.5, 0, C_NULL, 1)
+    train_info = TrainingInfo(urgencies, CGaussian(0.0,1.0), 0.5, 0, C_NULL, 1)
     @ccall "lib/libchess.so".train_model(
         chess_games.games::Ptr{Ptr{ChessGame}},
         chess_games.no_games::Cint,
@@ -64,6 +76,19 @@ function run()
         urgencies::Ptr{HTUrgencies},
     )::Cvoid
 
+    # iterate over the urgencies
+    urgencies_iterator = HTUrgenciesIterator(0, C_NULL)
+    @ccall "lib/libchess.so".setup_ht_urgencies_iterator(urgencies::Ptr{HTUrgencies}, urgencies_iterator::Ref{HTUrgenciesIterator})::Cvoid
+    finished = 0
+    cnt = 1
+    while (finished == 0)
+        urgency_entry = unsafe_load(urgencies_iterator.cur_urgency_entry)
+        println("Move $(cnt): $(urgency_entry.move_key), urgency: $(urgency_entry.urgency.τ), $(urgency_entry.urgency.ρ)")
+        @ccall "lib/libchess.so".inc_ht_urgencies_iterator(urgencies::Ptr{HTUrgencies}, urgencies_iterator::Ref{HTUrgenciesIterator})::Cvoid
+        finished = @ccall "lib/libchess.so".ht_urgencies_iterator_finished(urgencies_iterator::Ref{HTUrgenciesIterator})::Cint
+        cnt += 1
+    end
+
     # release the hash table for urgencies
     @ccall "lib/libchess.so".deletes_ht_urgencies(urgencies::Ptr{HTUrgencies})::Cvoid
 
@@ -71,4 +96,5 @@ function run()
     @ccall "lib/libchess.so".delete_chess_games(chess_games::ChessGames)::Cvoid
 end
 
-@time run()
+# @time run(pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn")
+run("/tmp/very_short_games.pgn")
