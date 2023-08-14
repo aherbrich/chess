@@ -20,7 +20,7 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
     /* seed random number generator */
     srand(time(NULL));
 
-    /* make directory tmp if it doesnt exist */
+    /* make directory tmp if it doesn't exist */
     mkdir("tmp", 0777);
 
     char filename[100];
