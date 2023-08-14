@@ -19,7 +19,7 @@ function create_dict_rank_count(filename = "tmp/output_test_1.txt")
     end
 
     #sort dictionary by number of occurrences for a rank
-    rank_count = sort(collect(rank_count), by=x->x[2], rev=true)
+    rank_count = sort(collect(rank_count), by = x -> x[2], rev = true)
     return rank_count
 end
 
@@ -27,7 +27,7 @@ end
 
 function create_dict_move_to_rank(filename = "tmp/output_test_1.txt")
     # create dictionary which holds move number and average rank
-    rank_grouped = Dict{Int64, Vector{Int64}}()
+    rank_grouped = Dict{Int64,Vector{Int64}}()
     # read test output files
     for m in eachline(filename)
         # extract rank and move number 
@@ -45,19 +45,19 @@ function create_dict_move_to_rank(filename = "tmp/output_test_1.txt")
 
     # calculate average rank and variance of rank for each move number
 
-    rank_count = Dict{Int64, Tuple{Float64, Float64}}()
-    for (k,v) in rank_grouped
+    rank_count = Dict{Int64,Tuple{Float64,Float64}}()
+    for (k, v) in rank_grouped
         rank_count[k] = (mean(v), sqrt(var(v)))
     end
 
-    rank_count = sort(collect(rank_count), by=x->x[1])
+    rank_count = sort(collect(rank_count), by = x -> x[1])
 
     return rank_count
 end
 
 function create_dict_move_to_possible(filename = "tmp/output_test_1.txt")
     # create dictionary which holds move number and average rank
-    rank_grouped = Dict{Int64, Vector{Int64}}()
+    rank_grouped = Dict{Int64,Vector{Int64}}()
     # read test output files
     for m in eachline(filename)
         # extract rank and move number 
@@ -75,23 +75,24 @@ function create_dict_move_to_possible(filename = "tmp/output_test_1.txt")
 
     # calculate average rank and variance of rank for each move number
 
-    rank_count = Dict{Int64, Float64}()
-    for (k,v) in rank_grouped
+    rank_count = Dict{Int64,Float64}()
+    for (k, v) in rank_grouped
         rank_count[k] = mean(v)
     end
 
-    rank_count = sort(collect(rank_count), by=x->x[1])
+    rank_count = sort(collect(rank_count), by = x -> x[1])
 
     return rank_count
 end
 
 function create_dict_move_to_heuristic(filename = "tmp/output_test_1.txt")
     # create dictionary which holds move number and average rank
-    rank_grouped = Dict{Int64, Vector{Int64}}()
+    rank_grouped = Dict{Int64,Vector{Int64}}()
     # read test output files
     for m in eachline(filename)
         # extract rank and move number 
-        move_nr, _, _, _, rank_heuristic = match(r"([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)", m)
+        move_nr, _, _, _, rank_heuristic =
+            match(r"([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)", m)
         move_nr = parse(Int64, move_nr)
         rank_heuristic = parse(Int64, rank_heuristic)
 
@@ -105,19 +106,19 @@ function create_dict_move_to_heuristic(filename = "tmp/output_test_1.txt")
 
     # calculate average rank and variance of rank for each move number
 
-    rank_count = Dict{Int64, Float64}()
-    for (k,v) in rank_grouped
+    rank_count = Dict{Int64,Float64}()
+    for (k, v) in rank_grouped
         rank_count[k] = mean(v)
     end
 
-    rank_count = sort(collect(rank_count), by=x->x[1])
+    rank_count = sort(collect(rank_count), by = x -> x[1])
 
     return rank_count
 end
 
 function create_dict_move_to_random_choice(filename = "tmp/output_test_1.txt")
     # create dictionary which holds move number and average rank
-    rank_grouped = Dict{Int64, Vector{Int64}}()
+    rank_grouped = Dict{Int64,Vector{Int64}}()
     # read test output files
     for m in eachline(filename)
         # extract rank and move number 
@@ -135,12 +136,12 @@ function create_dict_move_to_random_choice(filename = "tmp/output_test_1.txt")
 
     # calculate average rank and variance of rank for each move number
 
-    rank_count = Dict{Int64, Float64}()
-    for (k,v) in rank_grouped
+    rank_count = Dict{Int64,Float64}()
+    for (k, v) in rank_grouped
         rank_count[k] = mean(v)
     end
 
-    rank_count = sort(collect(rank_count), by=x->x[1])
+    rank_count = sort(collect(rank_count), by = x -> x[1])
 
     return rank_count
 end
@@ -150,7 +151,7 @@ function plot_rank_count()
     filename = "tmp/output_test_7.txt"
 
     d = create_dict_rank_count(filename)
-    d= d[1:40]
+    d = d[1:40]
 
     # extract ranks and number of occurrences
     r = [x[1] for x in d]
@@ -171,12 +172,12 @@ function plot_rank_count()
         ylabel = "Cumulative relative frequency",
         title = "Expert move is in top n ranks",
         legend = :topleft,
-        yaxis = [0,1]
+        yaxis = [0, 1],
     )
     display(p)
 end
 
-function plot_move_to_rank(cutoff=100; rel = false)
+function plot_move_to_rank(cutoff = 100; rel = false)
     if cutoff >= 400
         cutoff = 400
     end
@@ -196,22 +197,87 @@ function plot_move_to_rank(cutoff=100; rel = false)
 
     # extract average rank and move number
     move_nrs = [x[1] for (idx, x) in enumerate(d)]
-    bayesian = [x[2][1]  for (idx, x) in enumerate(d)]
+    bayesian = [x[2][1] for (idx, x) in enumerate(d)]
     bayesian_std = [x[2][2] for (idx, x) in enumerate(d)]
     possible = [x[2] for (idx, x) in enumerate(d2)]
     random_choice = [x[2] for (idx, x) in enumerate(d3)]
     heuristic = [x[2] for (idx, x) in enumerate(d4)]
 
     # plot the results
-    if(rel == false)
-        p = scatter(move_nrs, bayesian, alpha=0.8, markersize=2, label ="Average rank", xlabel="Move number", ylabel="Rank/Possible moves", title="Rank of expert move/possible moves over time", color="red", legend=:topright)
-        scatter!(move_nrs, possible, alpha=0.8, markersize=2, label ="Average moves possible", color="orange")
-        scatter!(move_nrs, random_choice, alpha=0.8, markersize=2, label ="Average rank by random choice", color="blue")
-        scatter!(move_nrs, heuristic, alpha=0.8, markersize=2, label ="Average rank by heuristic choice", color="green")
+    if (rel == false)
+        p = scatter(
+            move_nrs,
+            bayesian,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average rank",
+            xlabel = "Move number",
+            ylabel = "Rank/Possible moves",
+            title = "Rank of expert move/possible moves over time",
+            color = "red",
+            legend = :topright,
+        )
+        scatter!(
+            move_nrs,
+            possible,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average moves possible",
+            color = "orange",
+        )
+        scatter!(
+            move_nrs,
+            random_choice,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average rank by random choice",
+            color = "blue",
+        )
+        scatter!(
+            move_nrs,
+            heuristic,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average rank by heuristic choice",
+            color = "green",
+        )
     else
-        p = scatter(move_nrs, bayesian./possible, alpha=0.8, markersize=2, label ="Average rank", xlabel="Move number", ylabel="Rank/Possible moves", title="Rank of expert move/possible moves over time", color="red", legend=:topleft, yaxis = [0,1])
-        scatter!(move_nrs, possible./possible, alpha=0.8, markersize=2, label ="Average moves possible", color="orange")
-        scatter!(move_nrs, random_choice./possible, alpha=0.8, markersize=2, label ="Average rank by random choice", color="blue")
-        scatter!(move_nrs, heuristic./possible, alpha=0.8, markersize=2, label ="Average rank by heuristic choice", color="green")
+        p = scatter(
+            move_nrs,
+            bayesian ./ possible,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average rank",
+            xlabel = "Move number",
+            ylabel = "Rank/Possible moves",
+            title = "Rank of expert move/possible moves over time",
+            color = "red",
+            legend = :topleft,
+            yaxis = [0, 1],
+        )
+        scatter!(
+            move_nrs,
+            possible ./ possible,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average moves possible",
+            color = "orange",
+        )
+        scatter!(
+            move_nrs,
+            random_choice ./ possible,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average rank by random choice",
+            color = "blue",
+        )
+        scatter!(
+            move_nrs,
+            heuristic ./ possible,
+            alpha = 0.8,
+            markersize = 2,
+            label = "Average rank by heuristic choice",
+            color = "green",
+        )
     end
 end

@@ -157,7 +157,7 @@ function plot_coverage(d, n)
         ylabel = "coverage",
         title = "Coverage of top $n moves",
         legend = false,
-        ylim = (0,1),
+        ylim = (0, 1),
     )
 end
 
@@ -167,7 +167,8 @@ function train_model(filename; n = 1000, β = 25.0 / 6.0, μ = 25.0, σ = 25.0 /
     lines_read = 0
 
     open(filename) do f
-        reg = r"\(([pnbrqkPNBRQKE]-[a-h][1-8]\ [pnbrqkPNBRQKE]-[a-h][1-8][nbrqNBRQE]\ [01])\)"
+        reg =
+            r"\(([pnbrqkPNBRQKE]-[a-h][1-8]\ [pnbrqkPNBRQKE]-[a-h][1-8][nbrqNBRQE]\ [01])\)"
         for line in eachline(f)
             prior_beliefs = Vector{Gaussian1D}()
             for m in eachmatch(reg, line)
@@ -204,7 +205,7 @@ end
 function sort_moves_by_belief(d, moves, β)
     tmp = Vector{Tuple{String,Gaussian1D}}()
     for m in moves
-        push!(tmp, (m,d[m]))
+        push!(tmp, (m, d[m]))
     end
     post_beliefs = move_probability(map(x -> x[2], tmp), β)
 
@@ -212,6 +213,6 @@ function sort_moves_by_belief(d, moves, β)
     for i in eachindex(tmp)
         move_with_probs[i] = (tmp[i][1], post_beliefs[i])
     end
-    
+
     return (sort(move_with_probs, by = x -> x[2], rev = true))
 end

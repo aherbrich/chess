@@ -19,7 +19,7 @@ function ranking_update(move_beliefs::Vector{Gaussian1D}, β)
     # Urgency and latent urgency variables as well as pairwise difference for all moves
     urgency = Vector{Int}(undef, length(move_beliefs))
     latent_urgency = Vector{Int}(undef, length(move_beliefs))
-    diff = Vector{Int}(undef, length(move_beliefs)-1)
+    diff = Vector{Int}(undef, length(move_beliefs) - 1)
     for i in eachindex(move_beliefs)
         urgency[i] = add!(bag)
         latent_urgency[i] = add!(bag)
@@ -36,12 +36,21 @@ function ranking_update(move_beliefs::Vector{Gaussian1D}, β)
 
     # Gaussian noise for the latent urgencies of the winning move and the other moves
     likelF = Vector{Factor}(undef, length(move_beliefs))
-    diffF = Vector{Factor}(undef, length(move_beliefs)-1)
-    compareF = Vector{Factor}(undef, length(move_beliefs)-1)
+    diffF = Vector{Factor}(undef, length(move_beliefs) - 1)
+    compareF = Vector{Factor}(undef, length(move_beliefs) - 1)
     for i in eachindex(move_beliefs)
         likelF[i] = addFactor(GaussianMeanFactor(β * β, latent_urgency[i], urgency[i], bag))
         if (i < length(move_beliefs))
-            diffF[i] = addFactor(WeightedSumFactor(1, -1, latent_urgency[1], latent_urgency[i+1], diff[i], bag))
+            diffF[i] = addFactor(
+                WeightedSumFactor(
+                    1,
+                    -1,
+                    latent_urgency[1],
+                    latent_urgency[i+1],
+                    diff[i],
+                    bag,
+                ),
+            )
             compareF[i] = addFactor(GreaterThanFactor(0, diff[i], bag))
         end
     end
@@ -99,8 +108,18 @@ function move_probability_approx(move_beliefs::Vector{Gaussian1D}, β)
         Z[i] = 1.0
         for j in eachindex(move_beliefs)
             if (i != j)
-                Z[i] *= 1 - cdf(Normal(mean(move_beliefs[i]) - mean(move_beliefs[j]), 
-                                       sqrt(variance(move_beliefs[i]) + variance(move_beliefs[j]) + 2 * β * β)), 0)
+                Z[i] *=
+                    1 - cdf(
+                        Normal(
+                            mean(move_beliefs[i]) - mean(move_beliefs[j]),
+                            sqrt(
+                                variance(move_beliefs[i]) +
+                                variance(move_beliefs[j]) +
+                                2 * β * β,
+                            ),
+                        ),
+                        0,
+                    )
             end
         end
     end
@@ -117,8 +136,9 @@ function test()
 
     println("\n\nTwo Move example\n=================")
     prior_beliefs = [
-        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)), 
-        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))]
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+    ]
     (Z, posterior_beliefs) = ranking_update(prior_beliefs, β)
     println(prior_beliefs[1], " (Winner) ==> ", posterior_beliefs[1])
     println(prior_beliefs[2], " (Loser) ==> ", posterior_beliefs[2])
@@ -128,7 +148,8 @@ function test()
     prior_beliefs = [
         Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
         Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
-        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0))]
+        Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
+    ]
     (Z, posterior_beliefs) = ranking_update(prior_beliefs, β)
     println(prior_beliefs[1], " (Winner) ==> ", posterior_beliefs[1])
     println(prior_beliefs[2], " (Loser 1) ==> ", posterior_beliefs[2])
@@ -139,7 +160,8 @@ function test()
     prior_beliefs = [
         Gaussian1Dμσ2(41.57517524002317, 0.6605468334386351 * 0.6605468334386351),
         Gaussian1Dμσ2(37.332437754079756, 0.4705768648864796 * 0.4705768648864796),
-        Gaussian1Dμσ2(36.888465029048206, 0.2991688936980313 * 0.2991688936980313)]
+        Gaussian1Dμσ2(36.888465029048206, 0.2991688936980313 * 0.2991688936980313),
+    ]
     # prior_beliefs = [
     #     Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
     #     Gaussian1Dμσ2(25.0, 25.0 * 25.0 / (3.0 * 3.0)),
