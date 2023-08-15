@@ -4,6 +4,20 @@
 
 #include "include/parse/parse.h"
 
+/* allocates memory for token iterator*/
+token_iterator_t* new_token_iterator(){
+    return (token_iterator_t *) malloc(sizeof(token_iterator_t));
+};
+
+/* frees memory for token iterator (and it's fields) */
+void delete_token_iterator(token_iterator_t* it){
+    if(it->input) free(it->input);
+    if(it->delimiters) free(it->delimiters);
+    if(it->token) free(it->token);
+    free(it);
+}
+
+/* initializes token iterator */
 token_iterator_t* tokenize(token_iterator_t* it, char *input, char* delimiters){
     if(it == NULL || input == NULL || delimiters == NULL){
         fprintf(stderr, "Invalid call! it:%p in:%p del:%p\n", it, input, delimiters);
@@ -46,15 +60,16 @@ token_iterator_t* tokenize(token_iterator_t* it, char *input, char* delimiters){
     return it;
 }
 
+/* returns 1 if there are tokens left */
 int token_left(token_iterator_t* it){
     if(it->token){
         return 1;
     } else{
-        free(it->input);
-        free(it->delimiters);
         return 0;
     }
 }
+
+/* extracts the next token */
 void token_next(token_iterator_t* it){
     /* free token from last iteration */
     free(it->token);

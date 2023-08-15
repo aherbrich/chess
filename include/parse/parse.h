@@ -26,8 +26,15 @@ typedef struct _token_iterator_t {
     char* delimiters;
 } token_iterator_t;
 
+/* allocates memory for token iterator*/
+token_iterator_t* new_token_iterator();
+/* frees memory for token iterator (and it's fields) */
+void delete_token_iterator(token_iterator_t* it);
+/* initializes token iterator */
 token_iterator_t* tokenize(token_iterator_t* it, char *input, char* delimiters);
+/* returns 1 if there are tokens left */
 int token_left(token_iterator_t* it);
+/* extracts the next token*/
 void token_next(token_iterator_t* it);
 
 /* loads a set of chess games from a text file */
