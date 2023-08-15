@@ -111,12 +111,13 @@ function run(lib, file_name, no_folds; prior = CGaussian(0.0, 1.0))
         @ccall $delete_move_set_array(msa::Ptr{MoveSetArray})::Cvoid
 
         # generate result file
-        move_predictions = Vector{Tuple{Int,Int}}()
+        move_predictions = Vector{Tuple{Int,Int,CGaussian}}()
         for i in eachindex(all_move_urgencies)
             move_idx, move_urgencies = all_move_urgencies[i]
             t = (
                 move_idx,
                 findall(x -> x == 1, sortperm(move_urgencies, lt = Base.:<, rev = true))[1],
+                move_urgencies[1]
             )
             push!(move_predictions, t)
         end
@@ -125,7 +126,7 @@ function run(lib, file_name, no_folds; prior = CGaussian(0.0, 1.0))
     end
 
     # initialize move move_predictions
-    fold_move_predicitions = Vector{Vector{Tuple{Int,Int}}}()
+    fold_move_predicitions = Vector{Vector{Tuple{Int,Int,CGaussian}}}()
 
     # initalizes the chess engine
     @ccall $initialize_attack_boards()::Cvoid
@@ -197,34 +198,56 @@ end
 
 lib = dlopen("lib/libchess.so")
 try
-    mp = run(lib, pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", 10)
-    # mp = run(lib, "/tmp/many_games.pgn", 10)
-    mp = vcat(mp...)
-
-    # compute the plot numbers
-    rank_pos = 1
-    max_no_moves = maximum(x -> x[1], mp)
-    rank_accuracy = Vector{Float64}(undef, max_no_moves)
-    for move_idx = 1:max_no_moves
-        idx = findall(x -> x[1] == move_idx, mp)
-        rank_accuracy[move_idx] = mean(x -> x[2], mp[idx])
-        # if length(idx) > 0
-        #     rank_accuracy[move_idx] = length(findall(x -> x[2] <= rank_pos, mp[idx])) / length(idx)
-        # else
-        #     rank_accuracy[rank_pos] = 0
-        # end
-    end
+    move_preds = run(lib, pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn", 10)
+    # move_preds = run(lib, "/tmp/many_games.pgn", 10)
+    mp = vcat(move_preds...)
 
     # plot scatter plot of the rank accuracy
-    p = scatter(
-        rank_accuracy,
-        label = "Rank Accuracy",
+    p = plot(
         xlabel = "Move index",
         ylabel = "Rank Accuracy",
-        title = "Rank Accuracy of Move Predictions in Top-$rank_pos",
-        legend = false,
+        legend = :topright,
+        ylim = (0, 1),
+        xlim = (1, 150),
     )
+    for rank_pos in [1;3;5;10;20]
+        # compute the plot numbers
+        max_no_moves = maximum(x -> x[1], mp)
+        rank_accuracy = Vector{Float64}(undef, max_no_moves)
+        for move_idx = 1:max_no_moves
+            idx = findall(x -> x[1] == move_idx, mp)
+            # rank_accuracy[move_idx] = mean(x -> x[2], mp[idx])
+            if length(idx) > 0
+                rank_accuracy[move_idx] = length(findall(x -> x[2] <= rank_pos, mp[idx])) / length(idx)
+            else
+                rank_accuracy[rank_pos] = 0
+            end
+        end
+
+        # plot scatter plot of the rank accuracy
+        scatter!(
+            rank_accuracy,
+            label = "Top-$rank_pos",
+        )
+    end
     display(p)
 finally
     dlclose(lib)
 end
+
+# # compute the plot numbers
+# max_no_rank = maximum(x -> x[2], mp)
+# mean_belief = Vector{Float64}(undef, max_no_rank)
+# for rank = 1:max_no_rank
+#     idx = findall(x -> x[2] == rank, mp)
+#     mean_belief[rank] = mean(x -> x[3].τ/x[3].ρ, mp[idx])
+# end
+
+# p = scatter(
+#     1:max_no_rank,
+#     mean_belief,
+#     xlabel = "Rank",
+#     ylabel = "Mean Urgency",
+#     legend = false,
+# )
+# display(p)
