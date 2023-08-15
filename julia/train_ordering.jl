@@ -79,7 +79,7 @@ function run(lib, file_name)
     urgencies = @ccall $initialize_ht_urgencies()::Ptr{HTUrgencies}
 
     # train the model 
-    train_info = TrainingInfo(urgencies, CGaussian(0.0,1.0), 0.5, 0, C_NULL, 1)
+    train_info = TrainingInfo(urgencies, CGaussian(0.0, 1.0), 0.5, 0, C_NULL, 1)
     @ccall $train_model(
         chess_games.games::Ptr{Ptr{ChessGame}},
         chess_games.no_games::Cint,
@@ -115,7 +115,7 @@ function run(lib, file_name)
 end
 
 lib = dlopen("lib/libchess.so")
-try 
+try
     @time run(lib, pwd() * "/data/ficsgamesdb_2022_standard2000_nomovetimes_288254.pgn")
 finally
     dlclose(lib)

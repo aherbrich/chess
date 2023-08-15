@@ -12,15 +12,17 @@
 
 /* type for storing a set of moves and all other possible moves */
 typedef struct _move_set_t {
-    int* move_keys;     /* set of all moves (where move at index 0 is the move made) */
+    int move_idx;       /* index of the move in the game */
     int no_moves;       /* total number of all moves (including the move made) */
+    int* move_keys;     /* set of all moves (where move at index 0 is the move made) */
 } move_set_t;
 
 /* allocates a new move set */
-move_set_t* new_move_set(int no_moves) {
+move_set_t* new_move_set(int no_moves, int move_idx) {
     move_set_t* ms = (move_set_t*) malloc(sizeof(move_set_t));
     ms->move_keys = (int*) malloc(sizeof(int) * no_moves);
     ms->no_moves = no_moves;
+    ms->move_idx = move_idx;
     return ms;
 }
 
@@ -35,9 +37,9 @@ void delete_move_set(move_set_t *ms) {
 
 /* type for storing sets of move sets */
 typedef struct _move_set_array_t {
-    move_set_t** move_sets;    /* array of all move sets */
     int no_move_sets;          /* total number of move sets */
     int capacity;              /* total capacity of the array of move sets */
+    move_set_t** move_sets;    /* array of all move sets */
 } move_set_array_t;
 
 /* allocates a new array of move sets */
@@ -86,6 +88,7 @@ move_set_array_t* games_to_move_sets(chess_games_t chess_games) {
         char* move_str = (char*) malloc(strlen(chess_games.games[i]->move_list) + 1);
         strcpy(move_str, chess_games.games[i]->move_list);
 
+        int move_idx = 1;
         char* token = strtok(move_str, " ");
         do {
             move_t* move = str_to_move(board, token);
@@ -97,7 +100,7 @@ move_set_array_t* games_to_move_sets(chess_games_t chess_games) {
 
                 /* create array to hold all move keys corresponding to possible moves */
                 int no_moves = move_lst.nr_elem;
-                move_set_t *ms = new_move_set(no_moves);
+                move_set_t *ms = new_move_set(no_moves, move_idx);
                 int idx = 0;
 
                 /* extract move key from move made */
@@ -117,8 +120,9 @@ move_set_array_t* games_to_move_sets(chess_games_t chess_games) {
 
                     free_move(other_move);
                 }
-                /* add the move set to the set of move set */
+                /* add the move set to the set of move set and increment move index */
                 add_move_set(msa, ms);
+                move_idx++;
 
                 /* execute move made */
                 do_move(board, move);
