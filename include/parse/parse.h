@@ -19,6 +19,17 @@ typedef struct _chess_games_t {
     chess_game_t** games;  // array of chess games
 } chess_games_t;
 
+typedef struct _token_iterator_t {
+    char* input;
+    char* token;
+    char* next;
+    char* delimiters;
+} token_iterator_t;
+
+token_iterator_t* tokenize(token_iterator_t* it, char *input, char* delimiters);
+int token_left(token_iterator_t* it);
+void token_next(token_iterator_t* it);
+
 /* loads a set of chess games from a text file */
 chess_games_t load_chess_games(const char* file_name);
 /* count total numbers of moves made */
