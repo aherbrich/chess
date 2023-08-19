@@ -16,7 +16,7 @@ ORDERING_OBJ = $(addprefix $(BUILD_DIR)/, $(ORDERING_SRC:src/%.c=%.o))
 EVAL_SRC = $(wildcard src/train-eval/*.c)
 EVAL_OBJ = $(addprefix $(BUILD_DIR)/, $(EVAL_SRC:src/%.c=%.o))
 
-UCI_ENGINE_SRC = src/gui.c
+UCI_ENGINE_SRC = src/uci.c
 TRAIN_ORDERING_SRC = src/train_ordering.c
 TEST_ORDERING_SRC = src/test_ordering.c
 TRAIN_EVAL_SRC = src/train.c
