@@ -60,12 +60,14 @@ typedef enum _dir_t {
 	NORTH_NORTH = 16, SOUTH_SOUTH = -16
 } dir_t;
 
-
+/* useful renames */
 typedef uint64_t bitboard_t;
 typedef uint8_t player_t;
 typedef uint8_t idx_t;
 typedef uint8_t flag_t;
 
+/* struct holding information (lost in do_move, but)
+   needed for reconstruction of board in undo_move */
 typedef struct _undoinfo_t {
     flag_t castlerights;
     piece_t captured;
@@ -77,6 +79,7 @@ typedef struct _undoinfo_t {
     uint64_t hash;
 } undoinfo_t;
 
+/* structure representing a chessboard */
 #define MAXPLIES 1024
 typedef struct _board_t {
     piece_t playingfield[64];
@@ -94,6 +97,7 @@ typedef struct _board_t {
     uint64_t hash;
 } board_t;
 
+/* structure representing a move */
 typedef struct _move_t {
     uint16_t value;
     idx_t from;

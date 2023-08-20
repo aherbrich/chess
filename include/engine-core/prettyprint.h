@@ -11,17 +11,27 @@
 #define Color_WHITE "\033[0;37m"
 #define Color_END "\033[0m"
 
-//////////////////////////////////////////////////////////////
-//  PRINT FUNCTIONS
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for printing of board(-like) structures                                                */
+/* ------------------------------------------------------------------------------------------------ */
+
+/* prints a given chessboard */
 void print_board(board_t* board);
+/* prints a given bitboard; useful for bitboard debugging */
 void print_bitboard(bitboard_t board);
 
-void print_move(move_t* move);
-void print_move_ranking(board_t* board, move_t* move);
-void print_move_test(board_t* board, move_t* move);
-void print_LAN_move(move_t* move, player_t color_playing);
-char* get_LAN_move(move_t* move, player_t color_playing);
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for printing of move(-like) structures                                                */
+/* ------------------------------------------------------------------------------------------------ */
 
+/* prints a given move */
+void print_move(move_t* move);
+/* prints a given move in LANotation */
+void print_LAN_move(move_t* move, player_t color_playing);
+/* returns a string of a given move in LANotation */
+char* get_LAN_move(move_t* move, player_t color_playing);
+/* prints the principal variation, i.e. the sequence of moves the engine considers best */
 void print_line(board_t* board, int depth);
 
 #endif

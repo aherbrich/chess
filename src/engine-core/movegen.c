@@ -1578,18 +1578,17 @@ void undo_move(board_t *board, move_t *move) {
 ///////////////////////////////////////////////////////////////
 ////		FUNCTIONS CONCERNING CHECK VALIDITY
 
-/* Checks if a player is in check WHEN AT TURN */
+/* Checks if current player is in check */
 /* WARNING: Only call AFTER move generation (and BEFORE making move)
 (since we determine if we are in check in move generation anyway,
 but would switch players if we made move early) */
-int is_in_check(board_t *board) {
+int is_in_check_fast(board_t *board) {
     return (board->checkers);
 }
 
-/* Checks if the opponent player is in check after move */
-/* WARNING: Call only AFTER making a move as player A
-to check if player B is now in check */
-int is_in_check_opponent(board_t *board) {
+/* Checks if current player is in check */
+/* WARNING: Always safe to use */
+int is_in_check(board_t *board) {
     player_t us = board->player;
     player_t them = SWITCHSIDES(us);
 
