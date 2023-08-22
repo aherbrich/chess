@@ -48,7 +48,7 @@ extern htentry_t **ht_table;
 /* initializes the global transposition table */
 void initialize_hashtable();
 /* deletes (frees memory) of all transpositon table entries */
-void clear_hashtable();
+void reset_hashtable();
 /* stores an entry in transposition table */
 void store_hashtable_entry(board_t *board, int8_t flags, int16_t value, move_t *move, int8_t depth);
 /* gets entry of TT, i.e. writes information into memory at given pointers, returns 1 if successfull */

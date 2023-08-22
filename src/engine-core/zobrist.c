@@ -111,7 +111,7 @@ void initialize_hashtable() {
 }
 
 /* Clears the global hashtable */
-void clear_hashtable() {
+void reset_hashtable() {
     for (int i = 0; i < HTSIZE; i++) {
         /* remove all (so possibly multiple) hash entries at index i */
         while (ht_table[i]) {
@@ -121,6 +121,9 @@ void clear_hashtable() {
             ht_table[i] = tmp;
         }
     }
+    free(ht_table);
+
+    initialize_hashtable();
 }
 
 /* Determines how full the hash table is in permill */
