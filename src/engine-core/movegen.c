@@ -4,8 +4,6 @@
 #include "include/engine-core/move.h"
 #include "include/engine-core/pq.h"
 #include "include/engine-core/zobrist.h"
-#include "include/ordering/ordering.h"
-#include "include/ordering/urgencies.h"
 
 const bitboard_t MASK_FILE[8] = {
     0x101010101010101, 0x202020202020202, 0x404040404040404, 0x808080808080808,
@@ -637,8 +635,6 @@ void initialize_chess_engine_necessary() {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
-    initialize_ranking_updates();
-    ht_urgencies = initialize_ht_urgencies();
 }
 
 //////////////////////////////////////////////////////

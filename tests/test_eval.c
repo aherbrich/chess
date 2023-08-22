@@ -2,8 +2,7 @@
 #include <sys/time.h>
 
 #include "include/engine-core/engine.h"
-#include "include/ordering/ordering.h"
-#include "include/ordering/urgencies.h"
+#include "include/engine-core/init.h"
 
 char STARTING_FEN[] =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
@@ -23,9 +22,10 @@ int main() {
     board_t* board = init_board();
     load_by_FEN(board, TEST7_FEN);
 
-    initialize_chess_engine_necessary();
+    initialize_attack_boards();
+    initialize_helper_boards();
+    initialize_zobrist_table();
     initialize_hashtable();
-    load_ht_urgencies_from_binary_file("ht_gaussians.bin", ht_urgencies);
 
     searchdata_t* search_data = init_search_data(board);
 
@@ -51,7 +51,6 @@ int main() {
 
     free(board);
     free_search_data(search_data);
-    deletes_ht_urgencies(ht_urgencies);
 
     return 0;
 }

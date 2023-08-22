@@ -1,3 +1,4 @@
+#include "include/engine-core/init.h"
 #include "include/engine-core/board.h"
 #include "include/engine-core/move.h"
 #include "include/engine-core/perft.h"
@@ -12,7 +13,9 @@ int main() {
     load_by_FEN(board,
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-    initialize_chess_engine_necessary();
+    initialize_attack_boards();
+    initialize_helper_boards();
+    initialize_zobrist_table();
 
     perft_divide(board, 5);
 

@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #include "include/engine-core/engine.h"
-#include "include/ordering/urgencies.h"
+#include "include/engine-core/init.h"
 #include "include/parse/parse.h"
 #include "include/train-eval/database.h"
 
@@ -53,7 +53,8 @@ int main() {
     chess_games_t chess_games = load_chess_games(file_name);
 
     /* initialize chess engine */
-    initialize_chess_engine_necessary();
+    initialize_attack_boards();
+    initialize_helper_boards();
     initialize_zobrist_table();
     initialize_database();
 

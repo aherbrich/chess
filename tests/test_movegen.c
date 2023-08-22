@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "include/engine-core/init.h"
 #include "include/engine-core/board.h"
 #include "include/engine-core/move.h"
 #include "include/engine-core/perft.h"
@@ -168,7 +169,7 @@ int run_specific_test(perfttest_t *test) {
     int nr_of_moves;
     struct timeval start;
     struct timeval end;
-    int ret_value = 0;
+    int ret_value = 1;
 
     // run perft test for given depths and output results
     for (int i = 0; i < 16 && test->results[i] != -1; i++) {
@@ -194,10 +195,11 @@ int run_specific_test(perfttest_t *test) {
         if (test->results[i] == nr_of_moves) {
             print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
                                  "yes", Color_GREEN);
-            ret_value = 1;
+            ret_value = 0;
         } else {
             print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
                                  "no", Color_RED);
+            ret_value = 1;
         }
         print_perft_test_row_separator();
     }
@@ -211,7 +213,8 @@ int run_specific_test(perfttest_t *test) {
  */
 int main() {
     // intialize necessary structures
-    initialize_chess_engine_necessary();
+    initialize_attack_boards();
+    initialize_helper_boards();
     initialize_zobrist_table();
     // determine number of tests in file
     int nr_of_tests = count_lines_in_file();
