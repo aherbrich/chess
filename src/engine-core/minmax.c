@@ -7,8 +7,6 @@
 #include "include/engine-core/search.h"
 #include "include/engine-core/types.h"
 #include "include/engine-core/zobrist.h"
-#include "include/ordering/ordering.h"
-#include "include/ordering/urgencies.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1
@@ -284,39 +282,6 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     initialize_maxpq(&movelst);
     generate_moves(searchdata->board, &movelst);
 
-    // extract move order urgency prediction
-    int move_keys[movelst.nr_elem];
-    double means[movelst.nr_elem];
-    double probs[movelst.nr_elem];
-
-    int idx_of_max_prob = 1;
-    int idx_of_max_mean = 1;
-
-    for (int i = 1; i <= movelst.nr_elem; i++) {
-        move_keys[i - 1] = calculate_move_key(searchdata->board, movelst.array[i]);
-        gaussian_t *g_ptr = get_urgency(ht_urgencies, move_keys[i - 1]);
-        means[i - 1] = mean((g_ptr) ? *g_ptr : init_gaussian1D_standard_normal());
-        probs[i - 1] = 0.0;
-    }
-
-    // predict_move_probabilities(ht_urgencies, probs, move_keys, movelst.nr_elem, 0.5 * 0.5);
-
-    for (int i = 1; i <= movelst.nr_elem; i++) {
-        if (probs[i - 1] >= probs[idx_of_max_prob - 1]) {
-            idx_of_max_prob = i;
-        }
-        if (means[i - 1] >= means[idx_of_max_mean - 1]) {
-            idx_of_max_mean = i;
-        }
-    }
-
-    if (searchdata->nodes_searched % 300000 == 0) {
-        printf("================================\n");
-        // printf("| Hits/Searched(Prob):\n| %d/%d\t(%f)\n", pv_move_hits_prob, pv_move_searches, (float) pv_move_hits_prob/(float) pv_move_searches);
-        // printf("|\n");
-        printf("| Hits/Searched(Mean):\n| %d/%d\t(%f)\n", pv_move_hits_mean, pv_move_searches, (float)pv_move_hits_mean / (float)pv_move_searches);
-        printf("================================\n\n\n");
-    }
 
     // =================================================================== //
     // PV/HASH MOVE: While starting a new iteration, the most important    //
@@ -328,8 +293,6 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
         pv_move_searches++;
         for (int i = 1; i <= movelst.nr_elem; i++) {
             if (is_same_move(movelst.array[i], pv_move)) {
-                if (i == idx_of_max_prob) pv_move_hits_prob++;
-                if (i == idx_of_max_mean) pv_move_hits_mean++;
                 movelst.array[i]->value = 10000;
                 swap(&movelst, i, 1);
                 break;
