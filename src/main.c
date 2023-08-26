@@ -19,7 +19,7 @@ int main() {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
-    initialize_hashtable();
+    tt = init_tt(MB_TO_BYTES(64));
 
     /* start uci interface of chess engine */
     uci_interface_loop(&args);

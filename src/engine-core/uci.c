@@ -6,7 +6,7 @@
 
 #include "include/engine-core/engine.h"
 #include "include/engine-core/uci.h"
-
+#include "include/engine-core/tt.h"
 
 #define BUFFER_SIZE 16384
 #define TO_PROM_FLAG(X) ((X== 'n' || X == 'N') ? KPROM : (X == 'b' || X == 'B') ? BPROM : (X == 'r' || X == 'R') ? RPROM : (X == 'q' || X == 'Q') ? QPROM : -1)
@@ -122,8 +122,8 @@ move_t *LAN_to_move(board_t *board, char *move_str) {
 void *start_search(void *args) {
     searchdata_t *searchdata = (searchdata_t *)args;
 
-    /* clear hash table form last search*/
-    reset_hashtable();
+    /* clear tt form last search*/
+    reset_tt(tt);
 
     /* indicate that search is running */
     search_running = 1;
@@ -208,7 +208,7 @@ void setoption_command_response(options_t options){
 /* handles and prints the ucinewgame command response */
 void ucinewgame_command_response(board_t* board){
     clear_board(board);
-    reset_hashtable();
+    reset_tt(tt);
     verbosity_print("new game started");
 }
 

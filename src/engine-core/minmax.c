@@ -7,6 +7,7 @@
 #include "include/engine-core/search.h"
 #include "include/engine-core/types.h"
 #include "include/engine-core/zobrist.h"
+#include "include/engine-core/tt.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1
@@ -168,7 +169,7 @@ int quiet_search(board_t *board, int alpha, int beta,
         if (stop_immediately) {
             free_move(move);
             free_pq(&movelst);
-            return get_eval_from_hashtable(board);
+            return tt_eval(tt, board);
         }
 
         // filter out non-captures
@@ -245,12 +246,19 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // before and found an exact evaluation, return the score and stop  //
     // searching.                                                       //
     // ================================================================ //
+    tt_entry_t* entry = retrieve_tt_entry(tt, searchdata->board);
+    int entry_found = 0;
     move_t *pv_move = NULL;
-    int16_t pv_value;
-    int8_t pv_flags, pv_depth;
+    int16_t pv_value = 0;
+    int8_t pv_flags = 0, pv_depth = 0;
 
-    int entry_found = get_hashtable_entry(searchdata->board, &pv_flags,
-                                          &pv_value, &pv_move, &pv_depth);
+    if(entry){
+        entry_found = 1;
+        pv_move = copy_move(&entry->best_move);
+        pv_value = entry->eval;
+        pv_flags = entry->flags;
+        pv_depth = entry->depth;
+    }
 
     if (entry_found && pv_depth == depth && pv_flags == EXACT) {
         free_move(pv_move);
@@ -360,8 +368,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // cant be sure that the information is truely correct).            //
     // ================================================================ //
     if (!stop_immediately) {
-        store_hashtable_entry(searchdata->board, tt_flag, best_eval, best_move,
-                              depth);
+        store_tt_entry(tt, searchdata->board, *best_move, depth, best_eval,
+                       tt_flag);
     }
     free(best_move);
 
@@ -402,8 +410,7 @@ void search(searchdata_t *searchdata) {
         if (stop_immediately) {
             stop_immediately = 0;
             if (searchdata->best_move == NULL && depth == 1) {
-                searchdata->best_move =
-                    get_best_move_from_hashtable(searchdata->board);
+                searchdata->best_move = tt_best_move(tt, searchdata->board);
             }
             break;
         }
@@ -430,14 +437,14 @@ void search(searchdata_t *searchdata) {
 
         // Update search data and output info (for GUI)
         free_move(searchdata->best_move);
-        searchdata->best_move = get_best_move_from_hashtable(searchdata->board);
+        searchdata->best_move = tt_best_move(tt, searchdata->board);
         searchdata->best_eval = eval;
 
         int nodes = searchdata->nodes_searched;
         int seldepth = searchdata->max_seldepth;
         int nps = (int)(nodes / delta_in_ms(searchdata));
         int time = delta_in_ms(searchdata);
-        int hashfull = hashtable_full_permill();
+        int hashfull = tt_permille_full(tt);
         char *score = get_mate_or_cp_value(eval, depth);
 
         printf("info score %s depth %d seldepth %d nodes %d time %d nps %d hasfull %d pv ",
@@ -452,7 +459,7 @@ void search(searchdata_t *searchdata) {
     int nodes = searchdata->nodes_searched;
     int nps = (int)(nodes / delta_in_ms(searchdata));
     int time = delta_in_ms(searchdata);
-    int hashfull = hashtable_full_permill();
+    int hashfull = tt_permille_full(tt);
     char *move_str =
         get_LAN_move(searchdata->best_move, searchdata->board->player);
     printf("info nodes %d time %d nps %d hasfull %d\nbestmove %s\n", nodes,

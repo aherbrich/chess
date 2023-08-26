@@ -119,3 +119,60 @@ tt_entry_t* retrieve_tt_entry(tt_t table, board_t* board) {
 
     return NULL;
 }
+
+/* returns how full the transposition table is in per mille */
+int tt_permille_full(tt_t table) {
+    uint64_t count = 0;
+    for (int i = 0; i < table.size; i++) {
+        if (table.buckets[i].always_replace.key != 0ULL) count++;
+        if (table.buckets[i].replace_if_better.key != 0ULL) count++;
+    }
+    return ((int)((count * 1000) / (table.size * 2)));
+}
+
+/* returns the eval for the board position based on tt entry */
+int tt_eval(tt_t table, board_t* board) {
+    /* calculate zobrist key and hash */
+    uint64_t key = board->hash;
+    uint64_t hash = hash_func_tt(board->hash, table.no_bits);
+
+    /* get entries */
+    tt_entry_t* entry_always_replace = &table.buckets[hash].always_replace;
+    tt_entry_t* entry_replace_if_better = &table.buckets[hash].replace_if_better;
+
+    /* return eval if there exist an entry for the board */
+    if(entry_replace_if_better->key == key){
+        return entry_replace_if_better->eval;
+    } else if (entry_always_replace->key == key){
+        return entry_always_replace->eval;
+    }
+
+    /* otherwise, return worst eval */
+    return -16000;
+}
+
+/* Gets the best move for the board position based on tt entry */
+move_t *tt_best_move(tt_t table, board_t *board) {
+    /* calculate zobrist key and hash */
+    uint64_t key = board->hash;
+    uint64_t hash = hash_func_tt(board->hash, table.no_bits);
+
+    /* get entries */
+    tt_entry_t* entry_always_replace = &table.buckets[hash].always_replace;
+    tt_entry_t* entry_replace_if_better = &table.buckets[hash].replace_if_better;
+
+    /* return eval if there exist an entry for the board */
+    if(entry_replace_if_better->key == key){
+        return copy_move(&entry_replace_if_better->best_move);
+    } else if (entry_always_replace->key == key){
+        return copy_move(&entry_always_replace->best_move);
+    }
+    
+    /* otherwise, return worst eval */
+    return NULL;
+}
+
+/* resets the transposition table */
+void reset_tt(tt_t table) {
+    memset(table.buckets, 0, table.size * sizeof(tt_bucket_t));
+}

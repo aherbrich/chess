@@ -7,6 +7,7 @@
 #include "include/engine-core/move.h"
 #include "include/engine-core/types.h"
 #include "include/engine-core/zobrist.h"
+#include "include/engine-core/tt.h"
 
 char FIELD[64][2] = {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "a2", "b2",
                      "c2", "d2", "e2", "f2", "g2", "h2", "a3", "b3", "c3", "d3",
@@ -248,7 +249,7 @@ void print_line(board_t* board, int depth) {
     /* for all depth, probe best move from the transpostiotn table and print it
      */
     for (int d = depth; d > 0; d--) {
-        move_t* best_move = get_best_move_from_hashtable(board_copy);
+        move_t* best_move = tt_best_move(tt, board_copy);
         if (best_move == NULL) {
             /* this can happen but shouldn't (if hash entry overwritten) */
             printf("NULL ");

@@ -25,7 +25,7 @@ int main() {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
-    initialize_hashtable();
+    tt = init_tt(MB_TO_BYTES(64));
 
     searchdata_t* search_data = init_search_data(board);
 
@@ -36,7 +36,7 @@ int main() {
     print_board(board);
     printf("\n");
 
-    search_data->max_depth = 20;
+    search_data->max_depth = 10;
     search_data->run_infinite = 1;
     search(search_data);
     int eval = search_data->best_eval;
