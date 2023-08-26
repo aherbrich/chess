@@ -7,7 +7,10 @@
 #include "include/engine-core/prettyprint.h"
 #include "include/engine-core/search.h"
 
-tt_t tt;
+
+/* ------------------------------------------------------------------------------------------------ */
+/* helper functions for transposition table                                                         */
+/* ------------------------------------------------------------------------------------------------ */
 
 /* from 'Hackers solution' a fast way to calculate the nearest power of 2, lower or equal to x */
 uint32_t round_to_power_of_two (uint32_t x) {
@@ -26,20 +29,15 @@ int find_power_of_two(int x) {
     return count;
 }
 
-/* prints tt entry */
-void print_tt_entry(tt_entry_t* entry) {
-    printf("key: %llu\n", entry->key);
-    printf("best move: ");
-    print_move(&entry->best_move);
-    printf("depth: %d\n", entry->depth);
-    printf("eval: %d\n", entry->eval);
-    printf("flags: %d\n", entry->flags);
-}
-
 /* fibonacci hash function for transposition table */
 uint64_t hash_func_tt(uint64_t key, int bits) {
     return (key * 11400714819323198485ULL) >> (64-bits);
 }
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for intialization and deletion of transposition table                                  */
+/* ------------------------------------------------------------------------------------------------ */
+
 
 /* allocates memory for and initializes a transposition table */
 tt_t init_tt(int size_in_bytes) {
@@ -74,6 +72,17 @@ tt_t init_tt(int size_in_bytes) {
 void free_tt(tt_t table) {
     free(table.buckets);
 }
+
+/* resets the transposition table */
+void reset_tt(tt_t table) {
+    memset(table.buckets, 0, table.size * sizeof(tt_bucket_t));
+}
+
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for storing and retrieving of transposition table entries                              */
+/* ------------------------------------------------------------------------------------------------ */
+
 
 /* stores an entry in transposition table */
 void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int16_t eval, int8_t flags) {
@@ -125,16 +134,6 @@ tt_entry_t* retrieve_tt_entry(tt_t table, board_t* board) {
     return NULL;
 }
 
-/* returns how full the transposition table is in per mille */
-int tt_permille_full(tt_t table) {
-    uint64_t count = 0;
-    for (int i = 0; i < table.size; i++) {
-        if (table.buckets[i].always_replace.key != 0ULL) count++;
-        if (table.buckets[i].replace_if_better.key != 0ULL) count++;
-    }
-    return ((int)((count * 1000) / (table.size * 2)));
-}
-
 /* returns the eval for the board position based on tt entry */
 int tt_eval(tt_t table, board_t* board) {
     /* calculate zobrist key and hash */
@@ -177,7 +176,28 @@ move_t *tt_best_move(tt_t table, board_t *board) {
     return NULL;
 }
 
-/* resets the transposition table */
-void reset_tt(tt_t table) {
-    memset(table.buckets, 0, table.size * sizeof(tt_bucket_t));
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for printing/info of transposition table                                               */
+/* ------------------------------------------------------------------------------------------------ */
+
+
+/* prints tt entry */
+void print_tt_entry(tt_entry_t* entry) {
+    printf("key: %llu\n", entry->key);
+    printf("best move: ");
+    print_move(&entry->best_move);
+    printf("depth: %d\n", entry->depth);
+    printf("eval: %d\n", entry->eval);
+    printf("flags: %d\n", entry->flags);
+}
+
+/* returns how full the transposition table is in per mille */
+int tt_permille_full(tt_t table) {
+    uint64_t count = 0;
+    for (int i = 0; i < table.size; i++) {
+        if (table.buckets[i].always_replace.key != 0ULL) count++;
+        if (table.buckets[i].replace_if_better.key != 0ULL) count++;
+    }
+    return ((int)((count * 1000) / (table.size * 2)));
 }
