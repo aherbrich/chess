@@ -1,8 +1,10 @@
 #include <stdio.h>
 
+#include "include/engine-core/perft.h"
+
+#include "include/engine-core/types.h"
 #include "include/engine-core/move.h"
 #include "include/engine-core/prettyprint.h"
-#include "include/engine-core/types.h"
 
 /* Runs perft test for a given board and depth */
 uint64_t perft(board_t* board, int depth) {

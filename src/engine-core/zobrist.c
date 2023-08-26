@@ -1,8 +1,8 @@
 #include "include/engine-core/zobrist.h"
 
-#include "include/engine-core/helpers.h"
-#include "include/engine-core/move.h"
 #include "include/engine-core/types.h"
+#include "include/engine-core/helpers.h"
+
 
 zobrist_t zobrist_table;
 

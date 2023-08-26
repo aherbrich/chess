@@ -1,7 +1,8 @@
-#include "include/engine-core/types.h"
 #include "include/engine-core/init.h"
-#include "include/engine-core/uci.h"
+#include "include/engine-core/types.h"
 #include "include/engine-core/board.h"
+#include "include/engine-core/uci.h"
+
 
 #include <stdio.h>
 

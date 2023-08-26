@@ -1,7 +1,9 @@
 #include <string.h>
 
-#include "include/engine-core/helpers.h"
+#include "include/engine-core/board.h"
+
 #include "include/engine-core/types.h"
+#include "include/engine-core/helpers.h"
 #include "include/engine-core/zobrist.h"
 
 /* ------------------------------------------------------------------------------------------------ */

@@ -1,9 +1,9 @@
-#include "include/parse/parse.h"
-
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "include/parse/parse.h"
 
 /* counts the number of games in a PGN chess game file */
 int count_number_of_games(const char* file_name) {

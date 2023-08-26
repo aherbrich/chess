@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include "include/engine-core/eval.h"
-#include "include/engine-core/move.h"
-#include "include/engine-core/prettyprint.h"
 #include "include/engine-core/search.h"
+
 #include "include/engine-core/types.h"
+#include "include/engine-core/move.h"
 #include "include/engine-core/zobrist.h"
 #include "include/engine-core/tt.h"
+#include "include/engine-core/eval.h"
+#include "include/engine-core/prettyprint.h"
 
 #define TOLERANCE 15  // ms
 #define STOP_ACCURACY 1

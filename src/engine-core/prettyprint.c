@@ -2,10 +2,12 @@
 
 #include <stdio.h>
 
+#include "include/engine-core/prettyprint.h"
+
+#include "include/engine-core/types.h"
 #include "include/engine-core/board.h"
 #include "include/engine-core/helpers.h"
 #include "include/engine-core/move.h"
-#include "include/engine-core/types.h"
 #include "include/engine-core/zobrist.h"
 #include "include/engine-core/tt.h"
 

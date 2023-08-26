@@ -1,9 +1,10 @@
 #include <sys/time.h>
 
-#include "include/engine-core/board.h"
 #include "include/engine-core/search.h"
+
 #include "include/engine-core/types.h"
 #include "include/engine-core/tt.h"
+#include "include/engine-core/board.h"
 
 /* Initializes search data structure */
 searchdata_t *init_search_data(board_t *board) {

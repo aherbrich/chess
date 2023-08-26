@@ -1,6 +1,6 @@
-#include "include/train-eval/database.h"
-
 #include <stdio.h>
+
+#include "include/train-eval/database.h"
 
 #include "include/engine-core/board.h"
 #include "include/engine-core/types.h"

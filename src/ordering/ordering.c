@@ -7,10 +7,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "include/ordering/ordering.h"
+
 #include "include/engine-core/engine.h"
 #include "include/ordering/factors.h"
 #include "include/ordering/gaussian.h"
-#include "include/ordering/ordering.h"
 #include "include/ordering/urgencies.h"
 #include "include/parse/parse.h"
 

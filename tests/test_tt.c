@@ -1,12 +1,6 @@
 #include <stdio.h>
 
-#include "include/engine-core/tt.h"
-#include "include/engine-core/types.h"
-#include "include/engine-core/move.h"
-#include "include/engine-core/board.h"
-#include "include/engine-core/init.h"
-#include "include/engine-core/search.h"
-#include "include/engine-core/prettyprint.h"
+#include "include/engine-core/engine.h"
 
 tt_t tt;
 

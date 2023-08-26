@@ -4,9 +4,15 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "include/engine-core/engine.h"
 #include "include/engine-core/uci.h"
-#include "include/engine-core/tt.h"
+
+#include "include/engine-core/types.h"
+#include "include/engine-core/search.h"
+#include "include/engine-core/board.h"
+#include "include/engine-core/move.h"
+#include "include/engine-core/pq.h"
+#include "include/engine-core/prettyprint.h"
+
 
 #define BUFFER_SIZE 16384
 #define TO_PROM_FLAG(X) ((X== 'n' || X == 'N') ? KPROM : (X == 'b' || X == 'B') ? BPROM : (X == 'r' || X == 'R') ? RPROM : (X == 'q' || X == 'Q') ? QPROM : -1)

@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "include/engine-core/engine.h"
-#include "include/engine-core/init.h"
 #include "include/ordering/ordering.h"
 #include "include/ordering/urgencies.h"
 #include "include/parse/parse.h"

@@ -1,3 +1,5 @@
+#include "include/train-eval/features.h"
+
 #include "include/engine-core/eval.h"
 #include "include/engine-core/types.h"
 #include "include/train-eval/linalg.h"

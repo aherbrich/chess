@@ -1,3 +1,5 @@
+#include "include/engine-core/helpers.h"
+
 #include "include/engine-core/types.h"
 
 const int DEBRUIJN64[64] = {

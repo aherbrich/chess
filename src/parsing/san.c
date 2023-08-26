@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "include/parse/parse.h"
+
 #include "include/engine-core/move.h"
 #include "include/engine-core/types.h"
 

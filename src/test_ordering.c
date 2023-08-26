@@ -6,7 +6,6 @@
 #include <unistd.h>
 
 #include "include/engine-core/engine.h"
-#include "include/engine-core/init.h"
 #include "include/ordering/factors.h"
 #include "include/ordering/gaussian.h"
 #include "include/ordering/ordering.h"

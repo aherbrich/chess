@@ -1,7 +1,9 @@
 #include <stdio.h>
 
-#include "include/engine-core/helpers.h"
 #include "include/engine-core/move.h"
+
+#include "include/engine-core/types.h"
+#include "include/engine-core/helpers.h"
 #include "include/engine-core/pq.h"
 #include "include/engine-core/zobrist.h"
 

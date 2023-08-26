@@ -1,7 +1,7 @@
 #include "include/engine-core/eval.h"
 
-#include "include/engine-core/move.h"
 #include "include/engine-core/types.h"
+#include "include/engine-core/move.h"
 
 /* pawn position values */
 int PAWN_POSITION_VALUE[64] = {
