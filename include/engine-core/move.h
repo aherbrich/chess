@@ -4,10 +4,6 @@
 #include "include/engine-core/pq.h"
 #include "include/engine-core/types.h"
 
-
-/* Initialization of chess engine, necessary before any other function is called */
-void initialize_chess_engine_necessary();
-
 /* ------------------------------------------------------------------------------------------------ */
 /* functions for move geneartion and execution                                                      */
 /* ------------------------------------------------------------------------------------------------ */

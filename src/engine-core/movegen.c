@@ -632,13 +632,6 @@ void initialize_helper_boards() {
     initialize_line();
 }
 
-/* Initializes all structures necessary for legal move generation */
-void initialize_chess_engine_necessary() {
-    initialize_attack_boards();
-    initialize_helper_boards();
-    initialize_zobrist_table();
-}
-
 //////////////////////////////////////////////////////
 ///			BASIC MOVE STRUCT FUNCTIONS
 
