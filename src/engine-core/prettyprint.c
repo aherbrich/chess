@@ -242,7 +242,7 @@ char* get_LAN_move(move_t* move, player_t color_playing) {
 }
 
 /* Prints the (PV line) upto given depth */
-void print_line(board_t* board, int depth) {
+void print_line(tt_t tt, board_t* board, int depth) {
     /* make a copy of the board */
     board_t* board_copy = copy_board(board);
 

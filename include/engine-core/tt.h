@@ -1,3 +1,7 @@
+#ifndef __TT_H__
+#define __TT_H__
+
+
 #include "include/engine-core/types.h"
 
 #define MB_TO_BYTES(x) (x * 1024 * 1024)
@@ -25,12 +29,12 @@ typedef struct tt_t {
     int no_bits;
 } tt_t;
 
-extern tt_t tt;
-
 /* prints tt entry */
 void print_tt_entry(tt_entry_t* entry);
 /* allocates memory for and initializes a transposition table */
 tt_t init_tt(int size_in_bytes);
+/* frees memory for a transposition table */
+void free_tt(tt_t table);
 /* stores an entry in transposition table */
 void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int16_t eval, int8_t flags);
 /* retrieves an entry from transposition table */
@@ -43,3 +47,5 @@ int tt_eval(tt_t table, board_t* board);
 move_t *tt_best_move(tt_t table, board_t *board);
 /* resets the transposition table */
 void reset_tt(tt_t table);
+
+#endif

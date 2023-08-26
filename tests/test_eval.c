@@ -25,7 +25,6 @@ int main() {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
-    tt = init_tt(MB_TO_BYTES(64));
 
     searchdata_t* search_data = init_search_data(board);
 

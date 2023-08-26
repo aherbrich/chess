@@ -3,12 +3,14 @@
 #include "include/engine-core/board.h"
 #include "include/engine-core/search.h"
 #include "include/engine-core/types.h"
+#include "include/engine-core/tt.h"
 
 /* Initializes search data structure */
 searchdata_t *init_search_data(board_t *board) {
     searchdata_t *data = (searchdata_t *)malloc(sizeof(searchdata_t));
 
     data->board = copy_board(board);  // current board
+    data->tt = init_tt(MB_TO_BYTES(64));  // transposition table
     data->max_depth = 100;             // maximum search depth in plies
     data->max_nodes = -1;             // maximum nodes allowed to search
     data->max_time = -1;              // maximum time allowed in ms
@@ -37,6 +39,7 @@ searchdata_t *init_search_data(board_t *board) {
 
 /* Frees search data structure */
 void free_search_data(searchdata_t *data) {
+    free_tt(data->tt);
     free(data->board);
     free(data->best_move);
     free(data);

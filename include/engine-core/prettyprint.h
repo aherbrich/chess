@@ -2,6 +2,7 @@
 #define __PRETTYPRINT_H__
 
 #include "include/engine-core/types.h"
+#include "include/engine-core/tt.h"
 
 #define Color_YELLOW "\033[0;33m"
 #define Color_GREEN "\033[0;32m"
@@ -32,6 +33,6 @@ void print_LAN_move(move_t* move, player_t color_playing);
 /* returns a string of a given move in LANotation */
 char* get_LAN_move(move_t* move, player_t color_playing);
 /* prints the principal variation, i.e. the sequence of moves the engine considers best */
-void print_line(board_t* board, int depth);
+void print_line(tt_t tt, board_t* board, int depth);
 
 #endif

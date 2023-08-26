@@ -70,6 +70,11 @@ tt_t init_tt(int size_in_bytes) {
     return table;
 }
 
+/* frees memory of transposition table */
+void free_tt(tt_t table) {
+    free(table.buckets);
+}
+
 /* stores an entry in transposition table */
 void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int16_t eval, int8_t flags) {
     /* calculate hash */

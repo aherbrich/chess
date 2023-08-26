@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #include "include/engine-core/types.h"
+#include "include/engine-core/tt.h"
 
 #define INF INT_MAX
 #define NEGINF (-INF)
@@ -19,6 +20,8 @@ typedef enum _ttflag_t {
 /* ------------------------------------------------------------------------------------------------ */
 typedef struct _searchdata_t {
     board_t* board;                 /* pointer to the actual board */
+    tt_t tt;                        /* transposition table for the search */
+
     int max_depth;                  /* maximum search depth in plies */
     int max_seldepth;               /* maximum search depth with quiescence search */
     int max_nodes;                  /* maximum nodes allowed to search */

@@ -122,9 +122,6 @@ move_t *LAN_to_move(board_t *board, char *move_str) {
 void *start_search(void *args) {
     searchdata_t *searchdata = (searchdata_t *)args;
 
-    /* clear tt form last search*/
-    reset_tt(tt);
-
     /* indicate that search is running */
     search_running = 1;
 
@@ -208,7 +205,6 @@ void setoption_command_response(options_t options){
 /* handles and prints the ucinewgame command response */
 void ucinewgame_command_response(board_t* board){
     clear_board(board);
-    reset_tt(tt);
     verbosity_print("new game started");
 }
 
