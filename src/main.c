@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 /* MAIN ENTRY POINT */
-int main() {
+int main(void) {
     /* initialize uci arguments */
     uci_args_t args = {
         .board = init_board(),

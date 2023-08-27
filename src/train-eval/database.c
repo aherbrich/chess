@@ -15,7 +15,7 @@ databaseentry_t **database;
 /* ------------------------------------------------------------------------------------------------ */
 
 /* allocates memory and initiliazes database with NULL entries */
-void initialize_database() {
+void initialize_database(void) {
     database =
         (databaseentry_t **)malloc(sizeof(databaseentry_t *) * DATABASESIZE);
     for (int i = 0; i < DATABASESIZE; i++) {

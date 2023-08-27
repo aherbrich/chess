@@ -71,7 +71,7 @@ board_t* copy_board(board_t* board) {
 }
 
 /* allocates memory and initiliazes board by call to 'clear_board' */
-board_t* init_board() {
+board_t* init_board(void) {
     board_t* board = (board_t*)malloc(sizeof(board_t));
     clear_board(board);
     return board;

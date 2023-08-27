@@ -45,7 +45,7 @@
 // }
 
 // /* determines and prints all magic numbers (for all squares) */
-// void print_magic_numbers() {
+// void print_magic_numbers(void) {
 //     int square;
 //     fprintf(stderr, "uint64_t ROOK_MAGIC[64] = {\n");
 //     for (square = 0; square < 64; square++)
@@ -59,3 +59,7 @@
 //                 find_magic(square, BISHOP_BITS[square], 1));
 //     fprintf(stderr, "};\n\n");
 // }
+
+void magic(void) {
+    return;
+}

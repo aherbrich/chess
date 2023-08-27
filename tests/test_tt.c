@@ -4,7 +4,7 @@
 
 tt_t tt;
 
-int main() {
+int main(void) {
     /* seed random number generator */
     srand(0);
 

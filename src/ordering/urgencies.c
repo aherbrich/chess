@@ -14,7 +14,7 @@
 urgency_ht_entry_t* ht_urgencies = 0;
 
 /* initializes an urgency hashtable with standard Normals */
-urgency_ht_entry_t* initialize_ht_urgencies() {
+urgency_ht_entry_t* initialize_ht_urgencies(void) {
     urgency_ht_entry_t* ht = (urgency_ht_entry_t*)malloc(sizeof(urgency_ht_entry_t) * HT_GAUSSIAN_SIZE);
     for (int i = 0; i < HT_GAUSSIAN_SIZE; i++) {
         ht[i].root = NULL;

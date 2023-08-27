@@ -26,7 +26,7 @@ int search_running = 0;
 /* ------------------------------------------------------------------------------------------------ */
 
 /* initializes the options */
-options_t init_options(){
+options_t init_options(void){
     options_t options = {
         .opt_hash = {.min = 1, .max = 1024, .def = 64}
     };
@@ -35,7 +35,7 @@ options_t init_options(){
 }
 
 /* initializes the engine info */
-engine_info_t init_engine_info(){
+engine_info_t init_engine_info(void){
     engine_info_t engine_info = {
         .name = "Herby",
         .author = "Alexander Herbrich",
@@ -157,7 +157,7 @@ void uci_command_response(uci_args_t* uci_args) {
 }
 
 /* handles and prints the verbosity command response */
-void verbosity_command_response(){
+void verbosity_command_response(void){
     char* level = strtok(NULL, " \n\t");
     if(!level) {
         verbosity_print("no level given - must be one of: low, medium, high");
@@ -397,6 +397,8 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 searchdata->run_infinite = 0;
             }
         } else if (!strcmp(token, "infinite")){
+            /* get next token and continue */
+            token = strtok(NULL, " \n\t");
             continue;
         } else {
             verbosity_print("unknown command - use 'go help' for more information");

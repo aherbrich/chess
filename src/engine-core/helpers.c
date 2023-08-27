@@ -19,7 +19,7 @@ const bitboard_t MAGICDEBRUIJN = 0x03f79d71b4cb0a89;
 /* ------------------------------------------------------------------------------------------------ */
 
 /* generates pseudorandom 64-bit interger*/
-uint64_t random_uint64() {
+uint64_t random_uint64(void) {
     uint64_t u1, u2, u3, u4;
     u1 = (uint64_t)(rand()) & 0xFFFF;
     u2 = (uint64_t)(rand()) & 0xFFFF;
@@ -29,7 +29,7 @@ uint64_t random_uint64() {
 }
 
 /* generates pseudorandom 64-bit interger with few bits set to 1 */
-uint64_t random_uint64_fewbits() {
+uint64_t random_uint64_fewbits(void) {
     return random_uint64() & random_uint64() & random_uint64();
 }
 

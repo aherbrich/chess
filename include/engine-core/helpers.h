@@ -8,9 +8,9 @@
 /* ------------------------------------------------------------------------------------------------ */
 
 /* generates pseudorandom 64-bit interger*/
-uint64_t random_uint64();
+uint64_t random_uint64(void);
 /* generates pseudorandom 64-bit interger with few bits set to 1 */
-uint64_t random_uint64_fewbits();
+uint64_t random_uint64_fewbits(void);
 /* determines index given a row and column */
 idx_t pos_to_idx(int row, int col);
 /* determines index of first bit set to 1 */

@@ -24,7 +24,7 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
     mkdir("tmp", 0777);
 
     char filename[100];
-    sprintf(filename, "tmp/output_test_%d.txt", id);
+    snprintf(filename, 100, "tmp/output_test_%d.txt", id);
     FILE* file = fopen(filename, "w");
 
     /* play games */
@@ -237,7 +237,7 @@ double k_fold_cross_validation(chess_games_t chess_games, int no_folds) {
     return total_accuracy;
 }
 
-int main() {
+int main(void) {
     /* parse chess game file */
     char file_name[PATH_MAX];
     getcwd(file_name, PATH_MAX);

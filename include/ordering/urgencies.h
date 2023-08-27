@@ -29,7 +29,7 @@ typedef struct _urgency_ht_iterator_t {
 extern urgency_ht_entry_t* ht_urgencies;
 
 /* initializes an urgency hashtable with empty cells */
-urgency_ht_entry_t* initialize_ht_urgencies();
+urgency_ht_entry_t* initialize_ht_urgencies(void);
 /* retrieves a pointer to the urgency belief for a given move key and move hash */
 gaussian_t* get_urgency(urgency_ht_entry_t* ht, int move_key);
 /* adds a (Gaussian) urgency belief to the hash table */

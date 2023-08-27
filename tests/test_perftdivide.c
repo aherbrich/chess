@@ -3,7 +3,7 @@
 /*
  * MAIN ENTRY POINT
  */
-int main() {
+int main(void) {
     board_t* board = init_board();
     load_by_FEN(board,
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");

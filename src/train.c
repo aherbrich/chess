@@ -44,7 +44,7 @@ void load_games_into_database(chess_game_t** chess_games, int nr_of_games) {
     return;
 }
 
-int main() {
+int main(void) {
     /* parse chess game file */
     char file_name[PATH_MAX];
     getcwd(file_name, PATH_MAX);

@@ -35,11 +35,11 @@ char *get_mate_or_cp_value(int score, int depth) {
     for (int i = 0; i < 1024; i++) buffer[i] = '\0';
 
     if (score >= 16000) {
-        sprintf(buffer, "mate %d", (depth / 2));
+        snprintf(buffer, 8, "mate %d", (depth / 2));
     } else if (score <= -16000) {
-        sprintf(buffer, "mate %d", -(depth / 2));
+        snprintf(buffer, 8, "mate %d", -(depth / 2));
     } else {
-        sprintf(buffer, "cp %d", score);
+        snprintf(buffer, 6, "cp %d", score);
     }
     return buffer;
 }
@@ -443,8 +443,10 @@ void search(searchdata_t *searchdata) {
 
         int nodes = searchdata->nodes_searched;
         int seldepth = searchdata->max_seldepth;
-        int nps = (int)(nodes / delta_in_ms(searchdata));
-        int time = delta_in_ms(searchdata);
+        int delta = delta_in_ms(searchdata);
+        if(delta == 0) delta = 1;
+        int nps = (int)(nodes / delta);
+        int time = delta;
         int hashfull = tt_permille_full(searchdata->tt);
         char *score = get_mate_or_cp_value(eval, depth);
 
@@ -458,8 +460,10 @@ void search(searchdata_t *searchdata) {
     }
 
     int nodes = searchdata->nodes_searched;
-    int nps = (int)(nodes / delta_in_ms(searchdata));
-    int time = delta_in_ms(searchdata);
+    int delta = delta_in_ms(searchdata);
+    if(delta == 0) delta = 1;
+    int nps = (int)(nodes / delta);
+    int time = delta;
     int hashfull = tt_permille_full(searchdata->tt);
     char *move_str =
         get_LAN_move(searchdata->best_move, searchdata->board->player);

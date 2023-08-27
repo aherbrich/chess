@@ -27,7 +27,7 @@ typedef struct _token_iterator_t {
 } token_iterator_t;
 
 /* allocates memory for token iterator*/
-token_iterator_t* new_token_iterator();
+token_iterator_t* new_token_iterator(void);
 /* frees memory for token iterator (and it's fields) */
 void delete_token_iterator(token_iterator_t* it);
 /* initializes token iterator */

@@ -17,7 +17,7 @@ typedef struct _zobrist_t {
 extern zobrist_t zobrist_table;             
 
 /* initializes the global zobrist table */
-void initialize_zobrist_table();
+void initialize_zobrist_table(void);
 /* calculates zobrist hash for a given board */
 uint64_t calculate_zobrist_hash(board_t *board);
 

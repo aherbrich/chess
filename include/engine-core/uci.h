@@ -1,3 +1,6 @@
+#ifndef __UCI_H__
+#define __UCI_H__
+
 #include "include/engine-core/types.h"
 #include "include/engine-core/search.h"
 
@@ -24,8 +27,8 @@ typedef struct _options_t {
     spin_value_t opt_hash; 
 } options_t;
 
-options_t init_options();
-engine_info_t init_engine_info();
+options_t init_options(void);
+engine_info_t init_engine_info(void);
 
 
 /* ------------------------------------------------------------------------------------------------ */
@@ -41,3 +44,5 @@ typedef struct _uci_args_t {
 
 /* starts the uci interface */
 void uci_interface_loop(void *args);
+
+#endif

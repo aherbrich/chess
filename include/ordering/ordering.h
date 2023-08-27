@@ -24,7 +24,7 @@ typedef struct _move_zobrist_table_t {
 extern move_zobrist_table_t move_zobrist_table;
 
 /* initializes the Zobrist hash for moves; should only be called once */
-void initialize_move_zobrist_table();
+void initialize_move_zobrist_table(void);
 /* function that computes a unique move key */
 int calculate_move_key(board_t* board, move_t* move);
 
@@ -33,7 +33,7 @@ int calculate_move_key(board_t* board, move_t* move);
 /* ------------------------------------------------------------------------------------------------ */
 
 /* this function should be called once and sets up the ranking update graph(s) */
-void initialize_ranking_updates();
+void initialize_ranking_updates(void);
 /* updates the urgency belief distributions indexed by the no_hashes many move hashes given in hashes */
 void update(gaussian_t** urgencies_ptr, int no_hashes, double beta_squared);
 

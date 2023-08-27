@@ -8,7 +8,7 @@
 /* ------------------------------------------------------------------------------------------------ */
 
 /* allocates memory and initiliazes board by call to 'clear_board' */
-board_t* init_board();
+board_t* init_board(void);
 /* makes a deep copy of a board */
 board_t* copy_board(board_t* board);
 /* resets the board to an empty, white at turn, default flags, no previous moves state */

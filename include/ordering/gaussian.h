@@ -7,7 +7,7 @@ typedef struct _gaussian_t {
 } gaussian_t;
 
 gaussian_t init_gaussian1D(double tau, double rho);
-gaussian_t init_gaussian1D_standard_normal();
+gaussian_t init_gaussian1D_standard_normal(void);
 gaussian_t init_gaussian1D_from_mean_and_variance(double mean, double var);
 
 double mean(gaussian_t gaussian1D);

@@ -25,7 +25,7 @@
 move_zobrist_table_t move_zobrist_table;
 
 /* initializes the Zobrist hash for moves; should only be called once */
-void initialize_move_zobrist_table() {
+void initialize_move_zobrist_table(void) {
     srand(42);
     for (int i = 0; i < NR_PIECES; i++) {
         move_zobrist_table.piecefrom[i] = rand();
@@ -80,7 +80,7 @@ gaussian_t msg_from_s_to_urgency[MAX_MOVES];
 gaussian_t msg_from_h_to_diffs[MAX_MOVES];
 
 /* this function should be called once and sets up the ranking update graph(s) */
-void initialize_ranking_updates() {
+void initialize_ranking_updates(void) {
     for (int i = 0; i < MAX_MOVES; ++i) {
         f[i].marginal = &urgency[i];
         f[i].msg = &msg_from_f_to_urgency[i];
@@ -279,7 +279,7 @@ void refresh_update_graph(ranking_update_info_t* root, double epsilon, const cha
         /* store the snapshot in a file */
         if (base_filename) {
             char filename[1024];
-            sprintf(filename, "%s_%6.4f", base_filename, outer_delta);
+            snprintf(filename, 1024, "%s_%6.4f", base_filename, outer_delta);
             write_ht_urgencies_to_binary_file(filename, ht_urgencies);
         }
     }

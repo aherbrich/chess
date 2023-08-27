@@ -7,7 +7,7 @@
 zobrist_t zobrist_table;
 
 /* Initializes the global zobrist table */
-void initialize_zobrist_table() {
+void initialize_zobrist_table(void) {
     /* Initialize random 64 bit number for each piece on each square of the
      * board */
     for (int i = 0; i < 64; i++) {
@@ -99,5 +99,3 @@ uint64_t calculate_zobrist_hash(board_t *board) {
     }
     return hash;
 }
-
-

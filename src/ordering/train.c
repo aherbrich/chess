@@ -43,7 +43,7 @@ typedef struct _move_set_array_t {
 } move_set_array_t;
 
 /* allocates a new array of move sets */
-move_set_array_t* new_move_set_array() {
+move_set_array_t* new_move_set_array(void) {
     move_set_array_t* msa = (move_set_array_t*) malloc(sizeof(move_set_array_t));
     msa->move_sets = NULL;
     msa->no_move_sets = 0;

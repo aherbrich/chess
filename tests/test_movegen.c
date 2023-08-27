@@ -74,29 +74,39 @@ void print_perft_test_row(char *fen, char *depth, char *expected, char *found,
 }
 
 /* prints perft test row seperator */
-void print_perft_test_row_separator() {
+void print_perft_test_row_separator(void) {
     printf(
         "+---------------------------------------------------------------------"
         "-----------------+--------+------------+------------+-------------------+----------+\n");
 }
 
 /* determines number of lines in a file */
-int count_lines_in_file() {
+int count_lines_in_file(void) {
     char file_name[PATH_MAX];
     getcwd(file_name, PATH_MAX);
     strcat(file_name, "/data/perft_suite.txt");
 
+    // open file
     FILE *fp = fopen(file_name, "r");
 
-    int line_count = 0;
-    int character;
-    do {
-        character = fgetc(fp);
-        if (character == '\n') line_count++;
-    } while (character != EOF);
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    if (fp == NULL) {
+        fprintf(stderr, "Perft test suite file doesnt exist...\n");
+        exit(1);
+    }
+
+    // start parsing file
+    int line_counter = 0;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        line_counter++;
+    }
+    free(line);
     fclose(fp);
 
-    return line_count;
+    return line_counter;
 }
 
 /* loads perft tests from file */
@@ -180,10 +190,10 @@ int run_specific_test(perfttest_t *test) {
         double nps = ((nr_of_moves) / ((end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0)) / 1000.0;
 
         // string formatting and output
-        sprintf(depth_str, "%d", test->depths[i]);
-        sprintf(expected_str, "%d", test->results[i]);
-        sprintf(found_str, "%d", nr_of_moves);
-        sprintf(nps_str, "%.2f Mn/s", nps);
+        snprintf(depth_str, 32, "%d", test->depths[i]);
+        snprintf(expected_str, 32, "%d", test->results[i]);
+        snprintf(found_str, 32, "%d", nr_of_moves);
+        snprintf(nps_str, 32, "%.2f Mn/s", nps);
 
         if (test->results[i] == nr_of_moves) {
             print_perft_test_row(test->fen, depth_str, expected_str, found_str, nps_str,
@@ -204,7 +214,7 @@ int run_specific_test(perfttest_t *test) {
 /*
  * MAIN ENTRY POINT
  */
-int main() {
+int main(void) {
     // intialize necessary structures
     initialize_attack_boards();
     initialize_helper_boards();

@@ -545,7 +545,7 @@ bitboard_t get_bishop_attacks_for_init(square_t square, bitboard_t occ) {
            sliding_attacks(square, occ, MASK_ANTI_DIAGONAL[anti_diagonal_of(square)]);
 }
 
-void initialize_squares_between() {
+void initialize_squares_between(void) {
     bitboard_t sqs;
     for (square_t sq1 = a1; sq1 <= h8; ++sq1)
         for (square_t sq2 = a1; sq2 <= h8; ++sq2) {
@@ -559,7 +559,7 @@ void initialize_squares_between() {
         }
 }
 
-void initialize_line() {
+void initialize_line(void) {
     for (square_t sq1 = a1; sq1 <= h8; ++sq1)
         for (square_t sq2 = a1; sq2 <= h8; ++sq2) {
             if (file_of(sq1) == file_of(sq2) || rank_of(sq1) == rank_of(sq2))
@@ -572,7 +572,7 @@ void initialize_line() {
 }
 
 /* Initializes hashtables with attack board for each square */
-void initialize_attack_boards() {
+void initialize_attack_boards(void) {
     /* bishop attacks */
     for (int sq = 0; sq < 64; sq++) {
         bitboard_t mask = bishop_mask(sq);
@@ -627,7 +627,7 @@ void initialize_attack_boards() {
 }
 
 /* Initializes hashtables with line masks and sqaures between masks */
-void initialize_helper_boards() {
+void initialize_helper_boards(void) {
     initialize_squares_between();
     initialize_line();
 }
@@ -970,6 +970,7 @@ void generate_legals(board_t *board, maxpq_t *movelst) {
                         while (bb1) insert(movelst, generate_move(pop_1st_bit(&bb1), board->history[board->ply_no].epsq, EPCAPTURE, 0));
                     }
                     /* INTENTIONAL FALL THROUGH */
+                    __attribute__((fallthrough));       /* silence warning */
                 case KNIGHT:
                     /* If the checker is either a pawn or a knight the only legal moves are to capture
                     the checker. Only non-pinned pieces can capture it */

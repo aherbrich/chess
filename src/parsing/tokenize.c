@@ -5,9 +5,9 @@
 #include "include/parse/parse.h"
 
 /* allocates memory for token iterator*/
-token_iterator_t* new_token_iterator(){
+token_iterator_t* new_token_iterator(void){
     return (token_iterator_t *) malloc(sizeof(token_iterator_t));
-};
+}
 
 /* frees memory for token iterator (and it's fields) */
 void delete_token_iterator(token_iterator_t* it){
@@ -20,7 +20,7 @@ void delete_token_iterator(token_iterator_t* it){
 /* initializes token iterator */
 token_iterator_t* tokenize(token_iterator_t* it, char *input, char* delimiters){
     if(it == NULL || input == NULL || delimiters == NULL){
-        fprintf(stderr, "Invalid call! it:%p in:%p del:%p\n", it, input, delimiters);
+        fprintf(stderr, "Invalid call! it:%p in:%p del:%p\n", (void *) it, (void *) input, (void *) delimiters);
         exit(1);
     }
 

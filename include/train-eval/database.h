@@ -20,7 +20,7 @@ typedef struct _databaseentry_t {
 } databaseentry_t;
 
 /* allocates memory and initiliazes database with NULL entries */
-void initialize_database();
+void initialize_database(void);
 /* updates win percentage information i.e how often white/black won from this position*/
 void update_database_entry(board_t* board, int winner);
 

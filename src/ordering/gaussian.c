@@ -12,7 +12,7 @@ gaussian_t init_gaussian1D(double tau, double rho) {
 }
 
 /* initializes a standard Normal */
-gaussian_t init_gaussian1D_standard_normal() {
+gaussian_t init_gaussian1D_standard_normal(void) {
     return init_gaussian1D(0, 1);
 }
 

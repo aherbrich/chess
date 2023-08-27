@@ -6,7 +6,7 @@
 #include "include/ordering/gaussian.h"
 
 /* runs the Gaussian tests */
-int gaussian_tests() {
+int gaussian_tests(void) {
     int fail_counter = 0;
 
     printf("Running Gaussian tests...\n");
@@ -67,7 +67,7 @@ int gaussian_tests() {
 }
 
 /* runs the Gaussian factor tests */
-int gaussian_factor_tests() {
+int gaussian_factor_tests(void) {
     int fail_counter = 0;
 
     printf("Running Gaussian factor tests...\n");
@@ -130,7 +130,7 @@ int gaussian_factor_tests() {
 }
 
 /* runs the Gaussian mean factor tests */
-int gaussian_mean_factor_tests() {
+int gaussian_mean_factor_tests(void) {
     int fail_counter = 0;
 
     printf("Running Gaussian mean factor tests...\n");
@@ -221,7 +221,7 @@ int gaussian_mean_factor_tests() {
 }
 
 /* runs the weighted sum factor tests */
-int weighted_sum_factor_tests() {
+int weighted_sum_factor_tests(void) {
     int fail_counter = 0;
 
     printf("Running weighted sum factor tests...\n");
@@ -374,7 +374,7 @@ int weighted_sum_factor_tests() {
 }
 
 /* runs the greater than factor tests */
-int greater_than_factor_tests() {
+int greater_than_factor_tests(void) {
     int fail_counter = 0;
 
     printf("Running greater-than factor tests...\n");
@@ -437,7 +437,7 @@ int greater_than_factor_tests() {
 }
 
 /* runs the ranking graph tests */
-int ranking_graph_tests() {
+int ranking_graph_tests(void) {
     int fail_counter = 0;
 
     printf("Running ranking graph tests...\n");
@@ -534,7 +534,7 @@ int ranking_graph_tests() {
 }
 
 /* runs the ranking graph tests */
-int ranking_graph_tests2() {
+int ranking_graph_tests2(void) {
     int fail_counter = 0;
 
     // printf("Running ranking graph tests (again)...\n");
@@ -555,7 +555,7 @@ int ranking_graph_tests2() {
 /*
  * MAIN ENTRY POINT
  */
-int main() {
+int main(void) {
     int fail_counter = 0;
 
     // tests the Gaussian implementation
