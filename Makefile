@@ -26,7 +26,6 @@ TEST_BIN = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
 TEST_TARGET = $(notdir $(TEST_BIN))
 
 CC = clang
-CC_FLAGS_STRICT = -Wall -Wextra -Wpedantic -Wformat=2 -Wshift-overflow -Wformat-security -Wnull-dereference -Wstack-protector -Walloca -Warray-bounds -Wimplicit-fallthrough -Wliteral-conversion -Wcast-qual -Wshadow -Wstrict-overflow=4 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align -Wmissing-declarations -Wno-unused-parameter -Wno-gnu-binary-literal -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -O3 -I. # -Wvla -Wconversion
 CC_FLAGS = -Wall -Wextra -Wshadow -Wmissing-declarations -Wno-unused-parameter -O3 -I.
 CC_EXTRA_FLAGS = -Wpedantic -Wformat=2 -Wshift-overflow -Wformat-security -Wnull-dereference -Wstack-protector -Walloca -Warray-bounds -Wimplicit-fallthrough -Wliteral-conversion -Wcast-qual -Wstrict-overflow=4 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align -Wmissing-declarations -Wno-gnu-binary-literal -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize-recover -Werror # -Wvla -Wconversion
 
