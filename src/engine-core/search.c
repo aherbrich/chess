@@ -230,8 +230,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
     // If we've reached a depth of zero, evaluate the board
     if (depth == 0) {
-        // return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
-        return eval_board(searchdata->board);
+        return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
+        //return eval_board(searchdata->board);
     }
 
     // ================================================================ //
