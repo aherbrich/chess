@@ -50,23 +50,22 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
                 int idx = 0;
 
                 /* calculate move hash for  MADE_MOVE*/
-                move_keys[idx] = calculate_move_key(board, move);
+                move_keys[idx] = calculate_move_key(board, *move);
                 move_indices[idx] = idx;
                 idx++;
 
                 /* calculate move hashes for OTHER_MOVES */
-                move_t* other_move;
-                while ((other_move = pop_max(&move_lst)) != NULL) {
+                move_t other_move;
+                while (!is_empty(&move_lst)) {
+                    other_move = pop_max(&move_lst);
                     /* if we see MADE_MOVE, skip it */
-                    if (is_same_move(move, other_move)) {
-                        free_move(other_move);
+                    if (is_same_move(*move, other_move)) {
                         continue;
                     }
                     /* else determine hash */
                     move_keys[idx] = calculate_move_key(board, other_move);
                     move_indices[idx] = idx;
                     idx++;
-                    free_move(other_move);
                 }
 
                 /* extract means corresponding to moves */
@@ -105,13 +104,12 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
                 initialize_maxpq(&legals);
                 generate_moves(board, &legals);
                 int idx_of_made_move_in_legal_moves = 0;
-                while ((other_move = pop_max(&legals)) != NULL) {
-                    if (is_same_move(move, other_move)) {
-                        free_move(other_move);
+                while (!is_empty(&legals)) {
+                    other_move = pop_max(&legals);
+                    if (is_same_move(*move, other_move)) {
                         break;
                     }
                     idx_of_made_move_in_legal_moves++;
-                    free_move(other_move);
                 }
 
                 /* write results into file */
@@ -125,10 +123,8 @@ double test_model(chess_game_t** chess_games, int no_games, int id) {
                 }
 
                 /* execute MADE_MOVE */
-                do_move(board, move);
+                do_move(board, *move);
                 free_move(move);
-                free_pq(&move_lst);
-                free_pq(&legals);
 
                 /* and continue with next (opponent) MADE_MOVE */
                 move_nr++;

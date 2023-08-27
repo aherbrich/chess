@@ -27,11 +27,11 @@ void print_bitboard(bitboard_t board);
 /* ------------------------------------------------------------------------------------------------ */
 
 /* prints a given move */
-void print_move(move_t* move);
+void print_move(move_t move);
 /* prints a given move in LANotation */
-void print_LAN_move(move_t* move, player_t color_playing);
+void print_LAN_move(move_t move, player_t color_playing);
 /* returns a string of a given move in LANotation */
-char* get_LAN_move(move_t* move, player_t color_playing);
+char* get_LAN_move(move_t move, player_t color_playing);
 /* prints the principal variation, i.e. the sequence of moves the engine considers best */
 void print_line(tt_t tt, board_t* board, int depth);
 

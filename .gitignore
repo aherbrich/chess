@@ -6,3 +6,4 @@ build/**
 bin/**
 lib/libchess.so
 tmp/**
+*.bin

@@ -156,7 +156,7 @@ int tt_eval(tt_t table, board_t* board) {
 }
 
 /* Gets the best move for the board position based on tt entry */
-move_t *tt_best_move(tt_t table, board_t *board) {
+move_t* tt_best_move(tt_t table, board_t *board) {
     /* calculate zobrist key and hash */
     uint64_t key = board->hash;
     uint64_t hash = hash_func_tt(board->hash, table.no_bits);
@@ -186,7 +186,7 @@ move_t *tt_best_move(tt_t table, board_t *board) {
 void print_tt_entry(tt_entry_t* entry) {
     printf("key: %llu\n", entry->key);
     printf("best move: ");
-    print_move(&entry->best_move);
+    print_move(entry->best_move);
     printf("depth: %d\n", entry->depth);
     printf("eval: %d\n", entry->eval);
     printf("flags: %d\n", entry->flags);

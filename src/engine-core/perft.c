@@ -16,15 +16,15 @@ uint64_t perft(board_t* board, int depth) {
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    move_t* move;
+    move_t move;
 
     uint64_t num_positions = 0;
 
-    while ((move = pop_max(&movelst)) != NULL) {
+    while (!is_empty(&movelst)) {
+        move = pop_max(&movelst);
         do_move(board, move);
         num_positions += perft(board, depth - 1);
         undo_move(board, move);
-        free_move(move);
     }
     return num_positions;
 }
@@ -35,9 +35,10 @@ uint64_t perft_divide(board_t* board, int depth) {
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
 
-    move_t* move;
+    move_t move;
     uint64_t all_nodes_count = 0;
-    while ((move = pop_max(&movelst))) {
+    while (!is_empty(&movelst)) {
+        move = pop_max(&movelst);
         do_move(board, move);
         uint64_t num_positions = perft(board, depth - 1);
         undo_move(board, move);
@@ -48,8 +49,6 @@ uint64_t perft_divide(board_t* board, int depth) {
 #else
         printf(": %llu\n", num_positions);
 #endif
-        free_move(move);
-
         all_nodes_count += num_positions;
     }
 

@@ -636,16 +636,16 @@ void initialize_helper_boards(void) {
 ///			BASIC MOVE STRUCT FUNCTIONS
 
 /* Determines if two moves are the same */
-int is_same_move(move_t *move1, move_t *move2) {
+int is_same_move(move_t move1, move_t move2) {
     /* moves are considered same if their FROM & TO squares and FLAGS are the
     same we do not consider the value of a move */
-    if (move1->from != move2->from) {
+    if (move1.from != move2.from) {
         return 0;
     }
-    if (move1->to != move2->to) {
+    if (move1.to != move2.to) {
         return 0;
     }
-    if (move1->flags != move2->flags) {
+    if (move1.flags != move2.flags) {
         return 0;
     }
 
@@ -653,14 +653,15 @@ int is_same_move(move_t *move1, move_t *move2) {
 }
 
 /* Allocates memory for a move and sets fields accordingly  */
-move_t *generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value) {
-    move_t *move = (move_t *)malloc(sizeof(move_t));
-
-    move->from = from;
-    move->to = to;
-    move->flags = flags;
-    move->value = value;
-
+move_t generate_move(idx_t from, idx_t to, flag_t flags, uint16_t value) {
+    move_t move = 
+    {   
+        .value = value,
+        .from = from,
+        .to = to,
+        .flags = flags,
+        
+    };
     return move;
 }
 
@@ -1278,7 +1279,7 @@ void move_piece_quiet(board_t *board, square_t from, square_t to) {
 }
 
 /* Execute move */
-void do_move(board_t *board, move_t *move) {
+void do_move(board_t *board, move_t move) {
     /* save current board hash in array */
     board->history[board->ply_no].hash = board->hash;
 
@@ -1300,8 +1301,8 @@ void do_move(board_t *board, move_t *move) {
     board->hash ^= zobrist_table.flag_random64[board->history[ply - 1].castlerights + 8];
 
     /* reset fifty-counter if move is a capture or a pawn move*/
-    if ((move->flags & 0b0100) || (SQUARE_BB[move->from] & board->piece_bb[W_PAWN]) ||
-        (SQUARE_BB[move->from] & board->piece_bb[B_PAWN])) {
+    if ((move.flags & 0b0100) || (SQUARE_BB[move.from] & board->piece_bb[W_PAWN]) ||
+        (SQUARE_BB[move.from] & board->piece_bb[B_PAWN])) {
         board->history[ply].fifty_move_counter = 0;
 
     } else {
@@ -1316,40 +1317,40 @@ void do_move(board_t *board, move_t *move) {
     }
 
     /* adjust castling rights if (potentially) king or rook moved from their start squares */
-    if (move->from == a1)
+    if (move.from == a1)
         board->history[ply].castlerights &= ~(LONGSIDEW);
-    else if (move->from == h1)
+    else if (move.from == h1)
         board->history[ply].castlerights &= ~(SHORTSIDEW);
-    else if (move->from == a8)
+    else if (move.from == a8)
         board->history[ply].castlerights &= ~(LONGSIDEB);
-    else if (move->from == h8)
+    else if (move.from == h8)
         board->history[ply].castlerights &= ~(SHORTSIDEB);
-    else if (move->from == e1)
+    else if (move.from == e1)
         board->history[ply].castlerights &= ~(SHORTSIDEW | LONGSIDEW);
-    else if (move->from == e8)
+    else if (move.from == e8)
         board->history[ply].castlerights &= ~(SHORTSIDEB | LONGSIDEB);
 
     /* adjust castle rights if rooks were (potentially) captured on their start squares */
-    if (move->to == h1)
+    if (move.to == h1)
         board->history[ply].castlerights &= ~(SHORTSIDEW);
-    else if (move->to == a1)
+    else if (move.to == a1)
         board->history[ply].castlerights &= ~(LONGSIDEW);
-    else if (move->to == h8)
+    else if (move.to == h8)
         board->history[ply].castlerights &= ~(SHORTSIDEB);
-    else if (move->to == a8)
+    else if (move.to == a8)
         board->history[ply].castlerights &= ~(LONGSIDEB);
 
-    moveflags_t type = move->flags;
+    moveflags_t type = move.flags;
     switch (type) {
         case QUIET:
-            move_piece_quiet(board, move->from, move->to);
+            move_piece_quiet(board, move.from, move.to);
             break;
         case DOUBLEP:
-            move_piece_quiet(board, move->from, move->to);
+            move_piece_quiet(board, move.from, move.to);
             if (board->player == WHITE) {
-                board->history[ply].epsq = move->from + 8;
+                board->history[ply].epsq = move.from + 8;
             } else {
-                board->history[ply].epsq = move->from - 8;
+                board->history[ply].epsq = move.from - 8;
             }
             /* xor in the new ep square */
             board->hash ^= zobrist_table.flag_random64[board->history[ply].epsq % 8];
@@ -1377,99 +1378,99 @@ void do_move(board_t *board, move_t *move) {
             }
             break;
         case EPCAPTURE:
-            move_piece_quiet(board, move->from, move->to);
+            move_piece_quiet(board, move.from, move.to);
 
             if (board->player == WHITE) {
                 board->history[ply - 1].captured = B_PAWN;
-                remove_piece(board, move->to - 8);
+                remove_piece(board, move.to - 8);
             } else {
                 board->history[ply - 1].captured = W_PAWN;
-                remove_piece(board, move->to + 8);
+                remove_piece(board, move.to + 8);
             }
             break;
         case KPROM:
-            remove_piece(board, move->from);
+            remove_piece(board, move.from);
             if (board->player == WHITE) {
-                put_piece(board, W_KNIGHT, move->to);
+                put_piece(board, W_KNIGHT, move.to);
             } else {
-                put_piece(board, B_KNIGHT, move->to);
+                put_piece(board, B_KNIGHT, move.to);
             }
             break;
         case BPROM:
-            remove_piece(board, move->from);
+            remove_piece(board, move.from);
             if (board->player == WHITE) {
-                put_piece(board, W_BISHOP, move->to);
+                put_piece(board, W_BISHOP, move.to);
             } else {
-                put_piece(board, B_BISHOP, move->to);
+                put_piece(board, B_BISHOP, move.to);
             }
             break;
         case RPROM:
-            remove_piece(board, move->from);
+            remove_piece(board, move.from);
             if (board->player == WHITE) {
-                put_piece(board, W_ROOK, move->to);
+                put_piece(board, W_ROOK, move.to);
             } else {
-                put_piece(board, B_ROOK, move->to);
+                put_piece(board, B_ROOK, move.to);
             }
             break;
         case QPROM:
-            remove_piece(board, move->from);
+            remove_piece(board, move.from);
             if (board->player == WHITE) {
-                put_piece(board, W_QUEEN, move->to);
+                put_piece(board, W_QUEEN, move.to);
             } else {
-                put_piece(board, B_QUEEN, move->to);
+                put_piece(board, B_QUEEN, move.to);
             }
             break;
         case KCPROM:
-            board->history[board->ply_no - 1].captured = board->playingfield[move->to];
+            board->history[board->ply_no - 1].captured = board->playingfield[move.to];
 
-            remove_piece(board, move->from);
-            remove_piece(board, move->to);
+            remove_piece(board, move.from);
+            remove_piece(board, move.to);
 
             if (board->player == WHITE) {
-                put_piece(board, W_KNIGHT, move->to);
+                put_piece(board, W_KNIGHT, move.to);
             } else {
-                put_piece(board, B_KNIGHT, move->to);
+                put_piece(board, B_KNIGHT, move.to);
             }
             break;
         case BCPROM:
-            board->history[board->ply_no - 1].captured = board->playingfield[move->to];
+            board->history[board->ply_no - 1].captured = board->playingfield[move.to];
 
-            remove_piece(board, move->from);
-            remove_piece(board, move->to);
+            remove_piece(board, move.from);
+            remove_piece(board, move.to);
 
             if (board->player == WHITE) {
-                put_piece(board, W_BISHOP, move->to);
+                put_piece(board, W_BISHOP, move.to);
             } else {
-                put_piece(board, B_BISHOP, move->to);
+                put_piece(board, B_BISHOP, move.to);
             }
             break;
         case RCPROM:
-            board->history[board->ply_no - 1].captured = board->playingfield[move->to];
+            board->history[board->ply_no - 1].captured = board->playingfield[move.to];
 
-            remove_piece(board, move->from);
-            remove_piece(board, move->to);
+            remove_piece(board, move.from);
+            remove_piece(board, move.to);
 
             if (board->player == WHITE) {
-                put_piece(board, W_ROOK, move->to);
+                put_piece(board, W_ROOK, move.to);
             } else {
-                put_piece(board, B_ROOK, move->to);
+                put_piece(board, B_ROOK, move.to);
             }
             break;
         case QCPROM:
-            board->history[board->ply_no - 1].captured = board->playingfield[move->to];
+            board->history[board->ply_no - 1].captured = board->playingfield[move.to];
 
-            remove_piece(board, move->from);
-            remove_piece(board, move->to);
+            remove_piece(board, move.from);
+            remove_piece(board, move.to);
 
             if (board->player == WHITE) {
-                put_piece(board, W_QUEEN, move->to);
+                put_piece(board, W_QUEEN, move.to);
             } else {
-                put_piece(board, B_QUEEN, move->to);
+                put_piece(board, B_QUEEN, move.to);
             }
             break;
         case CAPTURE:
-            board->history[board->ply_no - 1].captured = board->playingfield[move->to];
-            move_piece(board, move->from, move->to);
+            board->history[board->ply_no - 1].captured = board->playingfield[move.to];
+            move_piece(board, move.from, move.to);
             break;
         default:
             fprintf(stderr,
@@ -1486,7 +1487,7 @@ void do_move(board_t *board, move_t *move) {
 }
 
 /* Undos a move */
-void undo_move(board_t *board, move_t *move) {
+void undo_move(board_t *board, move_t move) {
     /* xor out old castle rights */
     board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights + 8];
     /* reduce ply number */
@@ -1496,16 +1497,16 @@ void undo_move(board_t *board, move_t *move) {
     /* xor out the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply+1*/
     if (board->history[board->ply_no].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
 
-    moveflags_t type = move->flags;
+    moveflags_t type = move.flags;
 
     switch (type) {
         case QUIET:
-            move_piece_quiet(board, move->to, move->from);
+            move_piece_quiet(board, move.to, move.from);
             break;
         case DOUBLEP:
             /* xor in new ep square */
             board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no + 1].epsq % 8];
-            move_piece_quiet(board, move->to, move->from);
+            move_piece_quiet(board, move.to, move.from);
             break;
         case KCASTLE:
             if (board->player == BLACK) {
@@ -1526,39 +1527,39 @@ void undo_move(board_t *board, move_t *move) {
             }
             break;
         case EPCAPTURE:
-            move_piece_quiet(board, move->to, move->from);
+            move_piece_quiet(board, move.to, move.from);
             if (board->player == WHITE) {
-                put_piece(board, W_PAWN, move->to + 8);
+                put_piece(board, W_PAWN, move.to + 8);
             } else {
-                put_piece(board, B_PAWN, move->to - 8);
+                put_piece(board, B_PAWN, move.to - 8);
             }
             break;
         case KPROM:
         case BPROM:
         case RPROM:
         case QPROM:
-            remove_piece(board, move->to);
+            remove_piece(board, move.to);
             if (board->player == WHITE) {
-                put_piece(board, B_PAWN, move->from);
+                put_piece(board, B_PAWN, move.from);
             } else {
-                put_piece(board, W_PAWN, move->from);
+                put_piece(board, W_PAWN, move.from);
             }
             break;
         case KCPROM:
         case BCPROM:
         case RCPROM:
         case QCPROM:
-            remove_piece(board, move->to);
+            remove_piece(board, move.to);
             if (board->player == WHITE) {
-                put_piece(board, B_PAWN, move->from);
+                put_piece(board, B_PAWN, move.from);
             } else {
-                put_piece(board, W_PAWN, move->from);
+                put_piece(board, W_PAWN, move.from);
             }
-            put_piece(board, board->history[board->ply_no].captured, move->to);
+            put_piece(board, board->history[board->ply_no].captured, move.to);
             break;
         case CAPTURE:
-            move_piece_quiet(board, move->to, move->from);
-            put_piece(board, board->history[board->ply_no].captured, move->to);
+            move_piece_quiet(board, move.to, move.from);
+            put_piece(board, board->history[board->ply_no].captured, move.to);
             break;
     }
 

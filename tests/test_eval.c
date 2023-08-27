@@ -42,7 +42,7 @@ int main(void) {
     printf("\n");
     printf("Eval: \t\t%s%d%s\n", Color_PURPLE, eval, Color_END);
     printf("Best move:\t%s", Color_PURPLE);
-    print_LAN_move(search_data->best_move, board->player);
+    print_LAN_move(*search_data->best_move, board->player);
     printf("\n%s", Color_END);
     end = clock();
     printf("\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);

@@ -143,14 +143,14 @@ void print_bitboard(bitboard_t board) {
 }
 
 /* Prints move */
-void print_move(move_t* move) {
-    char* start_field = FIELD[move->from];
-    char* end_field = FIELD[move->to];
-    if (move->flags >= 8) {
+void print_move(move_t move) {
+    char* start_field = FIELD[move.from];
+    char* end_field = FIELD[move.to];
+    if (move.flags >= 8) {
         fprintf(stderr, "%s%.2s-%.2s-P%s", Color_PURPLE, start_field, end_field,
                 Color_END);
 
-    } else if (move->flags == KCASTLE || move->flags == QCASTLE) {
+    } else if (move.flags == KCASTLE || move.flags == QCASTLE) {
         fprintf(stderr, "%s%.2s-%.2s-C%s", Color_PURPLE, start_field, end_field,
                 Color_END);
     } else {
@@ -160,13 +160,13 @@ void print_move(move_t* move) {
 }
 
 /* Prints move in LAN notation */
-void print_LAN_move(move_t* move, player_t color_playing) {
-    char* start_field = FIELD[move->from];
-    char* end_field = FIELD[move->to];
+void print_LAN_move(move_t move, player_t color_playing) {
+    char* start_field = FIELD[move.from];
+    char* end_field = FIELD[move.to];
 
     /* if promotion move */
-    if (move->flags >= 8) {
-        flag_t prom_flag = move->flags & (0b11);
+    if (move.flags >= 8) {
+        flag_t prom_flag = move.flags & (0b11);
         if (prom_flag == 0) {
             if (color_playing == WHITE) {
                 printf("%.2s%.2sN", start_field, end_field);
@@ -200,14 +200,14 @@ void print_LAN_move(move_t* move, player_t color_playing) {
 }
 
 /* Creates LAN move string */
-char* get_LAN_move(move_t* move, player_t color_playing) {
-    char* start_field = FIELD[move->from];
-    char* end_field = FIELD[move->to];
+char* get_LAN_move(move_t move, player_t color_playing) {
+    char* start_field = FIELD[move.from];
+    char* end_field = FIELD[move.to];
     char* buffer = NULL;
     /* if promotion move */
-    if (move->flags >= 8) {
+    if (move.flags >= 8) {
         buffer = (char*)malloc(6);
-        flag_t prom_flag = move->flags & (0b11);
+        flag_t prom_flag = move.flags & (0b11);
         if (prom_flag == 0) {
             if (color_playing == WHITE) {
                 snprintf(buffer, 6, "%.2s%.2sN", start_field, end_field);
@@ -258,9 +258,9 @@ void print_line(tt_t tt, board_t* board, int depth) {
             free_board(board_copy);
             return;
         }
-        print_LAN_move(best_move, board_copy->player);
+        print_LAN_move(*best_move, board_copy->player);
         printf(" ");
-        do_move(board_copy, best_move);
+        do_move(board_copy, *best_move);
         free_move(best_move);
     }
 

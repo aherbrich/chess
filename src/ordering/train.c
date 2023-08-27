@@ -104,28 +104,26 @@ move_set_array_t* games_to_move_sets(chess_games_t chess_games) {
                 int idx = 0;
 
                 /* extract move key from move made */
-                ms->move_keys[idx++] = calculate_move_key(board, move);
+                ms->move_keys[idx++] = calculate_move_key(board, *move);
 
                 /* extract move key from all other moves */
-                move_t* other_move;
-                while ((other_move = pop_max(&move_lst)) != NULL) {
+                move_t other_move;
+                while (!is_empty(&move_lst)) {
+                    other_move = pop_max(&move_lst);
                     /* if we see move made, skip it */
-                    if (is_same_move(move, other_move)) {
-                        free_move(other_move);
+                    if (is_same_move(*move, other_move)) {
                         continue;
                     }
 
                     /* else extract ranking-info from move */
                     ms->move_keys[idx++] = calculate_move_key(board, other_move);
-
-                    free_move(other_move);
                 }
                 /* add the move set to the set of move set and increment move index */
                 add_move_set(msa, ms);
                 move_idx++;
 
                 /* execute move made */
-                do_move(board, move);
+                do_move(board, *move);
                 free_move(move);
             } else {
                 print_board(board);

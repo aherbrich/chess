@@ -99,12 +99,11 @@ move_t *LAN_to_move(board_t *board, char *move_str) {
 
     /* check if the move described by the move string is a valid move, i.e. in the move list */
     for (int i = 1; i < (&movelst)->nr_elem + 1; i++) {
-        move_t* move = movelst.array[i];
+        move_t* move = &movelst.array[i];
         if (move->from == from && move->to == to){
             /* if move is matches a non-promotion, we are finished */
             if(prom_flag == 0b0000 && (move->flags & 0b1000) == 0b0000) {
                 move = copy_move(move);
-                free_pq(&movelst);
                 return move;
             }
             /* if move matches a promotion */ 
@@ -112,14 +111,11 @@ move_t *LAN_to_move(board_t *board, char *move_str) {
                 move = copy_move(move);
                 /* we | to ensure we copy capture bit, which might be set */
                 move->flags = (move->flags & 0b0100) | prom_flag;    
-                free_pq(&movelst);
                 return move;
             }
         }
 
     }
-
-    free_pq(&movelst);
 
     return NULL;
 }
@@ -278,7 +274,7 @@ void position_command_response(board_t* board){
             while (move_str) {
                 move_t *move = LAN_to_move(board, move_str);
                 if (move) {
-                    do_move(board, move);
+                    do_move(board, *move);
                     free_move(move);
                 } else {
                     clear_board(board);

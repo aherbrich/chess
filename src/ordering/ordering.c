@@ -45,15 +45,15 @@ void initialize_move_zobrist_table(void) {
 }
 
 /* hash function from move to urgencies hash-table index */
-int calculate_move_key(board_t* board, move_t* move) {
+int calculate_move_key(board_t* board, move_t move) {
     uint32_t key = 0;
-    key ^= move_zobrist_table.piecefrom[board->playingfield[move->from]];
-    key ^= move_zobrist_table.pieceto[board->playingfield[move->to]];
-    key ^= move_zobrist_table.from[move->from];
-    key ^= move_zobrist_table.to[move->to];
-    key ^= move_zobrist_table.prompiece[(move->flags & 0b1000) ? (move->flags & 0b11) : 4];
-    key ^= move_zobrist_table.in_attack_range_after[(board->attackmap & (1ULL << move->to)) != 0];
-    key ^= move_zobrist_table.in_attack_range_before[(board->attackmap & (1ULL << move->from)) != 0];
+    key ^= move_zobrist_table.piecefrom[board->playingfield[move.from]];
+    key ^= move_zobrist_table.pieceto[board->playingfield[move.to]];
+    key ^= move_zobrist_table.from[move.from];
+    key ^= move_zobrist_table.to[move.to];
+    key ^= move_zobrist_table.prompiece[(move.flags & 0b1000) ? (move.flags & 0b11) : 4];
+    key ^= move_zobrist_table.in_attack_range_after[(board->attackmap & (1ULL << move.to)) != 0];
+    key ^= move_zobrist_table.in_attack_range_before[(board->attackmap & (1ULL << move.from)) != 0];
     return key;
 }
 

@@ -1,6 +1,5 @@
-#include "include/engine-core/pq.h"
-
 #include <stdio.h>
+#include <string.h>
 
 #include "include/engine-core/pq.h"
 
@@ -11,12 +10,12 @@
 /* Returns true if value (of move) at index i is truely lower than value at
  * index j in queue */
 int less(maxpq_t* pq, int i, int j) {
-    return (pq->array[i]->value < pq->array[j]->value);
+    return (pq->array[i].value < pq->array[j].value);
 }
 
 /* Swaps two elements (moves) in queue at indices i and j */
 void swap(maxpq_t* pq, int i, int j) {
-    move_t* tmp = pq->array[i];
+    move_t tmp = pq->array[i];
     pq->array[i] = pq->array[j];
     pq->array[j] = tmp;
 }
@@ -25,16 +24,14 @@ void swap(maxpq_t* pq, int i, int j) {
 void initialize_maxpq(maxpq_t* pq) {
     pq->size = PRIORITY_QUEUE_SIZE - 1;
     pq->nr_elem = 0;
-    for (int i = 0; i < pq->size + 1; i++) {
-        pq->array[i] = NULL;
-    }
+    memset(pq->array, 0, sizeof(move_t) * PRIORITY_QUEUE_SIZE);
 }
 
 /* Prints priority queue (!in memory order, not logical order!) */
 void print_pq(maxpq_t* pq) {
     for (int i = 1; i < pq->nr_elem + 1; i++) {
         print_move(pq->array[i]);
-        fprintf(stderr, " (%d)", pq->array[i]->value);
+        fprintf(stderr, " (%d)", pq->array[i].value);
         fprintf(stderr, "   ");
     }
     fprintf(stderr, "\n");
@@ -83,7 +80,7 @@ void sink_N(maxpq_t* pq, int k, int N) {
 }
 
 /* Inserts element into priority queue while heap property stays satisfied */
-void insert(maxpq_t* pq, move_t* elem) {
+void insert(maxpq_t* pq, move_t elem) {
     pq->nr_elem++;
     if (pq->nr_elem > pq->size) {
         fprintf(stderr, "Out of space!\n");
@@ -94,31 +91,26 @@ void insert(maxpq_t* pq, move_t* elem) {
     swim(pq, pq->nr_elem);
 }
 
+/* Returns true if priority queue is empty */
+int is_empty(maxpq_t* pq) {
+    return (pq->nr_elem == 0);
+}
+
 /* Removes element with highest value from queue and restores heap property */
-move_t* pop_max(maxpq_t* pq) {
+move_t pop_max(maxpq_t* pq) {
     /* if no elements in array return NULL to indicate empty array */
     if (pq->nr_elem == 0) {
-        return NULL;
+        fprintf(stderr, "No elements in priority queue!\n");
+        exit(EXIT_FAILURE);
     }
 
     /* else */
-    move_t* max = pq->array[1];
+    move_t max = pq->array[1];
     pq->array[1] = pq->array[pq->nr_elem];
-    pq->array[pq->nr_elem] = NULL;
+    memset(&pq->array[pq->nr_elem], 0, sizeof (move_t));
     pq->nr_elem--;
     sink(pq, 1);
     return max;
-}
-
-/* Frees all moves in a given priority queue */
-void free_pq(maxpq_t* pq) {
-    /* we dont need to free pq explicitly since its memory was allocated on
-     * stack */
-    if (pq->nr_elem == 0) return;
-    /* free moves */
-    for (int i = 1; i < pq->nr_elem + 1; i++) {
-        free_move(pq->array[i]);
-    }
 }
 
 /* Heap sort */

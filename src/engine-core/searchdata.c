@@ -5,6 +5,7 @@
 #include "include/engine-core/types.h"
 #include "include/engine-core/tt.h"
 #include "include/engine-core/board.h"
+#include "include/engine-core/move.h"
 
 /* Initializes search data structure */
 searchdata_t *init_search_data(board_t *board) {
@@ -26,7 +27,7 @@ searchdata_t *init_search_data(board_t *board) {
 
     gettimeofday(&(data->start), 0);
     data->max_seldepth = -1;          // maximum search depth with quiescence search
-    data->best_move = NULL;          // best move (so far)
+    data->best_move = NULL;           // best move in (iterative) search so far
     data->best_eval = NEGINF;        // evaluation of board after best move made
     data->nodes_searched = 0;        // amount of nodes searched in iterative search
     data->hash_used = 0;             // amount of hash entries that lead to not needing to
@@ -41,7 +42,7 @@ searchdata_t *init_search_data(board_t *board) {
 /* Frees search data structure */
 void free_search_data(searchdata_t *data) {
     free_tt(data->tt);
+    free_move(data->best_move);
     free(data->board);
-    free(data->best_move);
     free(data);
 }

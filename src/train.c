@@ -27,7 +27,7 @@ void load_games_into_database(chess_game_t** chess_games, int nr_of_games) {
 
             /* (3) play move */
             if (move) {
-                do_move(board, move);
+                do_move(board, *move);
                 update_database_entry(board, chess_game->winner);
                 free_move(move);
             } else {

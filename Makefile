@@ -26,8 +26,8 @@ TEST_BIN = $(addprefix $(BUILD_DIR)/, $(TEST_SRC:%.c=%))
 TEST_TARGET = $(notdir $(TEST_BIN))
 
 CC = clang
-CC_FLAGS = -Wall -Wextra -Wpedantic -Wformat=2 -Wshift-overflow -Wformat-security -Wnull-dereference -Wstack-protector -Walloca -Warray-bounds -Wimplicit-fallthrough -Wliteral-conversion -Wcast-qual -Wshadow -Wstrict-overflow=4 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align -Wmissing-declarations -Wno-unused-parameter -Wno-gnu-binary-literal -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -O3 -I. # -Wvla -Wconversion
-CC_FLAGS_OPTIMIZED = -Wall -Wextra -Wshadow -Wmissing-declarations -Wno-unused-parameter -O3 -I.
+CC_FLAGS_STRICT = -Wall -Wextra -Wpedantic -Wformat=2 -Wshift-overflow -Wformat-security -Wnull-dereference -Wstack-protector -Walloca -Warray-bounds -Wimplicit-fallthrough -Wliteral-conversion -Wcast-qual -Wshadow -Wstrict-overflow=4 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align -Wmissing-declarations -Wno-unused-parameter -Wno-gnu-binary-literal -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -O3 -I. # -Wvla -Wconversion
+CC_FLAGS = -Wall -Wextra -Wshadow -Wmissing-declarations -Wno-unused-parameter -O3 -I.
 
 .PHONY: all
 all: uci_engine train_ordering test_ordering train_eval library
@@ -45,7 +45,7 @@ ordering: $(ORDERING_OBJ)
 eval: $(EVAL_OBJ)
 
 .PHONY: uci_engine
-uci_engine: engine_core parser ordering $(BIN_DIR)/uci_engine
+uci_engine: engine_core $(BIN_DIR)/uci_engine
 
 .PHONY: train_ordering
 train_ordering: engine_core parser ordering $(BIN_DIR)/train_ordering
@@ -105,7 +105,7 @@ $(LIB_DIR)/libchess.so: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(P
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -shared -fPIC -o $@ $^ -lm
 
-$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(PARSING_OBJ)
+$(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ)
 	@mkdir -p $(dir $@)
 	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 

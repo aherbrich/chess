@@ -35,7 +35,7 @@ move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2,
 
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
 
         /* check if move is a pawn move */
         bitboard_t from_mask = 1ULL << move->from;
@@ -47,7 +47,7 @@ move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2,
                 /* if non-promotion */
                 if (!promotion) {
                     move_t* copy = copy_move(move);
-                    free_pq(&move_lst);
+                    
                     return copy;
                 }
                 /* if promotion */
@@ -55,32 +55,32 @@ move_t* find_pawn_move(board_t* board, char file1, char file2, char rank2,
                     if (promo_piece == 'Q' &&
                         (move->flags == QPROM || move->flags == QCPROM)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                     if (promo_piece == 'R' &&
                         (move->flags == RPROM || move->flags == RCPROM)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                     if (promo_piece == 'B' &&
                         (move->flags == BPROM || move->flags == BCPROM)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                     if (promo_piece == 'N' &&
                         (move->flags == KPROM || move->flags == KCPROM)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 }
             }
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 
@@ -93,21 +93,21 @@ move_t* find_castle_move(board_t* board, int kingside) {
 
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
         /* if kingside castle found */
         if (kingside && move->flags == KCASTLE) {
             move_t* copy = copy_move(move);
-            free_pq(&move_lst);
+            
             return copy;
         }
         /* if queen-side castle found */
         else if (!kingside && move->flags == QCASTLE) {
             move_t* copy = copy_move(move);
-            free_pq(&move_lst);
+            
             return copy;
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 
@@ -124,7 +124,7 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
     idx_t to = str_to_idx(file2, rank2);
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
 
         /* check if move is a knight move */
         bitboard_t from_mask = 1ULL << move->from;
@@ -135,7 +135,7 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
                 /* if move is unambiguous, we can instantly return */
                 if (!single_ambiguous && !double_ambiguous) {
                     move_t* copy = copy_move(move);
-                    free_pq(&move_lst);
+                    
                     return copy;
                 }
                 /* if move is ambiguous by rank and file */
@@ -144,7 +144,7 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 } else if (single_ambiguous) {
@@ -154,14 +154,14 @@ move_t* find_knight_move(board_t* board, char file1, char rank1, char file2,
                         (single_ambiguous == AMBIG_BY_RANK &&
                          (move->from / 8 + '1') == rank1)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 }
             }
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 
@@ -179,7 +179,7 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
 
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
 
         /* check if move is a bishop move */
         bitboard_t from_mask = 1ULL << move->from;
@@ -190,7 +190,7 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
                 /* if move is unambiguous, we can instantly return */
                 if (!single_ambiguous && !double_ambiguous) {
                     move_t* copy = copy_move(move);
-                    free_pq(&move_lst);
+                    
                     return copy;
                 }
                 /* if move is ambiguous by rank and file */
@@ -199,7 +199,7 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 } else if (single_ambiguous) {
@@ -209,14 +209,14 @@ move_t* find_bishop_move(board_t* board, char file1, char rank1, char file2,
                         (single_ambiguous == AMBIG_BY_RANK &&
                          (move->from / 8 + '1') == rank1)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 }
             }
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 
@@ -233,7 +233,7 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
 
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
 
         /* check if move is a rook move */
         bitboard_t from_mask = 1ULL << move->from;
@@ -244,7 +244,7 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
                 /* if move is unambiguous, we can instantly return */
                 if (!single_ambiguous && !double_ambiguous) {
                     move_t* copy = copy_move(move);
-                    free_pq(&move_lst);
+                    
                     return copy;
                 }
                 /* if move is ambiguous by rank and file */
@@ -253,7 +253,7 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 } else if (single_ambiguous) {
@@ -263,14 +263,14 @@ move_t* find_rook_move(board_t* board, char file1, char rank1, char file2,
                         (single_ambiguous == AMBIG_BY_RANK &&
                          (move->from / 8 + '1') == rank1)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 }
             }
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 
@@ -288,7 +288,7 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
 
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
 
         /* check if move is a queen move */
         bitboard_t from_mask = 1ULL << move->from;
@@ -299,7 +299,7 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
                 /* if move is unambiguous, we can instantly return */
                 if (!single_ambiguous && !double_ambiguous) {
                     move_t* copy = copy_move(move);
-                    free_pq(&move_lst);
+                    
                     return copy;
                 }
                 /* if move is ambiguous by rank and file */
@@ -308,7 +308,7 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 } else if (single_ambiguous) {
@@ -318,14 +318,14 @@ move_t* find_queen_move(board_t* board, char file1, char rank1, char file2,
                         (single_ambiguous == AMBIG_BY_RANK &&
                          (move->from / 8 + '1') == rank1)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 }
             }
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 
@@ -342,7 +342,7 @@ move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
 
     /* iterate through all moves */
     for (int i = 1; i < (&move_lst)->nr_elem + 1; i++) {
-        move_t* move = (&move_lst)->array[i];
+        move_t* move = &(&move_lst)->array[i];
 
         /* check if move is a king move */
         bitboard_t from_mask = 1ULL << move->from;
@@ -353,7 +353,7 @@ move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
                 /* if move is unambiguous, we can instantly return */
                 if (!single_ambiguous && !double_ambiguous) {
                     move_t* copy = copy_move(move);
-                    free_pq(&move_lst);
+                    
                     return copy;
                 }
                 /* if move is ambiguous by rank and file */
@@ -362,7 +362,7 @@ move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
                     if ((move->from % 8 + 'a') == file1 &&
                         (move->from / 8 + '1') == rank1) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 } else if (single_ambiguous) {
@@ -372,14 +372,14 @@ move_t* find_king_move(board_t* board, char file1, char rank1, char file2,
                         (single_ambiguous == AMBIG_BY_RANK &&
                          (move->from / 8 + '1') == rank1)) {
                         move_t* copy = copy_move(move);
-                        free_pq(&move_lst);
+                        
                         return copy;
                     }
                 }
             }
         }
     }
-    free_pq(&move_lst);
+    
     return NULL;
 }
 

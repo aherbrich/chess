@@ -47,7 +47,7 @@ int main(void) {
 
     /* (2.1) check if we find entry for board in transposition table */
     tt_entry_t* entry = retrieve_tt_entry(tt, board);
-    if(entry != NULL && is_same_move(&entry->best_move, &move_one) && entry->depth == 5 && entry->eval == 100 && entry->flags == EXACT){
+    if(entry != NULL && is_same_move(entry->best_move, move_one) && entry->depth == 5 && entry->eval == 100 && entry->flags == EXACT){
         printf("%sSUCCESS%s: test 1: entry is in transposition table\n", Color_GREEN, Color_END);
     } else {
         printf("%sFAIL%s: test 1: entry is not in transposition table\n", Color_RED, Color_END);
@@ -61,7 +61,7 @@ int main(void) {
     /* (2.2) check if we find entry for board in transposition table */
     /* (2.2) AND! that we retrieve move_one since it has higher depth */
     entry = retrieve_tt_entry(tt, board);
-    if(entry != NULL && is_same_move(&entry->best_move, &move_one) && entry->depth == 5 && entry->eval == 100 && entry->flags == EXACT){
+    if(entry != NULL && is_same_move(entry->best_move, move_one) && entry->depth == 5 && entry->eval == 100 && entry->flags == EXACT){
         printf("%sSUCCESS%s: test 2: entry is in transposition table\n", Color_GREEN, Color_END);
     } else {
         printf("%sFAIL%s: test 2: entry is not in transposition table\n", Color_RED, Color_END);
@@ -76,10 +76,12 @@ int main(void) {
     /* (2.3) check if we find entry for board in transposition table */
     /* (2.3) AND! that we retrieve move_three since it has higher depth */
     entry = retrieve_tt_entry(tt, board);
-    if(entry != NULL && is_same_move(&entry->best_move, &move_three) && entry->depth == 6 && entry->eval == 300 && entry->flags == UPPERBOUND){
+    if(entry != NULL && is_same_move(entry->best_move, move_three) && entry->depth == 6 && entry->eval == 300 && entry->flags == UPPERBOUND){
         printf("%sSUCCESS%s: test 3: entry is in transposition table\n", Color_GREEN, Color_END);
     } else {
         printf("%sFAIL%s: test 3: entry is not in transposition table\n", Color_RED, Color_END);
         exit(EXIT_FAILURE);
     }
+
+    free_board(board);
 }

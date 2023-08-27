@@ -13,17 +13,17 @@
 typedef struct _maxpq_t {
     int size;
     int nr_elem;
-    move_t* array[PRIORITY_QUEUE_SIZE];
+    move_t array[PRIORITY_QUEUE_SIZE];
 } maxpq_t;
 
 /* initializes a given priority queue */
 void initialize_maxpq(maxpq_t* pq);
-/* frees memory of moves in priority queue*/
-void free_pq(maxpq_t* pq);
 /* inserts a given element into the priority queue */
-void insert(maxpq_t* pq, move_t* elem);
+void insert(maxpq_t* pq, move_t elem);
+/* Returns true if priority queue is empty */
+int is_empty(maxpq_t* pq);
 /* returns the element with maximal key of the priority queue */
-move_t* pop_max(maxpq_t* pq);
+move_t pop_max(maxpq_t* pq);
 /* prints a given priority queue */
 void print_pq(maxpq_t* pq);
 /* sorts a given priority queue */

@@ -157,9 +157,10 @@ int quiet_search(board_t *board, int alpha, int beta,
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
-    move_t *move;
+    move_t move;
 
-    while ((move = pop_max(&movelst))) {
+    while (!is_empty(&movelst)) {
+        move = pop_max(&movelst);
         // every so often check if we have to stop the search
         if (last_check > STOP_ACCURACY && !stop_immediately) {
             last_check = 0;
@@ -168,14 +169,11 @@ int quiet_search(board_t *board, int alpha, int beta,
 
         // exit search cleanly if we have to stop
         if (stop_immediately) {
-            free_move(move);
-            free_pq(&movelst);
             return tt_eval(searchdata->tt, board);
         }
 
         // filter out non-captures
-        if (!(move->flags & 0b0100)) {
-            free_move(move);
+        if (!(move.flags & 0b0100)) {
             continue;
         }
 
@@ -201,13 +199,9 @@ int quiet_search(board_t *board, int alpha, int beta,
         }
         // beta-cutoff
         if (eval >= beta) {
-            free_move(move);
             break;
         }
-        free_move(move);
     }
-
-    free_pq(&movelst);
 
     return best_eval;
 }
@@ -287,7 +281,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // resulting from the opponent's possible following moves.            //
     // ================================================================== //
     maxpq_t movelst;
-    move_t *move;
+    move_t move;
     initialize_maxpq(&movelst);
     generate_moves(searchdata->board, &movelst);
 
@@ -301,8 +295,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     if (entry_found) {
         pv_move_searches++;
         for (int i = 1; i <= movelst.nr_elem; i++) {
-            if (is_same_move(movelst.array[i], pv_move)) {
-                movelst.array[i]->value = 10000;
+            if (is_same_move(movelst.array[i], *pv_move)) {
+                movelst.array[i].value = 10000;
                 swap(&movelst, i, 1);
                 break;
             }
@@ -314,9 +308,10 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     int legal_moves = 0;
     int tt_flag = UPPERBOUND;
     int best_eval = NEGINF;
-    move_t *best_move = NULL;
+    move_t best_move = {0,0,0,0};
 
-    while ((move = pop_max(&movelst))) {
+    while (!is_empty(&movelst)) {
+        move = pop_max(&movelst);
         legal_moves++;
 
         do_move(searchdata->board, move);
@@ -325,10 +320,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 
         if (eval > best_eval) {
             best_eval = eval;
-            free_move(best_move);
-            best_move = copy_move(move);
+            best_move = move;
         }
-        free_move(move);
 
         // Alpha bound adjustment
         if (eval > alpha) {
@@ -342,13 +335,10 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
             break;
         }
     }
-    free_pq(&movelst);
 
     // If the player had no legal moves, the game is over (atleast in this
     // branch of the search)
     if (legal_moves == 0) {
-        free_move(best_move);
-
         // We wan't to determine if the player was check mated
         if (is_in_check(searchdata->board)) {
             return -16000 - depth;
@@ -369,10 +359,9 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // cant be sure that the information is truely correct).            //
     // ================================================================ //
     if (!stop_immediately) {
-        store_tt_entry(searchdata->tt, searchdata->board, *best_move, depth, best_eval,
+        store_tt_entry(searchdata->tt, searchdata->board, best_move, depth, best_eval,
                        tt_flag);
     }
-    free(best_move);
 
     return best_eval;
 }
@@ -388,7 +377,6 @@ void search(searchdata_t *searchdata) {
     // Reset the performance counters and calculate the time available for
     // search
     searchdata->best_eval = NEGINF;
-    searchdata->best_move = NULL;
     searchdata->nodes_searched = 0;
     searchdata->hash_used = 0;
     searchdata->hash_bounds_adjusted = 0;
@@ -437,7 +425,7 @@ void search(searchdata_t *searchdata) {
         beta = eval + WINDOWSIZE;
 
         // Update search data and output info (for GUI)
-        free_move(searchdata->best_move);
+        if(searchdata->best_move) free(searchdata->best_move);
         searchdata->best_move = tt_best_move(searchdata->tt, searchdata->board);
         searchdata->best_eval = eval;
 
@@ -466,7 +454,7 @@ void search(searchdata_t *searchdata) {
     int time = delta;
     int hashfull = tt_permille_full(searchdata->tt);
     char *move_str =
-        get_LAN_move(searchdata->best_move, searchdata->board->player);
+        get_LAN_move(*searchdata->best_move, searchdata->board->player);
     printf("info nodes %d time %d nps %d hasfull %d\nbestmove %s\n", nodes,
            time, nps, hashfull, move_str);
     printf("\n");
