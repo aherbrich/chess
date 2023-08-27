@@ -212,10 +212,6 @@ int eval_board(board_t* board) {
     int egPhase = 24 - mgPhase;
 
     int eval = (mgScore * mgPhase + egScore * egPhase) / 24;
-    if (board->player == BLACK) {
-        eval *= -1;
-    }
-
     return eval;
 }
 
