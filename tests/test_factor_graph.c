@@ -573,10 +573,10 @@ int main(void) {
 
     // notify if testing was successful
     if (fail_counter) {
-        printf("%sFAILS: %d%s\n", Color_RED, fail_counter, Color_END);
+        printf("FAILS: %d\n", fail_counter);
         exit(EXIT_FAILURE);
     } else {
-        printf("%sALL OK...%s\n\n", Color_GREEN, Color_END);
+        printf("ALL OK...\n");
         exit(EXIT_SUCCESS);
     }
 }

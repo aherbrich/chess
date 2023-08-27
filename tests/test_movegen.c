@@ -187,7 +187,9 @@ int run_specific_test(perfttest_t *test) {
         GLOBAL_COUNT += (uint64_t)nr_of_moves;
         gettimeofday(&end, 0);
 
-        double nps = ((nr_of_moves) / ((end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0)) / 1000.0;
+        double delta = ((end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0);
+        if(delta == 0.0) delta = 1.0;
+        double nps = ((nr_of_moves) / delta) / 1000.0;
 
         // string formatting and output
         snprintf(depth_str, 32, "%d", test->depths[i]);

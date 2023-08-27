@@ -40,10 +40,10 @@ int main(void) {
     int eval = search_data->best_eval;
 
     printf("\n");
-    printf("Eval: \t\t%s%d%s\n", Color_PURPLE, eval, Color_END);
-    printf("Best move:\t%s", Color_PURPLE);
+    printf("Eval: \t\t%d\n",  eval);
+    printf("Best move:\t");
     print_LAN_move(*search_data->best_move, board->player);
-    printf("\n%s", Color_END);
+    printf("\n");
     end = clock();
     printf("\nTime: \t\t%fs\n", (double)(end - begin) / CLOCKS_PER_SEC);
 

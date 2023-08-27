@@ -92,13 +92,13 @@ void print_board(board_t* board) {
         for (int y = 0; y < 8; y++) {
             /* print row number */
             if (y == 0) {
-                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
+                fprintf(stderr, "%s%d%s    ", Color_WHITE, x + 1, Color_END);
             }
             /* print piece */
             char piece = board_string[pos_to_idx(x, y)];
-            /* in PURPLE if blacks piece */
+            /* in CYAN if blacks piece */
             if (piece >= 97 && piece <= 122) {
-                fprintf(stderr, "%s%c%s  ", Color_PURPLE, piece, Color_END);
+                fprintf(stderr, "%s%c%s  ", Color_CYAN, piece, Color_END);
             }
             /* in WHITE if whites piece */
             else {
@@ -107,7 +107,7 @@ void print_board(board_t* board) {
         }
         fprintf(stderr, "\n");
     }
-    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN,
+    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_WHITE,
             Color_END);
     fprintf(stderr, "\n");
     free(board_string);
@@ -129,14 +129,14 @@ void print_bitboard(bitboard_t board) {
     for (int x = 7; x >= 0; x--) {
         for (int y = 0; y < 8; y++) {
             if (y == 0) {
-                fprintf(stderr, "%s%d%s    ", Color_GREEN, x + 1, Color_END);
+                fprintf(stderr, "%s%d%s    ", Color_WHITE, x + 1, Color_END);
             }
             char field = string[pos_to_idx(x, y)];
             fprintf(stderr, "%c  ", field);
         }
         fprintf(stderr, "\n");
     }
-    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_GREEN,
+    fprintf(stderr, "\n     %sA  B  C  D  E  F  G  H%s", Color_WHITE,
             Color_END);
     fprintf(stderr, "\n");
     free(string);

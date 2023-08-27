@@ -22,11 +22,11 @@ int main(void) {
     /* check if transposition table is initialized correctly */
     for(int i = 0; i < tt.size; i++){
         if(tt.buckets[i].always_replace.key != 0ULL || tt.buckets[i].replace_if_better.key != 0ULL){
-            printf("%sFAIL%s: transposition table is not initialized correctlly \n", Color_RED, Color_END);
+            printf("%sFAIL%s: transposition table is not initialized correctlly \n", Color_WHITE, Color_END);
             exit(EXIT_FAILURE);  
         } 
     }
-    printf("%sSUCCESS%s: transposition table is initialized correctly - size %d (%dMb)) - bits %d\n", Color_GREEN, Color_END, tt.size, (int) BYTES_TO_MB(tt.size*sizeof(tt_bucket_t)), tt.no_bits);
+    printf("%sSUCCESS%s: transposition table is initialized correctly - size %d (%dMb)) - bits %d\n", Color_WHITE, Color_END, tt.size, (int) BYTES_TO_MB(tt.size*sizeof(tt_bucket_t)), tt.no_bits);
 
 
     /* check if RETREIVE and STORE are working correctly */
@@ -34,9 +34,9 @@ int main(void) {
     /* (1) check if entry is NULL for board for which no entry should exist */
     tt_entry_t* entry_null = retrieve_tt_entry(tt, board);
     if(entry_null == NULL){
-        printf("%sSUCCESS%s: no entry for board\n", Color_GREEN, Color_END);
+        printf("%sSUCCESS%s: no entry for board\n", Color_WHITE, Color_END);
     } else {
-        printf("%sFAIL%s: entry for board\n",Color_RED, Color_END);
+        printf("%sFAIL%s: entry for board\n",Color_WHITE, Color_END);
         exit(EXIT_FAILURE);
     }
 
@@ -48,9 +48,9 @@ int main(void) {
     /* (2.1) check if we find entry for board in transposition table */
     tt_entry_t* entry = retrieve_tt_entry(tt, board);
     if(entry != NULL && is_same_move(entry->best_move, move_one) && entry->depth == 5 && entry->eval == 100 && entry->flags == EXACT){
-        printf("%sSUCCESS%s: test 1: entry is in transposition table\n", Color_GREEN, Color_END);
+        printf("%sSUCCESS%s: test 1: entry is in transposition table\n", Color_WHITE, Color_END);
     } else {
-        printf("%sFAIL%s: test 1: entry is not in transposition table\n", Color_RED, Color_END);
+        printf("%sFAIL%s: test 1: entry is not in transposition table\n", Color_WHITE, Color_END);
         exit(EXIT_FAILURE);
     } 
 
@@ -62,9 +62,9 @@ int main(void) {
     /* (2.2) AND! that we retrieve move_one since it has higher depth */
     entry = retrieve_tt_entry(tt, board);
     if(entry != NULL && is_same_move(entry->best_move, move_one) && entry->depth == 5 && entry->eval == 100 && entry->flags == EXACT){
-        printf("%sSUCCESS%s: test 2: entry is in transposition table\n", Color_GREEN, Color_END);
+        printf("%sSUCCESS%s: test 2: entry is in transposition table\n", Color_WHITE, Color_END);
     } else {
-        printf("%sFAIL%s: test 2: entry is not in transposition table\n", Color_RED, Color_END);
+        printf("%sFAIL%s: test 2: entry is not in transposition table\n", Color_WHITE, Color_END);
         exit(EXIT_FAILURE);
     }
 
@@ -77,9 +77,9 @@ int main(void) {
     /* (2.3) AND! that we retrieve move_three since it has higher depth */
     entry = retrieve_tt_entry(tt, board);
     if(entry != NULL && is_same_move(entry->best_move, move_three) && entry->depth == 6 && entry->eval == 300 && entry->flags == UPPERBOUND){
-        printf("%sSUCCESS%s: test 3: entry is in transposition table\n", Color_GREEN, Color_END);
+        printf("%sSUCCESS%s: test 3: entry is in transposition table\n", Color_WHITE, Color_END);
     } else {
-        printf("%sFAIL%s: test 3: entry is not in transposition table\n", Color_RED, Color_END);
+        printf("%sFAIL%s: test 3: entry is not in transposition table\n", Color_WHITE, Color_END);
         exit(EXIT_FAILURE);
     }
 
