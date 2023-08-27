@@ -28,8 +28,6 @@ extern const int MATERIAL_VALUE[16];
 /* functions for simple evaluation                                                       */
 /* ------------------------------------------------------------------------------------------------ */
 
-/* returns number of pieces on board */
-int nr_of_pieces(board_t *board);
 /* returns either mate or stalemate evaluation score */
 int eval_end_of_game(board_t *board, int depth);
 /* returns simple evaluation (material and positional difference) */

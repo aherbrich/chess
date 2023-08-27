@@ -8,5 +8,6 @@
 void initialize_zobrist_table(void);
 void initialize_attack_boards(void);
 void initialize_helper_boards(void);
+void initialize_eval_tables(void);
 
 #endif

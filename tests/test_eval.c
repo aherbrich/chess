@@ -24,6 +24,7 @@ int main(void) {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
+    initialize_eval_tables();
 
     searchdata_t* search_data = init_search_data(board);
 

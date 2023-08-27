@@ -20,6 +20,7 @@ int main(void) {
     initialize_attack_boards();
     initialize_helper_boards();
     initialize_zobrist_table();
+    initialize_eval_tables();
 
     /* start uci interface of chess engine */
     uci_interface_loop(&args);
