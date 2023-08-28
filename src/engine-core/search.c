@@ -11,11 +11,6 @@
 #include "include/engine-core/prettyprint.h"
 
 
-
-int pv_move_searches = 0;
-int pv_move_hits_prob = 0;
-int pv_move_hits_mean = 0;
-
 int last_check = 0;
 int stop_immediately = 0;
 
@@ -207,7 +202,6 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // previous iteration of an iterative deepening framework.             //
     // =================================================================== //
     if (entry_found) {
-        pv_move_searches++;
         for (int i = 1; i <= movelst.nr_elem; i++) {
             if (is_same_move(movelst.array[i], *pv_move)) {
                 movelst.array[i].value = 10000;
