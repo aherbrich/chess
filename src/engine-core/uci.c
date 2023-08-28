@@ -327,8 +327,8 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no wtime given"); 
                 return 1; 
             } else {
-                searchdata->wtime = atoi(token);
-                searchdata->run_infinite = 0;
+                searchdata-> timer.wtime = atoi(token);
+                searchdata-> timer.run_infinite = 0;
             }
         } else if (!strcmp(token, "btime")){
             token = strtok(NULL, " \n\t");
@@ -336,8 +336,8 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no btime given"); 
                 return 1; 
             } else {
-                searchdata->btime = atoi(token);
-                searchdata->run_infinite = 0;
+                searchdata-> timer.btime = atoi(token);
+                searchdata-> timer.run_infinite = 0;
             }
         } else if (!strcmp(token, "winc")){
             token = strtok(NULL, " \n\t");
@@ -345,8 +345,8 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no winc given"); 
                 return 1; 
             } else {
-                searchdata->winc = atoi(token);
-                searchdata->run_infinite = 0;
+                searchdata-> timer.winc = atoi(token);
+                searchdata-> timer.run_infinite = 0;
             }
         } else if (!strcmp(token, "binc")){
             token = strtok(NULL, " \n\t");
@@ -354,8 +354,8 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no binc given"); 
                 return 1; 
             } else {
-                searchdata->binc = atoi(token);
-                searchdata->run_infinite = 0;
+                searchdata-> timer.binc = atoi(token);
+                searchdata-> timer.run_infinite = 0;
             }
         } else if (!strcmp(token, "movestogo")){
             /* TODO - implement movestogo */
@@ -370,7 +370,7 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no depth given"); 
                 return 1; 
             } else {
-                searchdata->max_depth = atoi(token);
+                searchdata-> timer.max_depth = atoi(token);
             }
         } else if (!strcmp(token, "nodes")){
             token = strtok(NULL, " \n\t");
@@ -378,7 +378,7 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no nodes given"); 
                 return 1; 
             } else {
-                searchdata->max_nodes = atoi(token);
+                searchdata-> timer.max_nodes = atoi(token);
             }
         } else if (!strcmp(token, "mate")){
             /* TODO - implement mate */
@@ -389,8 +389,8 @@ int go_command_response(searchdata_t* searchdata, pthread_t* search_thread){
                 verbosity_print("no movetime given"); 
                 return 1; 
             } else {
-                searchdata->max_time = atoi(token);
-                searchdata->run_infinite = 0;
+                searchdata-> timer.max_time = atoi(token);
+                searchdata-> timer.run_infinite = 0;
             }
         } else if (!strcmp(token, "infinite")){
             /* get next token and continue */
@@ -480,7 +480,7 @@ void uci_interface_loop(void *args) {
             searchdata = init_search_data(board);
             go_command_response(searchdata, &search_thread);
         } else if (!strcmp(command, "stop")) {
-            if(searchdata) searchdata->stop = 1;
+            if(searchdata) searchdata->timer.stop = 1;
         } 
         else if(!strcmp(command, "quit")){
             break;

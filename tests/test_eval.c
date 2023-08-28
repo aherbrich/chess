@@ -35,8 +35,8 @@ int main(void) {
     print_board(board);
     printf("\n");
 
-    search_data->max_depth = 10;
-    search_data->run_infinite = 1;
+    search_data->timer.max_depth = 10;
+    search_data->timer.run_infinite = 1;
     search(search_data);
     int eval = search_data->best_eval;
 

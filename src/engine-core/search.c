@@ -10,10 +10,7 @@
 #include "include/engine-core/eval.h"
 #include "include/engine-core/prettyprint.h"
 
-#define TOLERANCE 15  // ms
-#define STOP_ACCURACY 1
-#define MAXDEPTH 100
-#define WINDOWSIZE 50
+
 
 int pv_move_searches = 0;
 int pv_move_hits_prob = 0;
@@ -22,14 +19,8 @@ int pv_move_hits_mean = 0;
 int last_check = 0;
 int stop_immediately = 0;
 
-int delta_in_ms(searchdata_t *searchdata) {
-    gettimeofday(&(searchdata->end), 0);
-    return (int)((searchdata->end.tv_sec - searchdata->start.tv_sec) * 1000.0f +
-                 (searchdata->end.tv_usec - searchdata->start.tv_usec) /
-                     1000.0f);
-}
 
-/* Creates score string for info output (for GUI) */
+/* creates score string for info output (for GUI) */
 char *get_mate_or_cp_value(int score, int depth) {
     char *buffer = (char *)malloc(1024);
     for (int i = 0; i < 1024; i++) buffer[i] = '\0';
@@ -44,7 +35,7 @@ char *get_mate_or_cp_value(int score, int depth) {
     return buffer;
 }
 
-/* Determines a draw by threefold repitiion */
+/* determines a draw by threefold repitiion */
 int draw_by_repition(board_t *board) {
     uint64_t current_board_hash = board->hash;
 
@@ -58,86 +49,10 @@ int draw_by_repition(board_t *board) {
     return 0;
 }
 
-/* Determines how much time is available for search (search parameters specified
- * by the caller (the gui)) */
-int calculate_time(searchdata_t *data) {
-    int time_available = 0;
-    int atleast_one_time_found = 0;
-    int time_available_movetime = 0;
-    int time_available_remainingtime = 0;
 
-    // if max time for move is given
-    if (data->max_time != -1) {
-        // calculate time avaiable for search
-        time_available_movetime += data->max_time;
-        time_available_movetime = (data->board->player == WHITE)
-                                      ? (time_available_movetime + data->winc)
-                                      : (time_available_movetime + data->binc);
-        time_available_movetime -= TOLERANCE;
 
-        time_available = time_available_movetime;
-        // make sure chess engine has atleast 5ms for search
-        if (time_available < 5) {
-            time_available = 5;
-        }
-        atleast_one_time_found = 1;
-    }
-    // if whites/blacks remaining time is given
-    if ((data->board->player == WHITE && data->wtime != -1) ||
-        (data->board->player == BLACK && data->btime != -1)) {
-        // calculate time avaiable for search
-        time_available_remainingtime =
-            (data->board->player == WHITE)
-                ? ((int)((double)data->wtime / 30.0))
-                : ((int)((double)data->btime / 30.0));
-        time_available_remainingtime =
-            (data->board->player == WHITE)
-                ? (time_available_remainingtime + data->winc)
-                : (time_available_remainingtime + data->binc);
-        time_available_remainingtime -= TOLERANCE;
 
-        // if no max time was given or the now calculated time is lower than the
-        // max time given update it
-        if (!atleast_one_time_found ||
-            time_available_remainingtime < time_available_movetime) {
-            time_available = time_available_remainingtime;
-            // again, make sure chess engine has atleast 5ms for search
-            if (time_available < 5) {
-                time_available = 5;
-            }
-        }
-        atleast_one_time_found = 1;
-    }
-
-    if (atleast_one_time_found) {
-        // return the minimum of both times calculated (or one if only one was
-        // given)
-        return time_available;
-    } else {
-        // -1, indicates that no time limit was specified in the call
-        return -1;
-    }
-}
-
-/* Determines if the search has to be stopped */
-/* Because of either (1) a STOP request or (2) we have used up our time to
- * search */
-int search_has_to_be_stopped(searchdata_t *search_data) {
-    // if a stop was initiaited, stop the search immediately
-    if (search_data->stop) {
-        return 1;
-    }
-    // or, if search is not in infinite mode and the time has run out, stop
-    // search immediately
-    if (!search_data->run_infinite) {
-        if (delta_in_ms(search_data) >= search_data->time_available) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-/* Quescience search */
+/* quescience search */
 int quiet_search(board_t *board, int alpha, int beta,
                  searchdata_t *searchdata, int depth) {
     searchdata->nodes_searched++;
@@ -153,7 +68,7 @@ int quiet_search(board_t *board, int alpha, int beta,
 
     int best_eval = eval;
 
-    // generate legal moves
+    /* generate legal moves */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
     generate_moves(board, &movelst);
@@ -161,18 +76,18 @@ int quiet_search(board_t *board, int alpha, int beta,
 
     while (!is_empty(&movelst)) {
         move = pop_max(&movelst);
-        // every so often check if we have to stop the search
+        /* every so often check if we have to stop the search */
         if (last_check > STOP_ACCURACY && !stop_immediately) {
             last_check = 0;
-            stop_immediately = search_has_to_be_stopped(searchdata);
+            stop_immediately = search_has_to_be_stopped(searchdata->timer);
         }
 
-        // exit search cleanly if we have to stop
+        /* exit search cleanly if we have to stop */
         if (stop_immediately) {
             return tt_eval(searchdata->tt, board);
         }
 
-        // filter out non-captures
+        /* filter out non-captures */
         if (!(move.flags & 0b0100)) {
             continue;
         }
@@ -189,15 +104,15 @@ int quiet_search(board_t *board, int alpha, int beta,
         eval = -quiet_search(board, -beta, -alpha, searchdata, depth + 1);
         undo_move(board, move);
 
-        // if eval is better than the best so far, update it
+        /* if eval is better than the best so far, update it */
         if (eval > best_eval) {
             best_eval = eval;
         }
-        // if eval is better than alpha, adjust bound
+        /* if eval is better than alpha, adjust bound */
         if (eval > alpha) {
             alpha = eval;
         }
-        // beta-cutoff
+        /* beta-cutoff */
         if (eval >= beta) {
             break;
         }
@@ -209,29 +124,28 @@ int quiet_search(board_t *board, int alpha, int beta,
 int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     searchdata->nodes_searched++;
 
-    // Every so often, check if our time has expired
+    /* Every so often, check if our time has expired */
     if ((searchdata->nodes_searched & STOP_ACCURACY) == 0) {
-        stop_immediately = search_has_to_be_stopped(searchdata);
+        stop_immediately = search_has_to_be_stopped(searchdata->timer);
     }
 
-    // If we have to stop, exit search by returning 0 in all branches.
-    // We will simply use the information of last search as our result
-    // and discard any information gained in this search.
+    /* If we have to stop, exit search by returning 0 in all branches.
+       We will simply use the information of last search as our result
+       and discard any information gained in this search. */
     if (stop_immediately) {
         return 0;
     }
 
-    // Check for draw by repitition or fifty move rule
+    /* Check for draw by repitition or fifty move rule */
     if ((searchdata->board->history[searchdata->board->ply_no].fifty_move_counter >= 100 &&
          !(is_in_check(searchdata->board))) ||
         draw_by_repition(searchdata->board)) {
         return 0;
     }
 
-    // If we've reached a depth of zero, evaluate the board
+    /* If we've reached a depth of zero, evaluate the board */
     if (depth == 0) {
         return quiet_search(searchdata->board, alpha, beta, searchdata, 0);
-        //return eval_board(searchdata->board);
     }
 
     // ================================================================ //
@@ -266,7 +180,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
         if (pv_value < beta) beta = pv_value;
     }
     if (alpha >= beta) {
-        // early beta cutoff
+        /* early beta cutoff */
         searchdata->hash_used++;
         free_move(pv_move);
         return pv_value;
@@ -323,27 +237,26 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
             best_move = move;
         }
 
-        // Alpha bound adjustment
+        /* alpha bound adjustment */
         if (eval > alpha) {
             alpha = eval;
             tt_flag = EXACT;
         }
 
-        // Beta cutoff
+        /* beta cutoff */
         if (alpha >= beta) {
             tt_flag = LOWERBOUND;
             break;
         }
     }
 
-    // If the player had no legal moves, the game is over (atleast in this
-    // branch of the search)
+    /* If the player had no legal moves, the game is over (atleast in this branch of the search) */
     if (legal_moves == 0) {
-        // We wan't to determine if the player was check mated
+        /* We wan't to determine if the player was check mated */
         if (is_in_check(searchdata->board)) {
             return -16000 - depth;
         }
-        // Or if we reached a stalemate
+        /* Or if we reached a stalemate */
         else {
             return 0;
         }
@@ -367,21 +280,19 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
 }
 
 void search(searchdata_t *searchdata) {
-    // Reset the history hash table from previous searches
-    // Of course we keep the move_keys of already played
-    // positions untouched
+    /* Reset the history hash table from prevoius searches */
+    /* Of course we keep the board hashes of already played positions untouched */
     for (int i = searchdata->board->ply_no; i < MAXPLIES; i++) {
         searchdata->board->history[i].hash = 0ULL;
     }
 
-    // Reset the performance counters and calculate the time available for
-    // search
+    /* Reset the performance counters and calculate the time available for search */
     searchdata->best_eval = NEGINF;
     searchdata->nodes_searched = 0;
     searchdata->hash_used = 0;
     searchdata->hash_bounds_adjusted = 0;
     searchdata->pv_node_hit = 0;
-    searchdata->time_available = calculate_time(searchdata);
+    searchdata->timer.time_available = calculate_time(searchdata);
 
     int alpha = NEGINF, beta = INF;
 
@@ -392,7 +303,7 @@ void search(searchdata_t *searchdata) {
     // move ordering techniques such as; PV- and hash- moves determined in //
     // previous iteration(s), as well the history heuristic (TODO).        //
     // =================================================================== //
-    for (int depth = 1; depth <= searchdata->max_depth && depth < MAXDEPTH;
+    for (int depth = 1; depth <= searchdata->timer.max_depth && depth < MAXDEPTH;
          depth++) {
         int eval = negamax(searchdata, depth, alpha, beta);
 
@@ -424,7 +335,7 @@ void search(searchdata_t *searchdata) {
         alpha = eval - WINDOWSIZE;
         beta = eval + WINDOWSIZE;
 
-        // Update search data and output info (for GUI)
+        /* Update search data and output info (for GUI) */
         if(searchdata->best_move) free(searchdata->best_move);
         searchdata->best_move = tt_best_move(searchdata->tt, searchdata->board);
         searchdata->best_eval = eval;
