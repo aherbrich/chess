@@ -215,17 +215,3 @@ int eval_board(board_t* board) {
     return eval;
 }
 
-/* returns either mate or stalemate evaluation score */
-int eval_end_of_game(board_t *board, int depth) {
-    /* check for stalemate */
-    int in_check = is_in_check(board);
-
-    /* if check (mate) delivered */
-    if (in_check) {
-        return -16000 - depth;
-    }
-    /* if stalemate */
-    else {
-        return 0;
-    }
-}
