@@ -11,7 +11,7 @@
 
 #define TOLERANCE 15    // ms
 #define MAXDEPTH 100    // plies
-#define STOP_ACCURACY 1 // node
+#define STOP_ACCURACY 255 // nodes
 #define WINDOWSIZE 50   // centipawns
 
 typedef enum _ttflag_t {
@@ -52,7 +52,7 @@ typedef struct _searchdata_t {
     int max_seldepth;               /* maximum depth searched while in quiescence search */
     move_t* best_move;              /* best move in (iterative) search so far */    
     int best_eval;                  /* corresponding evaluation of best move */
-    int nodes_searched;             /* amount of nodes searched */
+    uint64_t nodes_searched;             /* amount of nodes searched */
     int hash_used;                  /* amount of hash table hits that lead to not */
                                     /* needing to search the node again */
     int hash_bounds_adjusted;       /* amount of hash table hits that lead to */ 
@@ -66,7 +66,7 @@ searchdata_t* init_search_data(board_t* board);
 void free_search_data(searchdata_t* data);
 
 /* ------------------------------------------------------------------------------------------------ */
-/* functions for time management                                                        */
+/* functions for time management                                                                    */
 /* ------------------------------------------------------------------------------------------------ */
 
 /* returns time passed while search in ms */
@@ -75,7 +75,7 @@ int delta_in_ms(searchdata_t *searchdata);
 int calculate_time(searchdata_t *data);
 /* determines if the search has to be stopped */
 /* because of either (1) a STOP request or (2) we have used up our time to search */
-int search_has_to_be_stopped(timer_t timer);
+void check_time(timer_t* timer);
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions concerning search                                                                      */

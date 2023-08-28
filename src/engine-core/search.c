@@ -11,10 +11,6 @@
 #include "include/engine-core/prettyprint.h"
 
 
-int last_check = 0;
-int stop_immediately = 0;
-
-
 /* creates score string for info output (for GUI) */
 char *get_mate_or_cp_value(int score, int depth) {
     char *buffer = (char *)malloc(1024);
@@ -72,13 +68,12 @@ int quiet_search(board_t *board, int alpha, int beta,
     while (!is_empty(&movelst)) {
         move = pop_max(&movelst);
         /* every so often check if we have to stop the search */
-        if (last_check > STOP_ACCURACY && !stop_immediately) {
-            last_check = 0;
-            stop_immediately = search_has_to_be_stopped(searchdata->timer);
+        if ((searchdata->nodes_searched & STOP_ACCURACY) == 0) {
+            check_time(&searchdata->timer);
         }
 
         /* exit search cleanly if we have to stop */
-        if (stop_immediately) {
+        if (searchdata->timer.stop == 1) {
             return tt_eval(searchdata->tt, board);
         }
 
@@ -86,8 +81,6 @@ int quiet_search(board_t *board, int alpha, int beta,
         if (!(move.flags & 0b0100)) {
             continue;
         }
-
-        last_check++;
 
         // delta pruning
         // if (best_eval - 200 - is_capture(move->to, board) > eval) {
@@ -119,15 +112,15 @@ int quiet_search(board_t *board, int alpha, int beta,
 int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     searchdata->nodes_searched++;
 
-    /* Every so often, check if our time has expired */
+    /* every so often, check if our time has expired */
     if ((searchdata->nodes_searched & STOP_ACCURACY) == 0) {
-        stop_immediately = search_has_to_be_stopped(searchdata->timer);
+        check_time(&searchdata->timer);
     }
 
     /* If we have to stop, exit search by returning 0 in all branches.
        We will simply use the information of last search as our result
        and discard any information gained in this search. */
-    if (stop_immediately) {
+    if (searchdata->timer.stop == 1) {
         return 0;
     }
 
@@ -265,9 +258,8 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     // was not aborted by callee or due to time expiration (since we    //
     // cant be sure that the information is truely correct).            //
     // ================================================================ //
-    if (!stop_immediately) {
-        store_tt_entry(searchdata->tt, searchdata->board, best_move, depth, best_eval,
-                       tt_flag);
+    if (searchdata->timer.stop != 1) {
+        store_tt_entry(searchdata->tt, searchdata->board, best_move, depth, best_eval, tt_flag);
     }
 
     return best_eval;
@@ -301,8 +293,7 @@ void search(searchdata_t *searchdata) {
          depth++) {
         int eval = negamax(searchdata, depth, alpha, beta);
 
-        if (stop_immediately) {
-            stop_immediately = 0;
+        if (searchdata->timer.stop == 1) {
             if (searchdata->best_move == NULL && depth == 1) {
                 searchdata->best_move = tt_best_move(searchdata->tt, searchdata->board);
             }

@@ -7,6 +7,10 @@
 #include "include/engine-core/board.h"
 #include "include/engine-core/move.h"
 
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for time management                                                                    */
+/* ------------------------------------------------------------------------------------------------ */
+
 /* returns time passed while search in ms */
 int delta_in_ms(searchdata_t *searchdata) {
     /* get current time */
@@ -98,19 +102,18 @@ int time_left(struct timeval start, int time_available) {
 /* determines if the search has to be stopped */
 /* because of either (1) a STOP request or (2) we have used up our time to
  * search */
-int search_has_to_be_stopped(timer_t timer) {
-    /* if a stop was initiaited, stop the search immediately */
-    if (timer.stop) {
-        return 1;
-    }
-    /* or, if search is not in infinite mode and the time has run out, stop search immediately */
-    if (!timer.run_infinite) {
-        if (!time_left(timer.start, timer.time_available)) {
-            return 1;
+void check_time(timer_t* timer) {
+    /* if search is not in infinite mode and the time has run out, stop search immediately */
+    if (!timer->run_infinite) {
+        if (!time_left(timer->start, timer->time_available)) {
+            timer->stop = 1;
         }
     }
-    return 0;
 }
+
+/* ------------------------------------------------------------------------------------------------ */
+/* functions for managing the searchdata (time constraints, search info etc. )          */
+/* ------------------------------------------------------------------------------------------------ */
 
 /* initializes timer */
 timer_t init_timer(void) {
@@ -133,6 +136,7 @@ timer_t init_timer(void) {
                                                    /* tells engine how much time (in ms) it has to search */
     return timer;
 }
+
 /* initializes search data structure */
 searchdata_t *init_search_data(board_t *board) {
     searchdata_t *data = (searchdata_t *)malloc(sizeof(searchdata_t));
