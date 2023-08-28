@@ -3,6 +3,7 @@
 
 #include "include/engine-core/tt.h"
 
+#include "include/engine-core/search.h"
 #include "include/engine-core/types.h"
 #include "include/engine-core/move.h"
 #include "include/engine-core/prettyprint.h"
@@ -85,7 +86,7 @@ void reset_tt(tt_t table) {
 
 
 /* stores an entry in transposition table */
-void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int16_t eval, int8_t flags) {
+void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int32_t eval, int8_t flags) {
     /* calculate hash */
     uint64_t hash = hash_func_tt(board->hash, table.no_bits);
 
@@ -152,7 +153,7 @@ int tt_eval(tt_t table, board_t* board) {
     }
 
     /* otherwise, return worst eval */
-    return -16000;
+    return NEGINF;
 }
 
 /* Gets the best move for the board position based on tt entry */

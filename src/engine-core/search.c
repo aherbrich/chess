@@ -20,9 +20,9 @@ char *get_mate_or_cp_value(int score, int depth) {
     char *buffer = (char *)malloc(1024);
     for (int i = 0; i < 1024; i++) buffer[i] = '\0';
 
-    if (score >= 16000) {
+    if (score >= INF - MAXDEPTH) {
         snprintf(buffer, 8, "mate %d", (depth / 2));
-    } else if (score <= -16000) {
+    } else if (score <= NEGINF + MAXDEPTH) {
         snprintf(buffer, 8, "mate %d", -(depth / 2));
     } else {
         snprintf(buffer, 6, "cp %d", score);
@@ -153,7 +153,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     tt_entry_t* entry = retrieve_tt_entry(searchdata->tt, searchdata->board);
     int entry_found = 0;
     move_t *pv_move = NULL;
-    int16_t pv_value = 0;
+    int32_t pv_value = 0;
     int8_t pv_flags = 0, pv_depth = 0;
 
     if(entry){
@@ -248,7 +248,7 @@ int negamax(searchdata_t *searchdata, int depth, int alpha, int beta) {
     if (legal_moves == 0) {
         /* We wan't to determine if the player was check mated */
         if (is_in_check(searchdata->board)) {
-            return -16000 - depth;
+            return NEGINF + depth;
         }
         /* Or if we reached a stalemate */
         else {
@@ -347,7 +347,7 @@ void search(searchdata_t *searchdata) {
                score, depth, seldepth, nodes, time, nps, hashfull);
         print_line(searchdata->tt, searchdata->board, depth);
         printf("\n");
-        if (eval >= 16000 || eval <= -16000) break;
+        if (eval >= INF - MAXDEPTH || eval <= NEGINF + MAXDEPTH) break;
 
         free(score);
     }

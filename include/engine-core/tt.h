@@ -16,7 +16,7 @@ typedef struct _tt_entry_t {
     uint64_t key;
     move_t best_move;
     int8_t depth;
-    int16_t eval;
+    int32_t eval;
     int8_t flags; 
 } tt_entry_t;
 
@@ -50,7 +50,7 @@ void reset_tt(tt_t table);
 /* ------------------------------------------------------------------------------------------------ */
 
 /* stores an entry in transposition table */
-void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int16_t eval, int8_t flags);
+void store_tt_entry(tt_t table, board_t* board, move_t move, int8_t depth, int32_t eval, int8_t flags);
 /* retrieves an entry from transposition table */
 tt_entry_t* retrieve_tt_entry(tt_t table, board_t* board);
 /* Returns the eval for the board position from tt */
