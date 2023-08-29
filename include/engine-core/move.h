@@ -14,6 +14,10 @@ void generate_moves(board_t* board, maxpq_t* movelst);
 void do_move(board_t* board, move_t move);
 /* undoes a given move on a given board */
 void undo_move(board_t* board, move_t move);
+/* executes a null move */
+void do_null_move(board_t* board);
+/* undoes a null move */
+void undo_null_move(board_t* board);
 
 
 /* ------------------------------------------------------------------------------------------------ */

@@ -1494,7 +1494,7 @@ void undo_move(board_t *board, move_t move) {
     board->ply_no--;
     /* xor in new castle rights */
     board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].castlerights + 8];
-    /* xor out the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply+1*/
+    /* xor in the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply+1*/
     if (board->history[board->ply_no].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
 
     moveflags_t type = move.flags;
@@ -1504,7 +1504,7 @@ void undo_move(board_t *board, move_t move) {
             move_piece_quiet(board, move.to, move.from);
             break;
         case DOUBLEP:
-            /* xor in new ep square */
+            /* xor out the (new) ep square */
             board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no + 1].epsq % 8];
             move_piece_quiet(board, move.to, move.from);
             break;
@@ -1564,7 +1564,49 @@ void undo_move(board_t *board, move_t move) {
     }
 
     board->player = SWITCHSIDES(board->player);
-    /* xor in the new castle rights */
+    /* xor out old player and xor in the new player */
+    board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
+}
+
+/* Execute move */
+void do_null_move(board_t *board) {
+    /* save current board hash in array */
+    board->history[board->ply_no].hash = board->hash;
+
+    /* increase board ply number */
+    board->ply_no++;
+    uint16_t ply = board->ply_no;
+
+    /* reset history fields for board at new ply */
+    board->history[ply].captured = NO_PIECE;
+    board->history[ply].epsq = NO_SQUARE;
+    board->history[ply].castlerights = board->history[ply - 1].castlerights;
+    board->history[ply].fifty_move_counter = 0;
+    board->history[ply].full_move_counter = board->history[ply - 1].full_move_counter;
+
+    /* xor out the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply-1*/
+    if (board->history[ply - 1].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[ply - 1].epsq % 8];
+
+    /* if black is making the move/ made his move, then increase the full move
+     * counter */
+    if (board->player == BLACK) {
+        board->history[ply].full_move_counter++;
+    }
+
+    board->player = SWITCHSIDES(board->player);
+    /* xor out old player and xor in the new player */
+    board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
+}
+
+/* Undos a move */
+void undo_null_move(board_t *board) {
+    /* reduce ply number */
+    board->ply_no--;
+    /* xor in the (old) ep square if an ep sqaure was given i.e. epcapture was possible at ply+1*/
+    if (board->history[board->ply_no].epsq != NO_SQUARE) board->hash ^= zobrist_table.flag_random64[board->history[board->ply_no].epsq % 8];
+
+    board->player = SWITCHSIDES(board->player);
+    /* xor out old player and xor in the new player */
     board->hash ^= zobrist_table.flag_random64[24] ^ zobrist_table.flag_random64[25];
 }
 

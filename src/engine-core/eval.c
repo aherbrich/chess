@@ -3,8 +3,6 @@
 #include "include/engine-core/types.h"
 #include "include/engine-core/move.h"
 
-#define PIECE_COLOR(p) ((p)>>3)
-#define FLIP(sq) ((sq)^56)
 
 /* ------------------------------------------------------------------------------------------------ */
 /* PeSTOS's eval function (from https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function)     */

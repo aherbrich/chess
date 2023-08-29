@@ -3,6 +3,9 @@
 
 #include "include/engine-core/types.h"
 
+#define PIECE_COLOR(p) ((p)>>3)
+#define FLIP(sq) ((sq)^56)
+
 #define PAWNVALUE 100
 #define KNIGHTVALUE 320
 #define BISHOPVALUE 330
