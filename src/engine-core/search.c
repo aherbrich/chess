@@ -36,11 +36,11 @@ char *get_mate_or_cp_value(int score, int depth) {
     for (int i = 0; i < 1024; i++) buffer[i] = '\0';
 
     if (score >= INF - MAXDEPTH) {
-        snprintf(buffer, 8, "mate %d", (depth / 2));
+        snprintf(buffer, 1024, "mate %d", (depth / 2));
     } else if (score <= NEGINF + MAXDEPTH) {
-        snprintf(buffer, 8, "mate %d", -(depth / 2));
+        snprintf(buffer, 1024, "mate %d", -(depth / 2));
     } else {
-        snprintf(buffer, 6, "cp %d", score);
+        snprintf(buffer, 1024, "cp %d", score);
     }
     return buffer;
 }
@@ -59,16 +59,13 @@ int draw_by_repition(board_t *board) {
     return 0;
 }
 
-
-
-
-/* quescience search */
-int quiet_search(board_t *board, int alpha, int beta,
-                 searchdata_t *searchdata, int depth, int ply) {
+/* quiescence search */
+int32_t quiesce(searchdata_t* searchdata, int pvs_ply, int ply, int alpha, int beta){
     searchdata->nodes_searched++;
-    searchdata->max_seldepth = (searchdata->max_seldepth < depth) ? depth : searchdata->max_seldepth;
+    searchdata->max_seldepth = (searchdata->max_seldepth < ply) ? ply : searchdata->max_seldepth;
+
     /* check if we have exceeded the maximum search depth */
-    if (ply >= MAXDEPTH) {
+    if (pvs_ply + ply >= MAXDEPTH) {
         return eval_board(searchdata->board);
     }
 
@@ -82,66 +79,83 @@ int quiet_search(board_t *board, int alpha, int beta,
         check_time(&searchdata->timer);
     }
 
-    /* If we have to stop, exit search by returning 0 in all branches.
-       We will simply use the information of last search as our result
+    /* if we have to stop, exit search by returning 0 in all branches.
+       we will simply use the information of last search as our result
        and discard any information gained in this search. */
     if (searchdata->timer.stop == 1) {
         return 0;
     }
 
-    int eval = eval_board(board);
-
-    if (eval >= beta) {
-        return eval;
+    /* ================================================================== */
+    /* STAND-PAT: We need a score to return in case there are no captures */
+    /* available to be played. This is done by a using the static eval-   */
+    /* uation as a stand-pat score. This can bee seen as making a null    */
+    /* move and then evaluating the position. We use the stand-pat score  */
+    /* as a lower bound on the score. This is theoretically sound because */
+    /* we can usually assume that there is at least one move that can     */
+    /* either match or beat a "null" move. If the lower bound from the    */
+    /* stand pat score is already greater than or equal to beta, we can   */
+    /* return the stand pat score.                                        */
+    /* If we are in check we should not allow stand-pat beta cutoffs      */
+    /* (atleast in the first few plies) of quiescence search, since the   */
+    /* position is not quiet enough. Only in greater depths we allow this */
+    /* (but rather for reasons of preventing search explosions).          */
+    /* ================================================================== */
+    int32_t best_score_so_far = eval_board(searchdata->board);
+    if(!(ply <= 2 && is_in_check(searchdata->board)) && best_score_so_far >= beta) {
+        return best_score_so_far;
     }
-    if (eval > alpha) {
-        alpha = eval;
+    if (best_score_so_far > alpha) {
+        alpha = best_score_so_far; 
     }
+    
 
-    int best_eval = eval;
-
-    /* generate legal moves */
+    /* ================================================================== */
+    /* TACTICAL-MOVE ITERATION: We only want to search tactical/non-quiet */
+    /* moves, i.e. captures and promotions. If we are in check (in the    */
+    /* first few plies of quiescence search) we want to search all moves  */
+    /* instead of only captures and promotions.                           */
+    /* ================================================================== */
     maxpq_t movelst;
     initialize_maxpq(&movelst);
-    generate_moves(board, &movelst);
-    move_t move;
+    
+    if(ply <= 2 && is_in_check(searchdata->board)){
+        generate_moves(searchdata->board, &movelst);
+    } else {
+        generate_tactical_moves(searchdata->board, &movelst);
+    }
 
+
+    move_t move;
     while (!is_empty(&movelst)) {
         move = pop_max(&movelst);
 
-        /* filter out non-captures */
-        if (!(move.flags & 0b0100)) {
-            continue;
+        /* TODO: SEE */
+
+        do_move(searchdata->board, move);
+        int32_t score = -quiesce(searchdata, pvs_ply, ply + 1, -beta, -alpha);
+        undo_move(searchdata->board, move);
+
+        if (score > best_score_so_far) {
+            best_score_so_far = score;
         }
 
-        // delta pruning
-        // if (best_eval - 200 - is_capture(move->to, board) > eval) {
-        //     free_move(move);
-        //     continue;
-        // }
-
-        do_move(board, move);
-        eval = -quiet_search(board, -beta, -alpha, searchdata, depth + 1, ply + 1);
-        undo_move(board, move);
-
-        /* if eval is better than the best so far, update it */
-        if (eval > best_eval) {
-            best_eval = eval;
+        /* adjust alpha before potential beta cutoff */
+        if (best_score_so_far > alpha) {
+            alpha = best_score_so_far;
         }
-        /* if eval is better than alpha, adjust bound */
-        if (eval > alpha) {
-            alpha = eval;
-        }
-        /* beta-cutoff */
-        if (eval >= beta) {
+
+        /* beta cutoff */
+        if (alpha >= beta) {
             break;
         }
     }
 
-    return best_eval;
+    return best_score_so_far;
 }
 
-int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, int allow_null_move) {
+/* fail-soft prinicipal variation search */
+int32_t pvs(searchdata_t *searchdata, int depth, int ply, int allow_null_move, int alpha, int beta){
     searchdata->nodes_searched++;
 
     /* check if we have exceeded the maximum search depth */
@@ -159,14 +173,14 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
         check_time(&searchdata->timer);
     }
 
-    /* If we have to stop, exit search by returning 0 in all branches.
+    /* if we have to stop, exit search by returning 0 in all branches.
        We will simply use the information of last search as our result
        and discard any information gained in this search. */
     if (searchdata->timer.stop == 1) {
         return 0;
     }
 
-    /* Check for draw by repitition or fifty move rule */
+    /* check for draw by repitition or fifty move rule */
     if ((searchdata->board->history[searchdata->board->ply_no].fifty_move_counter >= 100 &&
          !(is_in_check(searchdata->board))) ||
         draw_by_repition(searchdata->board)) {
@@ -190,7 +204,7 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
     /* to contain tactical lines and to prevent the horizion effect.      */
     /* ================================================================== */
     if (depth == 0) {
-        return quiet_search(searchdata->board, alpha, beta, searchdata, 0, ply);
+        return quiesce(searchdata, ply, 0, alpha, beta);
     }
 
     /* ================================================================== */
@@ -224,6 +238,7 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
             case LOWERBOUND:
                 searchdata->hash_bounds_adjusted++;
                 if(pv_value >= beta) return pv_value;
+                if(pv_value > alpha) alpha = pv_value;
                 break;
             /* ================================================================== */
             /* UPPERBOUND: If the score of the entry is a upperbound, i.e. could  */
@@ -238,6 +253,7 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
             case UPPERBOUND:
                 searchdata->hash_bounds_adjusted++;
                 if(pv_value <= alpha) return pv_value;
+                if(pv_value < beta) beta = pv_value;
                 break;
         }
     }
@@ -283,7 +299,7 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
     /* ================================================================== */
     if (allow_null_move && !is_in_check(searchdata->board) && depth >= 3 && !is_lategame(searchdata->board)){
         do_null_move(searchdata->board);
-        int32_t score = -negamax(searchdata, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, -beta, -beta + 1, 0);
+        int32_t score = -pvs(searchdata, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, 0, -beta, -beta + 1);
         undo_null_move(searchdata->board);
         if (score >= beta) {
             return score;
@@ -307,7 +323,7 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
     /* ================================================================== */
     /* PV-MOVE: We want to order the moves in a way that makes the        */
     /* search more efficient. We do this by searching the most promising  */
-    /* moves first. the most important move ordering technique is to try  */
+    /* moves first. The most important move ordering technique is to try  */
     /* PV-Moves first. A PV-Move is part of the principal variation and   */
     /* therefor a best move found in the previous iteration of an         */
     /* iterative deepening framework.                                     */
@@ -323,46 +339,70 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
     }
 
     int legal_moves = 0;
+    int32_t best_score_so_far = NEGINF;
+    move_t best_move_so_far = {0,0,0,0};
     int tt_flag = UPPERBOUND;
-    int best_eval = NEGINF;
-    move_t best_move = {0,0,0,0};
 
     while (!is_empty(&movelst)) {
         move = pop_max(&movelst);
         legal_moves++;
 
         do_move(searchdata->board, move);
-        int eval = -negamax(searchdata, depth - 1, ply + 1, -beta, -best_eval, 1);
-        undo_move(searchdata->board, move);
-
-        if (eval > best_eval) {
-            best_eval = eval;
-            best_move = move;
+        
+        /* ================================================================== */
+        /* PRINCIPAL VARIATION SEARCH: PVS produces more cutoffs than alpha–  */
+        /* beta by assuming that the first explored node is the best. Then,   */
+        /* can check whether that is true by searching the remaining nodes    */
+        /* with a null window (when alpha and beta are equal), which is fast- */
+        /* er than searching with the regular alpha–beta window. If the proof */
+        /* fails, then the first node was not in the principal variation, and */
+        /* the search continues as normal alpha–beta. Hence, PVS works best   */
+        /* when the move ordering is good.                                    */
+        /* ================================================================== */
+        int32_t score;
+        if(legal_moves == 1){
+            /* search the first (assumed to be the best) move with full window */
+            score = -pvs(searchdata, depth - 1, ply + 1, 1, -beta, -alpha);
+        } else {
+            /* search the remaining moves with a null window */
+            score = -pvs(searchdata, depth - 1, ply + 1, 1, -alpha - 1, -alpha);
+            /* if the score is within the window (alpha, beta), search again with full window */
+            if(score > alpha && score < beta){
+                score = -pvs(searchdata, depth - 1, ply + 1, 1, -beta, -alpha);
+            }
         }
 
-        /* alpha bound adjustment */
-        if (eval > alpha) {
-            alpha = eval;
-            tt_flag = EXACT;
+        undo_move(searchdata->board, move);
+
+        if (score > best_score_so_far) {
+            best_score_so_far = score;
+            best_move_so_far = move;
+        }
+
+        /* adjust alpha before potential beta cutoff (fail-soft variation) */
+        if (best_score_so_far > alpha) { 
+            alpha = best_score_so_far;
+            tt_flag = EXACT; 
         }
 
         /* beta cutoff */
         if (alpha >= beta) {
+            /* if there are still moves left, we only know that the best score
+               so far is a lowerbound for the true score */
             if (!is_empty(&movelst)) {
                 tt_flag = LOWERBOUND;
-            }
-            
+            } 
             break;
         }
     }
 
-    /* If the player had no legal moves, the game is over (atleast in this branch of the search) */
+    /* if the player had no legal moves, the game is over (atleast in this branch of the search) */
     if (legal_moves == 0) {
-        /* We wan't to determine if the player was check mated */
+        /* we wan't to determine if the player was check mated */
         if (is_in_check(searchdata->board)) {
             return NEGINF + depth;
         }
-        /* Or if we reached a stalemate */
+        /* or if we reached a stalemate */
         else {
             return 0;
         }
@@ -379,10 +419,11 @@ int negamax(searchdata_t *searchdata, int depth, int ply, int alpha, int beta, i
     /* correct).                                                        */
     /* ================================================================ */
     if (searchdata->timer.stop != 1) {
-        store_tt_entry(searchdata->tt, searchdata->board, best_move, depth, best_eval, tt_flag);
+        store_tt_entry(searchdata->tt, searchdata->board, best_move_so_far, depth, best_score_so_far, tt_flag);
     }
 
-    return best_eval;
+    /* return best score (not alpha! a.k.a. fail-soft variation) */
+    return best_score_so_far;
 }
 
 void search(searchdata_t *searchdata) {
@@ -411,7 +452,7 @@ void search(searchdata_t *searchdata) {
     /* =================================================================== */
     for (int depth = 1; depth <= searchdata->timer.max_depth && depth < MAXDEPTH;
          depth++) {
-        int eval = negamax(searchdata, depth, 0, alpha, beta, 1);
+        int eval = pvs(searchdata, depth, 0, 1, alpha, beta);
 
         if (searchdata->timer.stop == 1) {
             if (searchdata->best_move == NULL && depth == 1) {

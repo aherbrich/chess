@@ -10,6 +10,8 @@
 
 /* generates all moves for a given board */
 void generate_moves(board_t* board, maxpq_t* movelst);
+/* generates tactical moves for a given board */
+void generate_tactical_moves(board_t* board, maxpq_t* movelst);
 /* executes a given move on a given board */
 void do_move(board_t* board, move_t move);
 /* undoes a given move on a given board */
