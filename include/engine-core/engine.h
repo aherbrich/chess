@@ -10,6 +10,7 @@
 #include "include/engine-core/pq.h"
 #include "include/engine-core/prettyprint.h"
 #include "include/engine-core/search.h"
+#include "include/engine-core/see.h"
 #include "include/engine-core/tt.h"
 #include "include/engine-core/types.h"
 #include "include/engine-core/uci.h"

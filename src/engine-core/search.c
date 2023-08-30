@@ -5,6 +5,7 @@
 
 #include "include/engine-core/types.h"
 #include "include/engine-core/move.h"
+#include "include/engine-core/see.h"
 #include "include/engine-core/zobrist.h"
 #include "include/engine-core/tt.h"
 #include "include/engine-core/eval.h"
@@ -129,8 +130,18 @@ int32_t quiesce(searchdata_t* searchdata, int pvs_ply, int ply, int alpha, int b
     move_t move;
     while (!is_empty(&movelst)) {
         move = pop_max(&movelst);
-
-        /* TODO: SEE */
+        
+        /* ================================================================== */
+        /* SEE: Static Exchange Evaluation examines the consequence of a ser- */
+        /* ies of exchanges on a single square after a given move, and calc-  */
+        /* ulates the likely evaluation change (material) to be lost or gain- */
+        /* ed. A positive static exchange indicates a "winning" move. For     */
+        /* example, PxQ will always be a win, since the Pawn side can choose  */
+        /* to stop the exchange after its Pawn is recaptured, and still be    */
+        /* ahead. If we find that a (capture) move has a negative SEE-value   */
+        /* trust it and prune the branch.                                     */
+        /* ================================================================== */
+        if((move.flags & 0b0100) && see(searchdata->board, move) < 0) continue;
 
         do_move(searchdata->board, move);
         int32_t score = -quiesce(searchdata, pvs_ply, ply + 1, -beta, -alpha);

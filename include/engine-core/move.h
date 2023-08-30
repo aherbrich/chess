@@ -38,4 +38,14 @@ int is_in_check_fast(board_t* board);
 int is_in_check(board_t* board);
 
 
+/* ------------------------------------------------------------------------------------------------ */
+/* functions made avaiable for SEE                                                                  */
+/* ------------------------------------------------------------------------------------------------ */
+/* returns bitboard of squares of pieces which can capture on given square as specified player */
+bitboard_t attackers_from_both_sides(board_t *board, square_t sq, bitboard_t occ);
+/* returns bitboard of squares of pieces which can capture on given square irrespective of piece color 
+   and which lie on the line of the two squares */
+bitboard_t consider_xray(board_t *board, square_t cap_sq, square_t from_sq, bitboard_t occ);
+
+
 #endif

@@ -550,24 +550,28 @@ void initialize_squares_between(void) {
     for (square_t sq1 = a1; sq1 <= h8; ++sq1)
         for (square_t sq2 = a1; sq2 <= h8; ++sq2) {
             sqs = SQUARE_BB[sq1] | SQUARE_BB[sq2];
-            if (file_of(sq1) == file_of(sq2) || rank_of(sq1) == rank_of(sq2))
+            if (sq1 != sq2 && (file_of(sq1) == file_of(sq2) || rank_of(sq1) == rank_of(sq2)))
                 SQUARES_BETWEEN_BB[sq1][sq2] =
                     get_rook_attacks_for_init(sq1, sqs) & get_rook_attacks_for_init(sq2, sqs);
-            else if (diagonal_of(sq1) == diagonal_of(sq2) || anti_diagonal_of(sq1) == anti_diagonal_of(sq2))
+            else if (sq1 != sq2 && (diagonal_of(sq1) == diagonal_of(sq2) || anti_diagonal_of(sq1) == anti_diagonal_of(sq2)))
                 SQUARES_BETWEEN_BB[sq1][sq2] =
                     get_bishop_attacks_for_init(sq1, sqs) & get_bishop_attacks_for_init(sq2, sqs);
+            else
+                SQUARES_BETWEEN_BB[sq1][sq2] = 0ULL;
         }
 }
 
 void initialize_line(void) {
     for (square_t sq1 = a1; sq1 <= h8; ++sq1)
         for (square_t sq2 = a1; sq2 <= h8; ++sq2) {
-            if (file_of(sq1) == file_of(sq2) || rank_of(sq1) == rank_of(sq2))
+            if (sq1 != sq2 && (file_of(sq1) == file_of(sq2) || rank_of(sq1) == rank_of(sq2)))
                 LINE[sq1][sq2] =
                     (get_rook_attacks_for_init(sq1, 0ULL) & get_rook_attacks_for_init(sq2, 0ULL)) | SQUARE_BB[sq1] | SQUARE_BB[sq2];
-            else if (diagonal_of(sq1) == diagonal_of(sq2) || anti_diagonal_of(sq1) == anti_diagonal_of(sq2))
+            else if (sq1 != sq2 && (diagonal_of(sq1) == diagonal_of(sq2) || anti_diagonal_of(sq1) == anti_diagonal_of(sq2)))
                 LINE[sq1][sq2] =
                     (get_bishop_attacks_for_init(sq1, 0ULL) & get_bishop_attacks_for_init(sq2, 0ULL)) | SQUARE_BB[sq1] | SQUARE_BB[sq2];
+            else
+                LINE[sq1][sq2] = 0ULL;
         }
 }
 
@@ -763,6 +767,33 @@ bitboard_t attackers_from(board_t *board, square_t sq, bitboard_t occ, player_t 
                                 (KNIGHT_ATTACK[sq] & board->piece_bb[B_KNIGHT]) |
                                 (attack_bishop(sq, occ) & (board->piece_bb[B_BISHOP] | board->piece_bb[B_QUEEN])) |
                                 (attack_rook(sq, occ) & (board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN])));
+}
+
+/* returns bitboard of squares of pieces which can capture on given square irrespective of piece color */
+bitboard_t attackers_from_both_sides(board_t *board, square_t sq, bitboard_t occ) {
+    return ((attack_pawn_single(sq, BLACK) & board->piece_bb[W_PAWN]) |
+            (attack_pawn_single(sq, WHITE) & board->piece_bb[B_PAWN]) | 
+            (KNIGHT_ATTACK[sq] & (board->piece_bb[W_KNIGHT] | board->piece_bb[B_KNIGHT])) |
+            (attack_bishop(sq, occ) & (board->piece_bb[W_BISHOP] | board->piece_bb[W_QUEEN] | board->piece_bb[B_BISHOP] | board->piece_bb[B_QUEEN])) |
+            (attack_rook(sq, occ) & (board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN])));
+}
+
+/* returns bitboard of squares of pieces which can capture on given square irrespective of piece color 
+   and which lie on the line of the two squares */
+bitboard_t consider_xray(board_t *board, square_t cap_sq, square_t from_sq, bitboard_t occ) {
+    bitboard_t pot_attackers = ((attack_bishop(cap_sq, occ) & (board->piece_bb[W_BISHOP] | board->piece_bb[W_QUEEN] | board->piece_bb[B_BISHOP] | board->piece_bb[B_QUEEN])) |
+                            (attack_rook(cap_sq, occ) & (board->piece_bb[W_ROOK] | board->piece_bb[W_QUEEN] | board->piece_bb[B_ROOK] | board->piece_bb[B_QUEEN])));
+
+    bitboard_t attackers = 0ULL;
+    /* for every attacker check if they were/are an xray-ing attacker 
+       i.e. can only attack NOW because the capturing piece on the from square
+       is not blocking anymore */
+    while(pot_attackers){
+        square_t sq = pop_1st_bit(&pot_attackers);
+        if ((SQUARES_BETWEEN_BB[cap_sq][sq] & SQUARE_BB[from_sq])) attackers |= SQUARE_BB[sq];
+    }
+    
+    return attackers;
 }
 
 /* Returns direction as in the view of white (i.e NORTH stays NORTH as white,
