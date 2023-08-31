@@ -184,7 +184,11 @@ move_t* tt_best_move(tt_t table, board_t *board) {
 
 /* prints tt entry */
 void print_tt_entry(tt_entry_t* entry) {
-    printf("key: %llu\n", entry->key);
+    #ifdef __linux__
+        printf("key: %lu\n", entry->key);
+    #else
+        printf("key: %llu\n", entry->key);
+    #endif
     printf("best move: ");
     print_move(entry->best_move);
     printf("depth: %d\n", entry->depth);
