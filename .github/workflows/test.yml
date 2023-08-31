@@ -1,0 +1,10 @@
+name: engine-test
+on: 
+  push
+
+jobs:
+  test:
+    steps:
+      - name: run script
+        run: 
+          ./test-script.sh
