@@ -89,7 +89,7 @@ $(TEST_TARGET): %: $(BUILD_DIR)/tests/%
 
 $(ENGINE_CORE_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	# $(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $< -lpthread
+	# $(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
 	$(CC) $(CC_FLAGS) -fno-exceptions -o $@ -c $<
 
 $(PARSING_OBJ): $(BUILD_DIR)/%.o: src/%.c
@@ -111,7 +111,7 @@ $(LIB_DIR)/libchess.so: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(P
 
 $(BIN_DIR)/uci_engine: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ)
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ $^ -lm -lpthread
+	$(CC) $(CC_FLAGS) -o $@ $^ -lm
 
 $(BIN_DIR)/train_ordering: $(TRAIN_ORDERING_SRC) $(PARSING_OBJ) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ)
 	@mkdir -p $(dir $@)
