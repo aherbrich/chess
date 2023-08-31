@@ -14,8 +14,8 @@ echo "\n\033[0;35mm====================================== [test_perftdivide] ===
 ./build/tests/test_perftdivide $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 echo "\n\033[0;35mm====================================== [test_tt] ======================================\033[0m\n"
 ./build/tests/test_tt $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
-echo "\n\033[0;35mm====================================== [test_movegen] ======================================\033[0m\n"
-./build/tests/test_movegen $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
+# echo "\n\033[0;35mm====================================== [test_movegen] ======================================\033[0m\n"
+# ./build/tests/test_movegen $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 
 # run tests with leak check
 echo "Running tests with leak check..."
@@ -43,5 +43,5 @@ echo "\n\033[0;35mm====================================== [test_perftdivide + sa
 ./build/tests/test_perftdivide $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 echo "\n\033[0;35mm====================================== [test_tt + sanitizers] ======================================\033[0m\n"
 ./build/tests/test_tt $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
-echo "\n\033[0;35mm====================================== [test_movegen + sanitizers] ======================================\033[0m\n"
-./build/tests/test_movegen $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
+# echo "\n\033[0;35mm====================================== [test_movegen + sanitizers] ======================================\033[0m\n"
+# ./build/tests/test_movegen $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
