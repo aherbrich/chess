@@ -39,7 +39,7 @@ engine_info_t init_engine_info(void){
     engine_info_t engine_info = {
         .name = "Herby",
         .author = "Alexander Herbrich",
-        .version = "v2.0",
+        .version = "v3.0",
     };
 
     return engine_info;
