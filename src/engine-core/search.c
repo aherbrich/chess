@@ -141,7 +141,24 @@ int32_t quiesce(searchdata_t* searchdata, int pvs_ply, int ply, int alpha, int b
         /* ahead. If we find that a (capture) move has a negative SEE-value   */
         /* trust it and prune the branch.                                     */
         /* ================================================================== */
-        if((move.flags & 0b0100) && see(searchdata->board, move) < 0) continue;
+        if(move.flags & 0b0100){
+            int32_t see_value = see(searchdata->board, move);
+            if(see_value < 0) continue;
+
+            /* ================================================================== */
+            /* VARIABLE DELTA PRUNING: Delta pruning is a technique that tries to */
+            /* reduce the search space by pruning moves that are unlikely to im-  */
+            /* prove the score. The idea is that if our current position is so    */
+            /* bad, that even a (possibly) positive exchange (indicated by a pos- */
+            /* see-value) would not raise our alpha, we can prune the branch. We  */
+            /* add a safety margin of 150 centipawns to reduce the number of bra- */
+            /* nches we prune, which might not raise alpha material-wise but lead */
+            /* to an advantage positionally or by a different mean of evaluation. */
+            /* ================================================================== */
+            if (best_score_so_far + see_value + 150 < alpha) {
+                continue;
+            }
+        }
 
         do_move(searchdata->board, move);
         int32_t score = -quiesce(searchdata, pvs_ply, ply + 1, -beta, -alpha);
@@ -375,9 +392,35 @@ int32_t pvs(searchdata_t *searchdata, int depth, int ply, int allow_null_move, i
             /* search the first (assumed to be the best) move with full window */
             score = -pvs(searchdata, depth - 1, ply + 1, 1, -beta, -alpha);
         } else {
+            /* ================================================================== */
+            /* LATE MOVE REDUCTION: Late move reduction is a technique that tries */
+            /* to reduce the search space by reducing the depth of the search for */
+            /* moves that are unlikely to improve the score. The idea is that mo- */
+            /* ves which are searched later in search are more likely to be bad   */
+            /* moves, (since our move ordering is good) and therefore we can red- */
+            /* uce the depth of the search. For one, we do not want to reduce the */
+            /* search depth for tactical moves, i.e. captures, promotions and     */
+            /* when in check, and neither for pv moves (since they are likely the */
+            /* best) nor for depths less than 3 (since we want to search at least */
+            /* 3 plies).                                                          */
+            /* ================================================================== */
+            int reduction = 0;
+            if(legal_moves >= 4 && depth >= 3 && !(move.flags & 0b1100) && !is_in_check(searchdata->board)){
+                reduction = 1;
+            }
+
             /* search the remaining moves with a null window */
-            score = -pvs(searchdata, depth - 1, ply + 1, 1, -alpha - 1, -alpha);
-            /* if the score is within the window (alpha, beta), search again with full window */
+            score = -pvs(searchdata, depth - 1 - reduction, ply + 1, 1, -alpha - 1, -alpha);
+            
+            /* ================================================================== */
+            /* RE-SEARCH: if the score lies within the window of alpha and beta,  */
+            /* i.e. would increase alpha, search again with full window and full  */
+            /* depth, since our hypothesis that the pv-move is the best move      */
+            /* is false. Hence, we want to be sure that the move is actually bet- */
+            /* ter. If the score is greater than alpha (and!) beta we do not      */
+            /* search again, because we assume the node would have lead to a beta */
+            /* cutoff.                                                            */
+            /* ================================================================== */
             if(score > alpha && score < beta){
                 score = -pvs(searchdata, depth - 1, ply + 1, 1, -beta, -alpha);
             }
