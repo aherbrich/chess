@@ -3,10 +3,11 @@ on:
   push
 
 jobs:
-  test:
+  run-engine-tests:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3.6.0
-      - name: run script
-        run: 
-          ./test-script.sh
+    - uses: actions/checkout@v3
+    - name: run script
+      run: |
+         chmod +x ./test-script.sh
+         ./test-script.sh
