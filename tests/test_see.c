@@ -24,10 +24,28 @@ int main(void){
     print_LAN_move(move, board->player);
     printf("): %d\n", swap_off_value);
 
-    if(swap_off_value != -225){
+    if(swap_off_value != -220){
+        free_board(board);
         exit(EXIT_FAILURE);
-    } else {
-        printf("ALL GOOD!");
-        exit(EXIT_SUCCESS);
     }
+    load_by_FEN(board, "q7/8/8/8/4Q3/8/k7/7Q b - - 0 1");
+
+    printf("board:\n");
+    print_board(board);
+
+    move_t move2 = {0, a8, e4, 0};
+    int32_t swap_off_value2 = see(board, move2);
+
+    printf("SEE-value(");
+    print_LAN_move(move2, board->player);
+    printf("): %d\n", swap_off_value2);
+
+    if(swap_off_value2 != 0){
+        free_board(board);
+        exit(EXIT_FAILURE);
+    }
+
+    free_board(board);
+    printf("SEE tests passed!\n");
+    return 0;
 }

@@ -14,6 +14,8 @@ echo "\n\033[0;35mm====================================== [test_perftdivide] ===
 ./build/tests/test_perftdivide $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 echo "\n\033[0;35mm====================================== [test_tt] ======================================\033[0m\n"
 ./build/tests/test_tt $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
+echo "\n\033[0;35mm====================================== [test_see] ======================================\033[0m\n"
+./build/tests/test_see $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 echo "\n\033[0;35mm====================================== [test_movegen] ======================================\033[0m\n"
 ./build/tests/test_movegen $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 
@@ -27,6 +29,8 @@ echo "\n\033[0;35mm====================================== [test_perftdivide + le
 sudo leaks -atExit -- ./build/tests/test_perftdivide
 echo "\n\033[0;35mm====================================== [test_tt + leak check] ======================================\033[0m\n"
 sudo leaks -atExit -- ./build/tests/test_tt
+echo "\n\033[0;35mm====================================== [test_see + leak check] ======================================\033[0m\n"
+sudo leaks -atExit -- ./build/tests/test_see
 echo "\n\033[0;35mm====================================== [test_movegen + leak check] ======================================\033[0m\n"
 sudo leaks -atExit -- ./build/tests/test_movegen
 
@@ -43,5 +47,7 @@ echo "\n\033[0;35mm====================================== [test_perftdivide + sa
 ./build/tests/test_perftdivide $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 echo "\n\033[0;35mm====================================== [test_tt + sanitizers] ======================================\033[0m\n"
 ./build/tests/test_tt $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
+echo "\n\033[0;35mm====================================== [test_see + sanitizers] ======================================\033[0m\n"
+./build/tests/test_see $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
 echo "\n\033[0;35mm====================================== [test_movegen + sanitizers] ======================================\033[0m\n"
 ./build/tests/test_movegen $? -eq 0 && echo "\n<<< \033[0;32mOK\033[0m" || echo "\n<<< \033[0;31mFAIL\033[0m";
