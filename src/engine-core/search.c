@@ -544,7 +544,7 @@ void search(searchdata_t *searchdata) {
         int seldepth = searchdata->max_seldepth;
         int delta = delta_in_ms(searchdata);
         if(delta == 0) delta = 1;
-        int nps = (int)(nodes / delta);
+        int nps = (int)(nodes / delta) * 1000;
         int time = delta;
         int hashfull = tt_permille_full(searchdata->tt);
         char *score = get_mate_or_cp_value(eval, depth);
@@ -561,7 +561,7 @@ void search(searchdata_t *searchdata) {
     int nodes = searchdata->nodes_searched;
     int delta = delta_in_ms(searchdata);
     if(delta == 0) delta = 1;
-    int nps = (int)(nodes / delta);
+    int nps = (int)(nodes / delta) * 1000;
     int time = delta;
     int hashfull = tt_permille_full(searchdata->tt);
     char *move_str =
