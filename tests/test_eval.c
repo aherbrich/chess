@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <sys/time.h>
+#ifdef __linux__
+#include <time.h>
+#endif
 
 #include "include/engine-core/engine.h"
 

@@ -89,21 +89,19 @@ $(TEST_TARGET): %: $(BUILD_DIR)/tests/%
 
 $(ENGINE_CORE_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	# $(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
-	$(CC) $(CC_FLAGS) -fno-exceptions -o $@ -c $<
+	$(CC) $(CC_FLAGS) -fno-exceptions -fPIC -o $@ -c $<
 
 $(PARSING_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	# $(CC) $(CC_FLAGS) -fno-exceptions -flto=full -o $@ -c $<
-	$(CC) $(CC_FLAGS) -fno-exceptions -o $@ -c $<
+	$(CC) $(CC_FLAGS) -fno-exceptions -fPIC -o $@ -c $<
 
 $(ORDERING_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ -c $<
+	$(CC) $(CC_FLAGS) -fPIC -o $@ -c $<
 
 $(EVAL_OBJ): $(BUILD_DIR)/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CC_FLAGS) -o $@ -c $<
+	$(CC) $(CC_FLAGS) -fPIC -o $@ -c $<
 
 $(LIB_DIR)/libchess.so: $(UCI_ENGINE_SRC) $(ENGINE_CORE_OBJ) $(ORDERING_OBJ) $(PARSING_OBJ)
 	@mkdir -p $(dir $@)
