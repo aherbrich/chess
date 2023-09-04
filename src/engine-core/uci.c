@@ -152,23 +152,6 @@ void uci_command_response(uci_args_t* uci_args) {
     printf("uciok\n");
 }
 
-/* handles and prints the verbosity command response */
-void verbosity_command_response(void){
-    char* level = strtok(NULL, " \n\t");
-    if(!level) {
-        verbosity_print("no level given - must be one of: low, medium, high");
-        return;
-    }
-    if(!strcmp(level, "low")){
-        verbosity = 0;
-    } else if(!strcmp(level, "high")){
-        verbosity = 1;
-        verbosity_print("verbosity set to high");
-    } else {
-        verbosity_print("verbosity level must be one of: low, high");
-    }
-}
-
 /* handles and prints the setoption command response */
 void setoption_command_response(options_t options){
     char* option = strtok(NULL, " \n\t");
@@ -417,8 +400,8 @@ void uci_interface_loop(void *args) {
     engine_info_t engine_info = uci_args->engine_info;
     options_t options = uci_args->options;
 
-    /* set verbosity, default low */
-    verbosity = 1;
+    /* verbosity level set by -v command line flag */
+    verbosity = uci_args->verbosity_level;
     /* set search running to false */
     search_running = 0;
 
@@ -467,8 +450,6 @@ void uci_interface_loop(void *args) {
             uci_command_response(uci_args);
         } else if (!strcmp(command, "isready")) {
             printf("readyok\n");
-        } else if (!strcmp(command, "verbosity")){
-            verbosity_command_response();
         } else if (!strcmp(command, "setoption")){
             setoption_command_response(options);
         } else if (!strcmp(command, "ucinewgame")){

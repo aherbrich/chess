@@ -40,6 +40,7 @@ typedef struct _uci_args_t {
     searchdata_t* searchdata;
     engine_info_t engine_info;
     options_t options;
+    int verbosity_level;
 } uci_args_t;
 
 /* starts the uci interface */
