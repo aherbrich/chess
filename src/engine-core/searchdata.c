@@ -102,7 +102,7 @@ int time_left(struct timeval start, int time_available) {
 /* determines if the search has to be stopped */
 /* because of either (1) a STOP request or (2) we have used up our time to
  * search */
-void check_time(timer_t* timer) {
+void check_time(search_timer_t* timer) {
     /* if search is not in infinite mode and the time has run out, stop search immediately */
     if (!timer->run_infinite) {
         if (!time_left(timer->start, timer->time_available)) {
@@ -116,8 +116,8 @@ void check_time(timer_t* timer) {
 /* ------------------------------------------------------------------------------------------------ */
 
 /* initializes timer */
-timer_t init_timer(int local_lag, int remote_lag) {
-    timer_t timer;                                  /* timer for time management */
+search_timer_t init_timer(int local_lag, int remote_lag) {
+    search_timer_t timer;                                  /* timer for time management */
 
     gettimeofday(&(timer.start), 0);               /* start time of search */
 

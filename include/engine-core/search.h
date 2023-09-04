@@ -23,7 +23,7 @@ typedef enum _ttflag_t {
 /* structs and functions for managing the searchdata (time constraints, search info etc. )          */
 /* ------------------------------------------------------------------------------------------------ */
 
-typedef struct _timer_t {
+typedef struct _search_timer_t {
     struct timeval start;           /* start time of search (μs accuracy) */
 
     int run_infinite;               /* tells the engine to run aslong as stop != 1 */
@@ -42,13 +42,13 @@ typedef struct _timer_t {
     int remote_lag;                  /* time in ms subtracted from available time
                                         to compensate for lag of remote connection */
     int time_available;              /* tells the engine how much time it has to search in ms */
-} timer_t;
+} search_timer_t;
 
 typedef struct _searchdata_t {
     board_t* board;                 /* pointer to the actual board */
     tt_t tt;                        /* transposition table for the search */
     
-    timer_t timer;                  /* timer for time management */
+    search_timer_t timer;                  /* timer for time management */
 
     int ponder;                     /* tells engine to start search at ponder move */
 
@@ -78,7 +78,7 @@ int delta_in_ms(searchdata_t *searchdata);
 int calculate_time(searchdata_t *data);
 /* determines if the search has to be stopped */
 /* because of either (1) a STOP request or (2) we have used up our time to search */
-void check_time(timer_t* timer);
+void check_time(search_timer_t* timer);
 
 /* ------------------------------------------------------------------------------------------------ */
 /* functions concerning search                                                                      */
