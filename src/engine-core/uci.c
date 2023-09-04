@@ -28,7 +28,7 @@ int search_running = 0;
 /* initializes the options */
 options_t init_options(void){
     options_t options = {
-        .opt_hash = {.min = 1, .max = 1024, .def = 64}
+        .opt_hash = {.min = 1, .max = 1024, .def = 256, .cur = 256}
     };
 
     return options;
@@ -153,11 +153,17 @@ void uci_command_response(uci_args_t* uci_args) {
 }
 
 /* handles and prints the setoption command response */
-void setoption_command_response(options_t options){
+void setoption_command_response(options_t* options){
+    char* option_indicator = strtok(NULL, " \n\t");
+    if(!option_indicator) { 
+        verbosity_print("option name indicator 'name' not given"); 
+        return; 
+    }
+
     char* option = strtok(NULL, " \n\t");
     /* if no option given exit */
     if(!option) { 
-        verbosity_print("no option given"); 
+        verbosity_print("no option name given"); 
         return; 
     }
     /* handle case insensitivity */
@@ -165,6 +171,12 @@ void setoption_command_response(options_t options){
 
     /* handle options */
     if(!strcmp(option, "hash")){
+        char* value_indicator = strtok(NULL, " \n\t");
+        if(!value_indicator){
+            verbosity_print("value indicator 'value' not given"); 
+            return; 
+        }
+
         char* value_str = strtok(NULL, " \n\t");
         if(!value_str) { 
             verbosity_print("no value given"); 
@@ -174,13 +186,14 @@ void setoption_command_response(options_t options){
         int value = atoi(value_str);
 
         /* check if value lies in acceptable range */
-        if(value < options.opt_hash.min || value > options.opt_hash.max){
+        if(value < options->opt_hash.min || value > options->opt_hash.max){
             verbosity_print("value out of range - use 'uci' for more information "); 
             return;
         }
 
-        /* TODO - restrict hash table size */
-        verbosity_print("(TODO: hashtable size set accordingly). Currently nothing changes.");
+        /* restrict hash table size */
+        options->opt_hash.cur = value;
+        verbosity_print("hashtable size has been set acorrdingly");
 
     } else{
         verbosity_print("there exist no such option!");
@@ -398,7 +411,7 @@ void uci_interface_loop(void *args) {
     board_t* board = uci_args->board;
     searchdata_t* searchdata = uci_args->searchdata;
     engine_info_t engine_info = uci_args->engine_info;
-    options_t options = uci_args->options;
+    options_t* options = &uci_args->options;
 
     /* verbosity level set by -v command line flag */
     verbosity = uci_args->verbosity_level;
@@ -450,7 +463,7 @@ void uci_interface_loop(void *args) {
             uci_command_response(uci_args);
         } else if (!strcmp(command, "isready")) {
             printf("readyok\n");
-        } else if (!strcmp(command, "setoption")){
+        } else if (!strcmp(command, "setoption") && !search_running){
             setoption_command_response(options);
         } else if (!strcmp(command, "ucinewgame")){
             ucinewgame_command_response(board);
@@ -458,7 +471,7 @@ void uci_interface_loop(void *args) {
             position_command_response(board);
         } else if(!strcmp(command, "go") && !search_running){
             if(searchdata) free_search_data(searchdata);
-            searchdata = init_search_data(board);
+            searchdata = init_search_data(board, options->opt_hash.cur);
             go_command_response(searchdata, &search_thread);
         } else if (!strcmp(command, "stop")) {
             if(searchdata) searchdata->timer.stop = 1;

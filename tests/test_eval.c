@@ -29,7 +29,7 @@ int main(void) {
     initialize_zobrist_table();
     initialize_eval_tables();
 
-    searchdata_t* search_data = init_search_data(board);
+    searchdata_t* search_data = init_search_data(board, 256);
 
     clock_t end;
     clock_t begin;

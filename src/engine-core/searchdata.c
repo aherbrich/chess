@@ -138,25 +138,25 @@ timer_t init_timer(void) {
 }
 
 /* initializes search data structure */
-searchdata_t *init_search_data(board_t *board) {
+searchdata_t *init_search_data(board_t *board, int tt_size_in_mb) {
     searchdata_t *data = (searchdata_t *)malloc(sizeof(searchdata_t));
 
-    data->board = copy_board(board);            /* pointer to the actual board */
-    data->tt = init_tt(MB_TO_BYTES(64));        /* transposition table for the search */
+    data->board = copy_board(board);                    /* pointer to the actual board */
+    data->tt = init_tt(MB_TO_BYTES(tt_size_in_mb));     /* transposition table for the search */
 
-    data->timer = init_timer();                 /* timer for time management */
+    data->timer = init_timer();                         /* timer for time management */
 
-    data->ponder = 0;                           /* tells engine to start search at ponder move */
+    data->ponder = 0;                                   /* tells engine to start search at ponder move */
 
-    data->max_seldepth = -1;                    /* maximum depth searched while in quiescence search */
-    data->best_move = NULL;                     /* best move in (iterative) search so far */
-    data->best_eval = NEGINF;                   /* corresponding evaluation of best move */
-    data->nodes_searched = 0;                   /* amount of nodes searched */
-    data->hash_used = 0;                        /* amount of hash entries that lead to not */
-                                                /* needing to search the node again */
-    data->hash_bounds_adjusted = 0;             /* amount of hash entries that lead to */
-                                                /* adjustment of alpha/beta bounds */
-    data->pv_node_hit = 0;                      /* amount of pv moves that turned out to be the best move */
+    data->max_seldepth = -1;                            /* maximum depth searched while in quiescence search */
+    data->best_move = NULL;                             /* best move in (iterative) search so far */
+    data->best_eval = NEGINF;                           /* corresponding evaluation of best move */
+    data->nodes_searched = 0;                           /* amount of nodes searched */
+    data->hash_used = 0;                                /* amount of hash entries that lead to not */
+                                                        /* needing to search the node again */
+    data->hash_bounds_adjusted = 0;                     /* amount of hash entries that lead to */
+                                                        /* adjustment of alpha/beta bounds */
+    data->pv_node_hit = 0;                              /* amount of pv moves that turned out to be the best move */
     return data;
 }
 

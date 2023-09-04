@@ -20,6 +20,7 @@ typedef struct _spin_value_t {
     int min;
     int max;
     int def;
+    int cur;
 } spin_value_t;
 
 /* chess engine options */
