@@ -26,6 +26,8 @@ typedef struct _spin_value_t {
 /* chess engine options */
 typedef struct _options_t {
     spin_value_t opt_hash; 
+    spin_value_t opt_local_lag;
+    spin_value_t opt_remote_lag;
 } options_t;
 
 options_t init_options(void);

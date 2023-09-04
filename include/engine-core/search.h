@@ -64,7 +64,7 @@ typedef struct _searchdata_t {
 } searchdata_t;
 
 /* returns an initialized searchdata struct with default values */
-searchdata_t* init_search_data(board_t* board, int tt_size_in_mb);
+searchdata_t* init_search_data(board_t* board, int tt_size_in_mb, int local_lag, int remote_lag);
 /* frees memory for searchdata struct */
 void free_search_data(searchdata_t* data);
 

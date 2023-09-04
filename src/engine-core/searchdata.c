@@ -112,11 +112,11 @@ void check_time(timer_t* timer) {
 }
 
 /* ------------------------------------------------------------------------------------------------ */
-/* functions for managing the searchdata (time constraints, search info etc. )          */
+/* functions for managing the searchdata (time constraints, search info etc. )                      */
 /* ------------------------------------------------------------------------------------------------ */
 
 /* initializes timer */
-timer_t init_timer(void) {
+timer_t init_timer(int local_lag, int remote_lag) {
     timer_t timer;                                  /* timer for time management */
 
     gettimeofday(&(timer.start), 0);               /* start time of search */
@@ -132,8 +132,8 @@ timer_t init_timer(void) {
     timer.winc = -1;                               /* white time increment in ms */  
     timer.binc = -1;                               /* black time increment in ms */
     
-    timer.local_lag = 15;                          /* estimate of (maximum) lag on local machine in ms */
-    timer.remote_lag = 0;                          /* estimate of (maximum) lag of remote connection in ms 
+    timer.local_lag = local_lag;                    /* estimate of (maximum) lag on local machine in ms */
+    timer.remote_lag = remote_lag;                  /* estimate of (maximum) lag of remote connection in ms 
                                                       default off (=0) */
     timer.time_available = -1;                     /* calculated once at the start of the search */
                                                    /* tells engine how much time (in ms) it has to search */
@@ -141,13 +141,13 @@ timer_t init_timer(void) {
 }
 
 /* initializes search data structure */
-searchdata_t *init_search_data(board_t *board, int tt_size_in_mb) {
+searchdata_t *init_search_data(board_t *board, int tt_size_in_mb, int local_lag, int remote_lag) {
     searchdata_t *data = (searchdata_t *)malloc(sizeof(searchdata_t));
 
     data->board = copy_board(board);                    /* pointer to the actual board */
     data->tt = init_tt(MB_TO_BYTES(tt_size_in_mb));     /* transposition table for the search */
 
-    data->timer = init_timer();                         /* timer for time management */
+    data->timer = init_timer(local_lag, remote_lag);    /* timer for time management */
 
     data->ponder = 0;                                   /* tells engine to start search at ponder move */
 

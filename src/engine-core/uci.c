@@ -28,7 +28,9 @@ int search_running = 0;
 /* initializes the options */
 options_t init_options(void){
     options_t options = {
-        .opt_hash = {.min = 1, .max = 1024, .def = 256, .cur = 256}
+        .opt_hash = {.min = 1, .max = 1024, .def = 256, .cur = 256},
+        .opt_local_lag = {.min = 0, .max = 100, .def = 15, .cur = 15},
+        .opt_remote_lag = {.min = 0, .max = 300, .def = 0, .cur = 0} 
     };
 
     return options;
@@ -145,10 +147,11 @@ void uci_command_response(uci_args_t* uci_args) {
     printf("\n");
 
     /* print options */
-    printf("option name Hash type spin default %d min %d max %d", uci_args->options.opt_hash.def, uci_args->options.opt_hash.min, uci_args->options.opt_hash.max);
+    printf("option name Hash type spin default %d min %d max %d\n", uci_args->options.opt_hash.def, uci_args->options.opt_hash.min, uci_args->options.opt_hash.max);
+    printf("option name Move Overhead type spin default %d min %d max %d\n", uci_args->options.opt_remote_lag.def, uci_args->options.opt_remote_lag.min, uci_args->options.opt_remote_lag.max);
+    printf("option name Move OverheadLocal type spin default %d min %d max %d\n",  uci_args->options.opt_local_lag.def, uci_args->options.opt_local_lag.min, uci_args->options.opt_local_lag.max);
 
     /* print uciok to indicate that engine is ready */
-    printf("\n");
     printf("uciok\n");
 }
 
@@ -163,13 +166,14 @@ void setoption_command_response(options_t* options){
     char* option = strtok(NULL, " \n\t");
     /* if no option given exit */
     if(!option) { 
-        verbosity_print("no option name given"); 
+        verbosity_print("either no option name was given or you forgot to precede it with the keyword 'name'"); 
         return; 
     }
     /* handle case insensitivity */
     option = to_lower(option);
 
     /* handle options */
+    /* HASH option */
     if(!strcmp(option, "hash")){
         char* value_indicator = strtok(NULL, " \n\t");
         if(!value_indicator){
@@ -195,6 +199,68 @@ void setoption_command_response(options_t* options){
         options->opt_hash.cur = value;
         verbosity_print("hashtable size has been set acorrdingly");
 
+    }
+    /* MOVE OVERHEAD/OVERHEADLOCAL option */ 
+    else if (!strcmp(option, "move")){
+        char* option_part_two = strtok(NULL, " \n\t");
+        if(!option_part_two) { 
+            verbosity_print("did you mean 'Move Overhead/Move OverheadLocal'?"); 
+            return; 
+        }
+
+        option_part_two = to_lower(option_part_two);
+        if(!strcmp(option_part_two, "overhead")) {
+            char* value_indicator = strtok(NULL, " \n\t");
+            if(!value_indicator){
+                verbosity_print("value indicator 'value' not given"); 
+                return; 
+            }
+
+            char* value_str = strtok(NULL, " \n\t");
+            if(!value_str) { 
+                verbosity_print("no value given"); 
+                return; 
+            }
+
+            int value = atoi(value_str);
+
+            /* check if value lies in acceptable range */
+            if(value < options->opt_remote_lag.min || value > options->opt_remote_lag.max){
+                verbosity_print("value out of range - use 'uci' for more information "); 
+                return;
+            }
+
+            /* restrict hash table size */
+            options->opt_remote_lag.cur = value;
+            verbosity_print("move overhead (remote lag) has been set acorrdingly");
+        } else if (!strcmp(option_part_two, "overheadlocal")) {
+            char* value_indicator = strtok(NULL, " \n\t");
+            if(!value_indicator){
+                verbosity_print("value indicator 'value' not given"); 
+                return; 
+            }
+
+            char* value_str = strtok(NULL, " \n\t");
+            if(!value_str) { 
+                verbosity_print("no value given"); 
+                return; 
+            }
+
+            int value = atoi(value_str);
+
+            /* check if value lies in acceptable range */
+            if(value < options->opt_local_lag.min || value > options->opt_local_lag.max){
+                verbosity_print("value out of range - use 'uci' for more information "); 
+                return;
+            }
+
+            /* restrict hash table size */
+            options->opt_local_lag.cur = value;
+            verbosity_print("move overhead (local lag) has been set acorrdingly");
+        } else {
+            verbosity_print("did you mean 'Move Overhead/Move OverheadLocal'?"); 
+            return;
+        }
     } else{
         verbosity_print("there exist no such option!");
     }
@@ -471,7 +537,10 @@ void uci_interface_loop(void *args) {
             position_command_response(board);
         } else if(!strcmp(command, "go") && !search_running){
             if(searchdata) free_search_data(searchdata);
-            searchdata = init_search_data(board, options->opt_hash.cur);
+            searchdata = init_search_data(board,
+                                          options->opt_hash.cur, 
+                                          options->opt_local_lag.cur, 
+                                          options->opt_remote_lag.cur);
             go_command_response(searchdata, &search_thread);
         } else if (!strcmp(command, "stop")) {
             if(searchdata) searchdata->timer.stop = 1;
