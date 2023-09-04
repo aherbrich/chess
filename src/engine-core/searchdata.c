@@ -39,7 +39,7 @@ int calculate_time(searchdata_t* data) {
         time_available_movetime = (data->board->player == WHITE)
                                       ? (time_available_movetime + data-> timer.winc)
                                       : (time_available_movetime + data-> timer.binc);
-        time_available_movetime -= TOLERANCE;
+        time_available_movetime -= (data->timer.local_lag + data->timer.remote_lag);
 
         time_available = time_available_movetime;
         /* make sure chess engine has atleast 5ms for search */
@@ -60,7 +60,7 @@ int calculate_time(searchdata_t* data) {
             (data->board->player == WHITE)
                 ? (time_available_remainingtime + data-> timer.winc)
                 : (time_available_remainingtime + data-> timer.binc);
-        time_available_remainingtime -= TOLERANCE;
+        time_available_remainingtime -= (data->timer.local_lag + data->timer.remote_lag);
 
         /* if no max time was given or the now calculated time is lower than the */
         /* max time given update it */
@@ -132,6 +132,9 @@ timer_t init_timer(void) {
     timer.winc = -1;                               /* white time increment in ms */  
     timer.binc = -1;                               /* black time increment in ms */
     
+    timer.local_lag = 15;                          /* estimate of (maximum) lag on local machine in ms */
+    timer.remote_lag = 0;                          /* estimate of (maximum) lag of remote connection in ms 
+                                                      default off (=0) */
     timer.time_available = -1;                     /* calculated once at the start of the search */
                                                    /* tells engine how much time (in ms) it has to search */
     return timer;

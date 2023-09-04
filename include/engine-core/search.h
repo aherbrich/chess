@@ -9,7 +9,6 @@
 #define INF INT_MAX
 #define NEGINF (-INF)
 
-#define TOLERANCE 15    // ms
 #define MAXDEPTH 100    // plies
 #define STOP_ACCURACY 255 // nodes
 #define WINDOWSIZE 50   // centipawns
@@ -29,7 +28,7 @@ typedef struct _timer_t {
 
     int run_infinite;               /* tells the engine to run aslong as stop != 1 */
     int max_depth;                  /* maximum search depth in plies allowed to search */
-    uint64_t max_nodes;                  /* maximum nodes allowed to search */
+    uint64_t max_nodes;             /* maximum nodes allowed to search */
     int stop;                       /* tells the engine to stop search when stop == 1 */
 
     int max_time;                   /* maximum time allowed */
@@ -38,7 +37,11 @@ typedef struct _timer_t {
     int winc;                       /* white time increment in ms */
     int binc;                       /* black time increment in ms */
 
-    int time_available;             /* tells the engine how much time it has to search in ms */
+    int local_lag;                   /* time in ms subtracted from available time
+                                        to compensate for lag on local machine */
+    int remote_lag;                  /* time in ms subtracted from available time
+                                        to compensate for lag of remote connection */
+    int time_available;              /* tells the engine how much time it has to search in ms */
 } timer_t;
 
 typedef struct _searchdata_t {
