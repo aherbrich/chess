@@ -52,6 +52,7 @@ typedef struct _searchdata_t {
 
     int ponder;                     /* tells engine to start search at ponder move */
 
+    int depth_with_ext;             /* tracks the "actual" depth of search i.e. with extensions */
     int max_seldepth;               /* maximum depth searched while in quiescence search */
     move_t* best_move;              /* best move in (iterative) search so far */    
     int best_eval;                  /* corresponding evaluation of best move */

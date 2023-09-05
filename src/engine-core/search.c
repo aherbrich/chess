@@ -185,6 +185,7 @@ int32_t quiesce(searchdata_t* searchdata, int pvs_ply, int ply, int alpha, int b
 /* fail-soft prinicipal variation search */
 int32_t pvs(searchdata_t *searchdata, int depth, int ply, int allow_null_move, int alpha, int beta){
     searchdata->nodes_searched++;
+    searchdata->depth_with_ext = (searchdata->depth_with_ext < ply) ? ply : searchdata->depth_with_ext;
 
     /* check if we have exceeded the maximum search depth */
     if (ply >= MAXDEPTH) {
@@ -547,7 +548,7 @@ void search(searchdata_t *searchdata) {
         int nps = (int)(nodes / delta) * 1000;
         int time = delta;
         int hashfull = tt_permille_full(searchdata->tt);
-        char *score = get_mate_or_cp_value(eval, depth);
+        char *score = get_mate_or_cp_value(eval, searchdata->depth_with_ext);
 
         printf("info score %s depth %d seldepth %d nodes %d time %d nps %d hasfull %d pv ",
                score, depth, seldepth, nodes, time, nps, hashfull);

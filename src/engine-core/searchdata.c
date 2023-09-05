@@ -151,6 +151,7 @@ searchdata_t *init_search_data(board_t *board, int tt_size_in_mb, int local_lag,
 
     data->ponder = 0;                                   /* tells engine to start search at ponder move */
 
+    data->depth_with_ext = 0;                           /* tracks the "actual" depth of search i.e. with extensions */
     data->max_seldepth = -1;                            /* maximum depth searched while in quiescence search */
     data->best_move = NULL;                             /* best move in (iterative) search so far */
     data->best_eval = NEGINF;                           /* corresponding evaluation of best move */
