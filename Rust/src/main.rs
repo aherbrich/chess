@@ -1,4 +1,6 @@
-use core::{panic, fmt};
+use core::panic;
+use std::path::Path;
+use std::io::{BufRead, BufReader};
 
 mod helpers;
 mod tables;
@@ -1341,9 +1343,6 @@ fn perft_divide(board : &mut Board, depth : u8) -> u64 {
 
     nodes
 }
-
-use std::path::Path;
-use std::io::{BufRead, BufReader};
 
 fn run_perft_tests(filename : &str) {
     let path = Path::new(filename);
