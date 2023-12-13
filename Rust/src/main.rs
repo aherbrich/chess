@@ -51,9 +51,9 @@ const PAWN_ATTACKS :[[u64; 64] ; 2] = initialize_pawn_attack_table();
 const KNIGHT_ATTACKS : [u64; 64] = initialize_knight_attack_table();
 const KING_ATTACKS : [u64; 64] = initialize_king_attack_table();
 #[allow(long_running_const_eval)]
-const BISHOP_ATTACKS_BLOCKERS_CONSIDERED : [[u64; 4096]; 64] = initialize_bishop_attack_table_blockers_considered();
+static BISHOP_ATTACKS_BLOCKERS_CONSIDERED : [[u64; 4096]; 64] = initialize_bishop_attack_table_blockers_considered();
 #[allow(long_running_const_eval)]
-const ROOK_ATTACKS_BLOCKERS_CONSIDERED : [[u64; 4096]; 64] = initialize_rook_attack_table_blockers_considered();
+static ROOK_ATTACKS_BLOCKERS_CONSIDERED : [[u64; 4096]; 64] = initialize_rook_attack_table_blockers_considered();
 
 enum Direction {
     North = 8,
@@ -180,18 +180,18 @@ impl fmt::Debug for Move {
         let to = FIELD[self.to as usize];
 
         if self.flags >= 8 {
-            result.push_str(&from);
-            result.push_str(&to);
+            result.push_str(from);
+            result.push_str(to);
             match self.flags {
-                8 | 12 => result.push_str("n"),
-                9 | 13 => result.push_str("b"),
-                10 | 14 => result.push_str("r"),
-                11 | 15 => result.push_str("q"),
+                8 | 12 => result.push('n'),
+                9 | 13 => result.push('b'),
+                10 | 14 => result.push('r'),
+                11 | 15 => result.push('q'),
                 _ => ()
             }
         } else {
-            result.push_str(&from);
-            result.push_str(&to);
+            result.push_str(from);
+            result.push_str(to);
         }
 
         result.push_str(&format!(" ({})", self.flags));
@@ -209,7 +209,7 @@ impl Move {
         }
     }
 
-    fn print(&self) -> () {
+    fn print(&self) {
         println!("from: {}, to: {}, flags: {}", self.from, self.to, self.flags);
     }
 }
@@ -272,7 +272,7 @@ impl Board {
         }
     }
 
-    fn reset_board(&mut self) -> () {
+    fn reset_board(&mut self) {
         self.playingfield = [Square::Empty; 64];
         self.piece_bitboards = [0; 12];
         self.checkers = 0;
@@ -296,7 +296,7 @@ impl Board {
         self.moves.clear();
     }
 
-    fn set_by_fen(&mut self, fen : &str) -> () {
+    fn set_by_fen(&mut self, fen : &str) {
         // reset board
         self.reset_board();
 
@@ -417,7 +417,7 @@ impl Board {
         // TODO hashes
     }
     
-    fn print(&self) -> () {
+    fn print(&self) {
         for rank in (0..8).rev() {
             for file in 0..8 {
                 match self.playingfield[rank * 8 + file] {
@@ -437,7 +437,7 @@ impl Board {
                 }
                 print!(" ")
             }
-            println!("");
+            println!();
         }
         println!("Side to move: {:?}", self.side_to_move);
 
@@ -683,7 +683,7 @@ impl Board {
         }
     }
 
-    fn print_moves(&self) -> () {
+    fn print_moves(&self) {
         println!("{} moves", self.moves.len());
         for mov in &self.moves {
             mov.print();
@@ -795,7 +795,7 @@ impl Board {
 
         // if black is moving, increase fullmove counter
         if self.side_to_move == Player::Black {
-            self.history[ply as usize].fullmove = self.history[ply as usize].fullmove + 1;
+            self.history[ply as usize].fullmove += 1;
         }
 
         // adjust casteling rights if (potentially) king or rook moved from their initial position
@@ -963,7 +963,7 @@ impl Board {
         // TODO hashes
 
         // reduce ply
-        self.ply = self.ply - 1;
+        self.ply -= 1;
 
         // XOR in new castle rights
         // TODO hashes
@@ -1086,7 +1086,7 @@ impl Board {
         }
     }
 
-    fn generate_moves(&mut self) -> () {
+    fn generate_moves(&mut self) {
         self.moves.clear();
         
         /***************************************************************************/
@@ -1201,11 +1201,11 @@ impl Board {
 
         // the capture mask filters destination squares to those occupied by enemy pieces which are checking
         // the king and must be captured
-        let mut capture_mask : u64;
+        let capture_mask : u64;
 
         // the quiet mask filters destination squares to those where pieces must be moved to, to block
         // an incoming attack on the king (i.e. a check)
-        let mut quiet_mask : u64;
+        let quiet_mask : u64;
 
         // a general purpose square for storing destination, etc.
         let mut sq : u8 = 0;
@@ -1300,14 +1300,12 @@ impl Board {
                         // for pawns and knights, the only way to get out of check is to capture the checking piece
                         
                         // special case: if the checking piece is a pawn, we also have to consider en passant captures
-                        if checker_piece.is_pawn() {
-                            if self.checkers == shift(SQUARE_BB[self.history[self.ply as usize].epsq as usize], relative_dir(us, Direction::South)) {
-                                bb1 = attacks_pawn_single(self.history[self.ply as usize].epsq, them) & our_pawns_bb & not_pinned;
+                        if checker_piece.is_pawn() && self.checkers == shift(SQUARE_BB[self.history[self.ply as usize].epsq as usize], relative_dir(us, Direction::South)) {
+                            bb1 = attacks_pawn_single(self.history[self.ply as usize].epsq, them) & our_pawns_bb & not_pinned;
 
-                                while bb1 != 0 {
-                                    let from = pop_first_bit(&mut bb1);
-                                    self.moves.push(Move::new(from, self.history[self.ply as usize].epsq, MoveFlags::EnPassant));
-                                }
+                            while bb1 != 0 {
+                                let from = pop_first_bit(&mut bb1);
+                                self.moves.push(Move::new(from, self.history[self.ply as usize].epsq, MoveFlags::EnPassant));
                             }
                         }
                         // special case handled!
@@ -1344,7 +1342,7 @@ impl Board {
                 // SPECIAL HANDLING of possible EP CAPTURES
 
                 // check if there is a possible ep square to capture on
-                if(self.history[self.ply as usize].epsq != NO_SQUARE) {
+                if self.history[self.ply as usize].epsq != NO_SQUARE {
                     // if yes, compute bitboard of pawns which could capture on ep square
                     bb2 = attacks_pawn_single(self.history[self.ply as usize].epsq, them) & our_pawns_bb;
 
@@ -1673,16 +1671,16 @@ fn relative_rank(player : Player, rank : Rank) -> Rank {
 
 fn shift(board: u64, dir : Direction) -> u64 {
     match dir {
-        Direction::North => return board << 8,
-        Direction::NorthNorth => return board << 16,
-        Direction::South => return board >> 8,
-        Direction::SouthSouth => return board >> 16,
-        Direction::East => return (board & CLEAR_FILE[File::H as usize]) << 1,
-        Direction::West => return (board & CLEAR_FILE[File::A as usize]) >> 1,
-        Direction::NorthEast => return (board & CLEAR_FILE[File::H as usize]) << 9,
-        Direction::NorthWest => return (board & CLEAR_FILE[File::A as usize]) << 7,
-        Direction::SouthEast => return (board & CLEAR_FILE[File::H as usize]) >> 7,
-        Direction::SouthWest => return (board & CLEAR_FILE[File::A as usize]) >> 9
+        Direction::North => board << 8,
+        Direction::NorthNorth => board << 16,
+        Direction::South => board >> 8,
+        Direction::SouthSouth => board >> 16,
+        Direction::East => (board & CLEAR_FILE[File::H as usize]) << 1,
+        Direction::West => (board & CLEAR_FILE[File::A as usize]) >> 1,
+        Direction::NorthEast => (board & CLEAR_FILE[File::H as usize]) << 9,
+        Direction::NorthWest => (board & CLEAR_FILE[File::A as usize]) << 7,
+        Direction::SouthEast => (board & CLEAR_FILE[File::H as usize]) >> 7,
+        Direction::SouthWest => (board & CLEAR_FILE[File::A as usize]) >> 9
     }
 } 
 
@@ -1704,15 +1702,15 @@ fn attacks_pawn_single(sq : u8, player : Player) -> u64 {
 
 fn attacks_bishop(sq : u8, occ : u64) -> u64 {
     let j = transform(occ & BISHOP_MASK[sq as usize], BISHOP_MAGIC[sq as usize], BISHOP_BITS[sq as usize] as i32);
-    return BISHOP_ATTACKS_BLOCKERS_CONSIDERED[sq as usize][j as usize];
+    BISHOP_ATTACKS_BLOCKERS_CONSIDERED[sq as usize][j as usize]
 }
 
 fn attacks_rook(sq : u8, occ : u64) -> u64 {
     let j = transform(occ & ROOK_MASK[sq as usize], ROOK_MAGIC[sq as usize], ROOK_BITS[sq as usize] as i32);
-    return ROOK_ATTACKS_BLOCKERS_CONSIDERED[sq as usize][j as usize];
+    ROOK_ATTACKS_BLOCKERS_CONSIDERED[sq as usize][j as usize]
 }
 
-fn make_moves_quiet(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
+fn make_moves_quiet(moves : &mut Vec<Move>, from : u8, to : u64) {
     let mut bb = to;
     while bb != 0 {
         let to_sq = pop_first_bit(&mut bb);
@@ -1720,7 +1718,7 @@ fn make_moves_quiet(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
     }
 }
 
-fn make_moves_capture(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
+fn make_moves_capture(moves : &mut Vec<Move>, from : u8, to : u64) {
     let mut bb = to;
     while bb != 0 {
         let to_sq = pop_first_bit(&mut bb);
@@ -1728,7 +1726,7 @@ fn make_moves_capture(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
     }
 }
 
-fn make_moves_promcapture(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
+fn make_moves_promcapture(moves : &mut Vec<Move>, from : u8, to : u64) {
     let mut bb = to;
     while bb != 0 {
         let to_sq = pop_first_bit(&mut bb);
@@ -1739,7 +1737,7 @@ fn make_moves_promcapture(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
     }
 }
 
-fn make_moves_doublepush(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
+fn make_moves_doublepush(moves : &mut Vec<Move>, from : u8, to : u64) {
     let mut bb = to;
     while bb != 0 {
         let to_sq = pop_first_bit(&mut bb);
@@ -1750,7 +1748,7 @@ fn make_moves_doublepush(moves : &mut Vec<Move>, from : u8, to : u64) -> () {
 const fn first_bit(bb : u64) -> u8 {
     const DEBRUIJN_MAGIC : u64 = 0x03f79d71b4cb0a89;
     let num = bb ^ (bb - 1);
-    return DEBRUIJN_TABLE[(num.wrapping_mul(DEBRUIJN_MAGIC) >> 58) as usize];
+    DEBRUIJN_TABLE[(num.wrapping_mul(DEBRUIJN_MAGIC) >> 58) as usize]
 }
 
 fn pop_first_bit(bb : &mut u64) -> u8 {
@@ -1760,7 +1758,7 @@ fn pop_first_bit(bb : &mut u64) -> u8 {
 
     let bit = first_bit(*bb);
     *bb &= *bb - 1;
-    return bit;
+    bit
 }
 
 fn sparse_pop_count(mut bb : u64) -> u8 {
@@ -1769,7 +1767,7 @@ fn sparse_pop_count(mut bb : u64) -> u8 {
         count += 1;
         bb &= bb.wrapping_sub(1);
     }
-    return count;
+    count
 }
 
 const fn initialize_mask_file_table() -> [u64; 8] {
@@ -1871,28 +1869,30 @@ const fn initialize_square_bb_table() -> [u64; 65] {
 }
 
 const fn initialize_rook_bits_table() -> [u64; 64] {
-    let table = [12, 11, 11, 11, 11, 11, 11, 12, 11, 10, 10, 10, 10,
+    
+
+    [12, 11, 11, 11, 11, 11, 11, 12, 11, 10, 10, 10, 10,
     10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11, 11, 10,
     10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10,
     11, 11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10,
-    10, 10, 10, 11, 12, 11, 11, 11, 11, 11, 11, 12];
-
-    table
+    10, 10, 10, 11, 12, 11, 11, 11, 11, 11, 11, 12]
 }
 
 const fn initialize_bishop_bits_table() -> [u64; 64] {
-    let table = [6, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5,
+    
+
+    [6, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5,
     5, 5, 7, 7, 7, 7, 5, 5, 5, 5, 7, 9, 9, 7, 5, 5,
     5, 5, 7, 9, 9, 7, 5, 5, 5, 5, 7, 7, 7, 7, 5, 5,
-    5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6];
-
-    table
+    5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6]
 }
 
 const fn initialize_rook_magic_table() -> [u64; 64] {
     // precaculated magic numbers for rook attacks
 
-    let table = [0xa8002c000108020,
+    
+
+    [0xa8002c000108020,
     0x4440200140003000,
     0x8080200010011880,
     0x380180080141000,
@@ -1955,15 +1955,15 @@ const fn initialize_rook_magic_table() -> [u64; 64] {
     0x101000208001005,
     0x2008450080702,
     0x1002080301d00c,
-    0x410201ce5c030092];
-
-    table
+    0x410201ce5c030092]
 }
 
 const fn initialize_bishop_magic_table() -> [u64; 64] {
     // precaculated magic numbers for bishop attacks
 
-    let table = [0x40210414004040,
+    
+
+    [0x40210414004040,
     0x2290100115012200,
     0xa240400a6004201,
     0x80a0420800480,
@@ -2026,9 +2026,7 @@ const fn initialize_bishop_magic_table() -> [u64; 64] {
     0xc00010020602,
     0x1045220c040820,
     0x12400808070840,
-    0x2004012a040132];
-
-    table
+    0x2004012a040132]
 }
 
 const fn initialize_bishop_mask_table() -> [u64; 64] {
@@ -2448,8 +2446,8 @@ const fn initialize_line_spanned_bb_table() -> [[u64; 64]; 64] {
     table
 }
 
-fn print_bitboard(bb : &u64) -> () {
-    println!("");
+fn print_bitboard(bb : &u64) {
+    println!();
     for rank in (0..8).rev() {
         for file in 0..8 {  
             if (bb & (1 << (rank * 8 + file))) != 0 {
@@ -2458,7 +2456,7 @@ fn print_bitboard(bb : &u64) -> () {
                 print!("- ");
             }
         }
-        println!("");
+        println!();
     }
     println!("\n");
 }
@@ -2472,7 +2470,7 @@ fn perft(board : &mut Board, depth : u8) -> u64 {
     
     board.generate_moves();
 
-    let mut moves = board.moves.clone();
+    let moves = board.moves.clone();
 
     for m in moves {
         board.do_move(m);
@@ -2482,13 +2480,13 @@ fn perft(board : &mut Board, depth : u8) -> u64 {
         board.undo_move(m);
     }
 
-    return nodes;
+    nodes
 }
 
 fn perft_divide(board : &mut Board, depth : u8) -> u64 {
     board.generate_moves();
 
-    let mut moves = board.moves.clone();
+    let moves = board.moves.clone();
 
     let mut nodes = 0;
 
@@ -2508,15 +2506,15 @@ fn perft_divide(board : &mut Board, depth : u8) -> u64 {
 use std::path::Path;
 use std::io::{BufRead, BufReader};
 
-fn run_perft_tests(filename : &str) -> () {
+fn run_perft_tests(filename : &str) {
     let path = Path::new(filename);
 
-    let file = std::fs::File::open(&path).unwrap();
+    let file = std::fs::File::open(path).unwrap();
     let reader = BufReader::new(file);
 
-    print!("+--------------------------------------------------------------------------------------+--------+------------+------------+-------------------+----------+\n");
-    print!("| FEN                                                                                  | Depth  | Expected   | Result     | MNodes per second | Correct  |\n");
-    print!("+--------------------------------------------------------------------------------------+--------+------------+------------+-------------------+----------+\n");
+    println!("+--------------------------------------------------------------------------------------+--------+------------+------------+-------------------+----------+");
+    println!("| FEN                                                                                  | Depth  | Expected   | Result     | MNodes per second | Correct  |");
+    println!("+--------------------------------------------------------------------------------------+--------+------------+------------+-------------------+----------+");
 
     let mut global_nodes = 0;
     let global_start = std::time::Instant::now();
@@ -2524,12 +2522,12 @@ fn run_perft_tests(filename : &str) -> () {
 
     for line in reader.lines() {
         let line = line.unwrap();
-        let mut parts = line.split(";");
+        let mut parts = line.split(';');
         let fen = parts.next().unwrap();
         
         // iterate over all depths
         for part in parts {
-            let mut depth_result = part.split(" ");
+            let mut depth_result = part.split(' ');
             let depth = depth_result.next().unwrap();
             let depth = depth[1..].parse::<u8>().unwrap();
             let nodes = depth_result.next().unwrap().parse::<u64>().unwrap();
@@ -2553,8 +2551,8 @@ fn run_perft_tests(filename : &str) -> () {
             } else {
                 mnps = format!("{:.*}", 4, result as f64 / (duration_in_ms as f64 / 1000.0) / 1000000.0);
             }
-            print!("| {:<84} | {:<6} | {:<10} | {:<10} | {:<17} |  {:<8}   |\n", fen, depth, nodes, result, mnps, correct);
-            print!("+--------------------------------------------------------------------------------------+--------+------------+------------+-------------------+----------+\n");
+            println!("| {:<84} | {:<6} | {:<10} | {:<10} | {:<17} |  {:<8}   |", fen, depth, nodes, result, mnps, correct);
+            println!("+--------------------------------------------------------------------------------------+--------+------------+------------+-------------------+----------+");
 
         }
     }
