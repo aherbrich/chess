@@ -1,14 +1,6 @@
 use core::{panic, fmt};
 
-const DEBRUIJN_TABLE : [u8; 64] = 
-[0, 47, 1, 56, 48, 27, 2, 60,
-57, 49, 41, 37, 28, 16, 3, 61,
-54, 58, 35, 52, 50, 42, 21, 44,
-38, 32, 29, 23, 17, 11, 4, 62,
-46, 55, 26, 59, 40, 36, 15, 53,
-34, 51, 20, 43, 31, 22, 10, 45,
-25, 39, 14, 33, 19, 30, 9, 24,
-13, 18, 8, 12, 7, 6, 5, 63];
+
 
 const FIELD : [&str; 64] = ["a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "a2", "b2",
 "c2", "d2", "e2", "f2", "g2", "h2", "a3", "b3", "c3", "d3",
@@ -232,8 +224,6 @@ struct Board {
     checkers : u64,
     pinned : u64,
     attackmap : u64,
-    capture_mask : u64,
-    quiet_mask : u64,
 
     side_to_move : Player,
     ply : u16,
@@ -252,8 +242,6 @@ impl Board {
             checkers : 0,
             pinned : 0,
             attackmap : 0,
-            capture_mask : 0,
-            quiet_mask : 0,
 
             side_to_move : Player::White,
             ply : 0,
@@ -278,8 +266,6 @@ impl Board {
         self.checkers = 0;
         self.pinned = 0;
         self.attackmap = 0;
-        self.capture_mask = 0;
-        self.quiet_mask = 0;
 
         self.side_to_move = Player::White;
         self.ply = 0;
@@ -455,241 +441,6 @@ impl Board {
         print_bitboard(&self.piece_bitboards[Piece::BlackKing as usize]);
     }
 
-    fn check(&self) {
-        for i in 0..64 {
-            match self.playingfield[i] {
-                Square::Occupied(Piece::WhitePawn) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - white pawn");
-                        }
-                },
-                Square::Occupied(Piece::WhiteKnight) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - white knight");
-                        }
-                },
-                Square::Occupied(Piece::WhiteBishop) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - white bishop");
-                        }
-                },
-                Square::Occupied(Piece::WhiteRook) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - white rook");
-                        }
-                },
-                Square::Occupied(Piece::WhiteQueen) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - white queen");
-                        }
-                },
-                Square::Occupied(Piece::WhiteKing) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - white king");
-                        }
-                },
-                Square::Occupied(Piece::BlackPawn) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) == 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - black pawn");
-                        }
-                },
-                Square::Occupied(Piece::BlackKnight) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - black knight");
-                        }
-                },
-                Square::Occupied(Piece::BlackBishop) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - black bishop");
-                        }
-                },
-                Square::Occupied(Piece::BlackRook) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - black rook");
-                        }
-                },
-                Square::Occupied(Piece::BlackQueen) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) == 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - black queen");
-                        }
-                },
-                Square::Occupied(Piece::BlackKing) => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) == 0 {
-                            self.print();
-                            panic!("Invalid board - black king");
-                        }
-                },
-                Square::Empty => {
-                    if  (self.piece_bitboards[Piece::WhitePawn as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackPawn as usize] & SQUARE_BB[i]) != 0  ||
-                        (self.piece_bitboards[Piece::WhiteKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKnight as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackBishop as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackRook as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackQueen as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::WhiteKing as usize] & SQUARE_BB[i]) != 0 ||
-                        (self.piece_bitboards[Piece::BlackKing as usize] & SQUARE_BB[i]) != 0 {
-                            self.print();
-                            panic!("Invalid board - empty square");
-                        }
-                }
-            }
-        }
-    }
-
-    fn print_moves(&self) {
-        println!("{} moves", self.moves.len());
-        for mov in &self.moves {
-            mov.print();
-        }
-    }
-
     fn remove_piece(&mut self, sq : u8) {
         // TODO hashes
         match self.playingfield[sq as usize] {
@@ -732,12 +483,6 @@ impl Board {
             },
             _ => {
                 self.print();
-                print_bitboard(&self.capture_mask);
-                print_bitboard(&self.piece_bitboards[Piece::WhitePawn as usize]);
-                print_bitboard(&self.piece_bitboards[Piece::BlackPawn as usize]);
-                print_bitboard(&self.piece_bitboards[Piece::WhiteKnight as usize]);
-                print_bitboard(&self.piece_bitboards[Piece::BlackKnight as usize]);
-
                 panic!("No piece on square {} {}", from, to);
             }
         }
@@ -1322,10 +1067,8 @@ impl Board {
                         // for all the other pieces, we can either 
                         // (1) capture the checking piece
                         capture_mask = self.checkers;
-                        self.capture_mask = capture_mask;
                         // (2) move a piece between the checking piece and our king
                         quiet_mask = SQUARES_BETWEEN_BB[our_king_sq as usize][checker_square as usize];
-                        self.quiet_mask = quiet_mask;
                     }
                 }
             },
@@ -1333,11 +1076,9 @@ impl Board {
             _ => {
                 // we can capture any enemy piece
                 capture_mask = them_bb;
-                self.capture_mask = capture_mask;
 
                 // we can move (quiet move) any piece to any empty square
                 quiet_mask = !all;
-                self.quiet_mask = quiet_mask;
 
                 // SPECIAL HANDLING of possible EP CAPTURES
 
@@ -1746,6 +1487,15 @@ fn make_moves_doublepush(moves : &mut Vec<Move>, from : u8, to : u64) {
 }
 
 const fn first_bit(bb : u64) -> u8 {
+    const DEBRUIJN_TABLE : [u8; 64] = 
+    [0, 47, 1, 56, 48, 27, 2, 60,
+    57, 49, 41, 37, 28, 16, 3, 61,
+    54, 58, 35, 52, 50, 42, 21, 44,
+    38, 32, 29, 23, 17, 11, 4, 62,
+    46, 55, 26, 59, 40, 36, 15, 53,
+    34, 51, 20, 43, 31, 22, 10, 45,
+    25, 39, 14, 33, 19, 30, 9, 24,
+    13, 18, 8, 12, 7, 6, 5, 63];
     const DEBRUIJN_MAGIC : u64 = 0x03f79d71b4cb0a89;
     let num = bb ^ (bb - 1);
     DEBRUIJN_TABLE[(num.wrapping_mul(DEBRUIJN_MAGIC) >> 58) as usize]
@@ -2491,7 +2241,6 @@ fn perft_divide(board : &mut Board, depth : u8) -> u64 {
     let mut nodes = 0;
 
     for m in moves {
-        //board.print();
         board.do_move(m);
 
         let n = perft(board, depth - 1);
