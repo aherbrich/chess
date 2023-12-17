@@ -1,15 +1,13 @@
-use crate::helpers::{rank_of, file_of, diagonal_of, anti_diagonal_of, attacks_on_line, transform, first_bit};
-use crate::types::Player;
+use super::helpers::{rank_of, file_of, diagonal_of, anti_diagonal_of, attacks_on_line, transform, first_bit};
+use super::types::Player;
 
 // helper bitboards 
 const MASK_FILE : [u64; 8] = initialize_mask_file_table();
 pub const MASK_RANK : [u64; 8] = initialize_mask_rank_table();
 pub const CLEAR_FILE : [u64; 8] = initialize_clear_file_table();
-const CLEAR_RANK : [u64; 8] = initialize_clear_rank_table();
 const MASK_ANTI_DIAG : [u64; 15] = initialize_mask_anti_diag_table();
 const MASK_DIAG : [u64; 15] = initialize_mask_diag_table();
 pub const SQUARE_BB : [u64; 65] = initialize_square_bb_table();
-const UNIBOARD : u64 = 0xFFFFFFFFFFFFFFFF;
 pub const SQUARES_BETWEEN_BB : [[u64; 64]; 64] = initialize_squares_between_bb_table();
 pub const LINE_SPANNED_BB : [[u64; 64]; 64] = initialize_line_spanned_bb_table();
 
@@ -69,18 +67,6 @@ const fn initialize_clear_file_table() -> [u64; 8] {
     while file < 8 {
         table[file] = (0x101010101010101 << file) ^ 0xFFFFFFFFFFFFFFFF;
         file += 1;
-    }
-
-    table
-}
-
-const fn initialize_clear_rank_table() -> [u64; 8] {
-    let mut table = [0; 8];
-
-    let mut rank = 0;
-    while rank < 8 {
-        table[rank] = (0xFF << (rank * 8)) ^ 0xFFFFFFFFFFFFFFFF;
-        rank += 1;
     }
 
     table
