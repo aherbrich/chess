@@ -7,7 +7,7 @@ use TrueChess::engine::perft::perft;
 
 #[test]
 fn run_perft_tests() {
-    let path = Path::new("/Users/aherbrich/src/myprojects/chess/Rust/tests/test_suite.txt");
+    let path = Path::new("tests/test_suite.txt");
 
     let file = std::fs::File::open(path).unwrap();
     let reader = BufReader::new(file);

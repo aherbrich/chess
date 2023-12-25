@@ -17,6 +17,7 @@ pub enum Direction {
     SouthWest = -9
 }
 
+#[allow(dead_code)]
 pub enum File {
     A,
     B,
