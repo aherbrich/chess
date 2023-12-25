@@ -6,4 +6,5 @@ pub mod engine {
     mod helpers;
     mod types;
     mod moves;
+    mod zobrist;
 }

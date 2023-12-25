@@ -3,6 +3,7 @@ use super::tables::{PAWN_ATTACKS, KNIGHT_ATTACKS, KING_ATTACKS};
 use super::helpers::{rank_of, attacks_on_line, attacks_bishop, attacks_rook, first_bit, pop_first_bit, sparse_pop_count};
 use super::types::{Player, Direction, File, Rank, Square, Piece};
 use super::moves::{Move, MoveFlags};
+use super::zobrist::ZOBRIST_TABLE;
 
 const CASTLE_WHITE_KING : u8 = 1;
 const CASTLE_WHITE_QUEEN : u8 = 2;
@@ -75,7 +76,6 @@ impl Board {
 
         self.side_to_move = Player::White;
         self.ply = 0;
-        self.hash = 0;
 
         self.history = [UndoInfo {
             castle : 0,
@@ -86,6 +86,8 @@ impl Board {
             hash : 0
         }; 1024];
         self.moves.clear();
+
+        self.hash = self.calculate_hash();
     }
 
     pub fn set_by_fen(&mut self, fen : &str) {
@@ -206,7 +208,32 @@ impl Board {
         // set fullmove number by sixth part
         self.history[0].fullmove = fen_parts.next().unwrap().parse::<u16>().unwrap();
 
-        // TODO hashes
+        // calculate hash
+        self.hash = self.calculate_hash();
+    }
+
+    fn calculate_hash(&mut self) -> u64 {
+        let mut hash = 0;
+
+        let mut i = 0;
+        while i < 64 {
+            match self.playingfield[i] {
+                Square::Occupied(piece) => {
+                    hash ^= ZOBRIST_TABLE.pieces[piece as usize][i];
+                },
+                _ => ()
+            }
+            i += 1;
+        }
+
+        if self.history[self.ply as usize].epsq != NO_SQUARE {
+            hash ^= ZOBRIST_TABLE.flags[(self.history[self.ply as usize].epsq % 8) as usize];
+        }
+
+        hash ^= ZOBRIST_TABLE.flags[8 + self.history[self.ply as usize].castle as usize];
+        hash ^= ZOBRIST_TABLE.flags[24 + self.side_to_move as usize];
+
+        hash
     }
     
     fn print(&self) {
@@ -248,12 +275,12 @@ impl Board {
     }
 
     fn remove_piece(&mut self, sq : u8) {
-        // TODO hashes
         match self.playingfield[sq as usize] {
             Square::Occupied(piece) => {
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][sq as usize];
                 self.piece_bitboards[piece as usize] &= !SQUARE_BB[sq as usize];
             },
-            _ => ()
+            _ => panic!("REMOVE_PIECE: No piece on square {}?", sq)
         };
         self.playingfield[sq as usize] = Square::Empty;
     }
@@ -262,15 +289,35 @@ impl Board {
         match pc {
             Square::Occupied(piece) => {
                 self.piece_bitboards[piece as usize] |= SQUARE_BB[sq as usize];
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][sq as usize];
             },
-            _ => ()
+            _ => panic!("PUT_PIECE: No piece on square {}?", sq)
         }
         self.playingfield[sq as usize] = pc;
-        // TODO hashes
     }
 
     fn move_piece (&mut self, from : u8, to : u8) {
-        // TODO hashes
+        match self.playingfield[from as usize] {
+            Square::Occupied(piece) => {
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][from as usize];
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][to as usize];
+            },
+            _ => {
+                self.print();
+                panic!("No piece on square {} {}", from, to);
+            }
+        }
+
+        match self.playingfield[to as usize] {
+            Square::Occupied(piece) => {
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][to as usize];
+            },
+            _ => {
+                self.print();
+                panic!("No piece on square {} {}", from, to);
+            }
+        }
+
         let mask = SQUARE_BB[from as usize] | SQUARE_BB[to as usize];
         
         match self.playingfield[from as usize] {
@@ -298,7 +345,18 @@ impl Board {
     }
 
     fn move_piece_quiet(&mut self, from : u8, to : u8) {
-        // TODO hashes
+        match self.playingfield[from as usize] {
+            Square::Occupied(piece) => {
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][from as usize];
+                self.hash ^= ZOBRIST_TABLE.pieces[piece as usize][to as usize];
+            },
+            _ => {
+                self.print();
+                panic!("No piece on square {} {}", from, to);
+            }
+        }
+
+
         match self.playingfield[from as usize] {
             Square::Occupied(piece) => {
                 self.piece_bitboards[piece as usize] ^= SQUARE_BB[from as usize] | SQUARE_BB[to as usize];
@@ -331,10 +389,10 @@ impl Board {
         // adjustment of hash
         // XOR out (old) ep square if an ep sqaure was set i.e. ep capture was possible at ply - 1
         if self.history[(ply - 1) as usize].epsq != NO_SQUARE {
-            // TODO hashes
+            self.hash ^= ZOBRIST_TABLE.flags[(self.history[(ply - 1) as usize].epsq % 8) as usize];
         }
         // XOR out (old) castling rights
-        // TODO hashes
+        self.hash ^= ZOBRIST_TABLE.flags[8 + self.history[(ply - 1) as usize].castle as usize];
 
         // reset fifty move counter if move is a pawn move or a capture
         if mov.flags & 0b100 != 0 || (SQUARE_BB[mov.from as usize] & self.piece_bitboards[Piece::WhitePawn as usize] != 0) ||
@@ -379,7 +437,7 @@ impl Board {
                     Player::White => self.history[ply as usize].epsq = mov.from + 8,
                     Player::Black => self.history[ply as usize].epsq = mov.from - 8
                 }
-                // TODO hashes
+                self.hash ^= ZOBRIST_TABLE.flags[(self.history[ply as usize].epsq % 8) as usize];
             },
             MoveFlags::KingCastle => {
                 match self.side_to_move {
@@ -506,22 +564,25 @@ impl Board {
             Player::Black => Player::White
         };
 
-        // TODO hashes
+        // XOR in the (new) player and XOR out the (old) player
+        self.hash ^= ZOBRIST_TABLE.flags[24] ^ ZOBRIST_TABLE.flags[25];
+        /* XOR in the new castle rights */
+        self.hash ^= ZOBRIST_TABLE.flags[8 + self.history[ply as usize].castle as usize];
     }
 
     pub fn undo_move(&mut self, mov : Move) {
         // XOR out old castle rights 
-        // TODO hashes
+        self.hash ^= ZOBRIST_TABLE.flags[8 + self.history[self.ply as usize].castle as usize];
 
         // reduce ply
         self.ply -= 1;
 
         // XOR in new castle rights
-        // TODO hashes
+        self.hash ^= ZOBRIST_TABLE.flags[8 + self.history[self.ply as usize].castle as usize];
 
         // XOR in the (old) ep square if an ep square was set i.e. ep capture was possible at ply - 1
         if self.history[self.ply as usize].epsq != NO_SQUARE {
-            // TODO hashes
+            self.hash ^= ZOBRIST_TABLE.flags[(self.history[self.ply as usize].epsq % 8) as usize];
         }
 
         match MoveFlags::from_u8(mov.flags) {
@@ -530,7 +591,7 @@ impl Board {
             },
             MoveFlags::DoublePawnPush => {
                 /* XOR out the new ep square */
-                // TODO hashes
+                self.hash ^= ZOBRIST_TABLE.flags[(self.history[(self.ply+1)as usize].epsq % 8) as usize];
                 self.move_piece_quiet(mov.to, mov.from);
             },
             MoveFlags::KingCastle => {
@@ -595,8 +656,7 @@ impl Board {
         };
 
         // XOR out the (old) player and XOR in the (new) player
-        // TODO hashes
-        
+        self.hash ^= ZOBRIST_TABLE.flags[24] ^ ZOBRIST_TABLE.flags[25];
     }
 
     fn diagonal_sliders(&self, player : Player) -> u64 {
