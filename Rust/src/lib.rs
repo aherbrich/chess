@@ -8,3 +8,7 @@ pub mod engine {
     mod moves;
     mod zobrist;
 }
+
+pub mod ordering {
+    pub mod gaussian;
+}
