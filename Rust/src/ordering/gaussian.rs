@@ -1,5 +1,8 @@
 // Implements all functionality for a 1D Gaussian distribution
 
+use std::ops::{Mul,MulAssign};
+
+#[derive(Debug, Copy, Clone)]
 pub struct Gaussian {
     tau: f64,       // precision-mean of the Gaussian
     rho: f64,       // precision of the Gaussian
@@ -39,12 +42,31 @@ impl Gaussian {
     pub fn variance(&self) -> f64 {
         1.0 / self.rho
     }
+}
 
-    // computes the absolute difference between two 1D Gaussian
-    pub fn abs_diff(&self, other: &Gaussian) -> f64 {
-        (self.tau - other.tau)
-            .abs()
-            .max((self.rho - other.rho).abs().sqrt())
+impl Mul for Gaussian {
+    type Output = Self;
+
+    // multiplies two 1D Gaussian
+    fn mul(self, other: Gaussian) -> Gaussian {
+        Gaussian {
+            tau: self.tau + other.tau,
+            rho: self.rho + other.rho,
+        }
     }
+}
 
+impl MulAssign for Gaussian {
+    // multiplies two 1D Gaussian in-place
+    fn mul_assign(&mut self, other: Gaussian) {
+        self.tau += other.tau;
+        self.rho += other.rho;
+    }
+}
+
+// 
+pub fn abs_diff(a: &Gaussian, b: &Gaussian) -> f64 {
+    (a.tau - b.tau)
+        .abs()
+        .max((a.rho - b.rho).abs().sqrt())
 }
