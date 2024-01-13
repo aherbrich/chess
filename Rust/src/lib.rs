@@ -11,4 +11,5 @@ pub mod engine {
 
 pub mod ordering {
     pub mod gaussian;
+    pub mod factorgraph;
 }
