@@ -222,17 +222,15 @@ impl Factor for GreaterThanFactor {
 
 
 // an implementation of a factor graph
-pub struct FactorGraph {
+pub struct DistributionBag {
     pub variables: Vec<Gaussian>,
-    factors: Vec<Box<dyn Factor>>,
 }
 
-impl FactorGraph {
+impl DistributionBag {
     // creates a new factor graph
-    pub fn new() -> FactorGraph {
-        FactorGraph {
+    pub fn new() -> DistributionBag {
+        DistributionBag {
             variables: Vec::new(),
-            factors: Vec::new(),
         }
     }
 
@@ -245,13 +243,6 @@ impl FactorGraph {
     pub fn new_variable(&mut self) -> usize {
         let index = self.variables.len();
         self.variables.push(Gaussian::new(0.0, 0.0));
-        index
-    }
-
-    // adds a new factor to the factor graph
-    pub fn new_factor(&mut self, factor: Box<dyn Factor>) -> usize {
-        let index = self.factors.len();
-        self.factors.push(factor);
         index
     }
 }
