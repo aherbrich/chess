@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 const-random="0.1.17"
+libm="0.2.8"
 
 [profile.release]
 lto = true

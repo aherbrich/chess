@@ -7,8 +7,8 @@ use std::f64;
 
 #[derive(Debug,Copy,Clone)]
 pub struct Gaussian {
-    tau: f64,       // precision-mean of the Gaussian
-    rho: f64,       // precision of the Gaussian
+    pub tau: f64,       // precision-mean of the Gaussian
+    pub rho: f64,       // precision of the Gaussian
 }
 
 impl Gaussian {
@@ -93,7 +93,7 @@ impl fmt::Display for Gaussian {
         if self.rho == 0.0 {
             write!(f, "(μ = 0, σ = Inf)")
         } else {
-            write!(f, "(μ = {0:.3}, σ = {1:.3})\n", self.mean(), self.variance().sqrt())
+            write!(f, "(μ = {0:.3}, σ = {1:.3})", self.mean(), self.variance().sqrt())
         }        
     }
 }
